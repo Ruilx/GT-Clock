@@ -1,0 +1,537 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0,minimum-scale=1.0, user-scalable=0" />
+		<meta http-equiv="Cache-Control" content="no-transform">
+		<meta http-equiv="Cache-Control" content="no-siteapp">
+		<title>GT-Clock8266</title>
+		<link rel="stylesheet" type="text/css" href="assets/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="assets/bootflat.min.css">
+		<link rel="stylesheet" type="text/css" href="assets/datetimepicker.min.css">
+		<style>
+			.mb0{
+				margin-bottom: 0;
+			}
+			#tfp{
+				width: 288px;
+				height: 24px;
+				margin: auto;
+				background: url('assets/timeFont1.png') no-repeat top left;
+				background-size: 288px;
+				image-rendering: pixelated;
+				transition: background-position ease-out 0.3s;
+			}
+			@media (max-width: 480px) {
+				#tfp{
+					width: 180px;
+				}
+			}
+			@media(max-width: 335px){
+				#tfp{
+					width: 100%;
+				}
+			}
+			#fp{
+				width: 240px;
+				height: 24px;
+				margin: auto;
+				background: url('assets/normalFont1.png') no-repeat top left;
+				background-size: 240px;
+				image-rendering: pixelated;
+				transition: background-position ease-out 0.3s;
+			}
+			@media (max-width: 480px) {
+				#fp{
+					width: 100%;
+				}
+			}
+		</style>
+	</head>
+	<body style="padding-top: 70px; background-color: #f1f2f6">
+		<nav class="navbar navbar-inverse navbar-fixed-top" id="nav"></nav>
+		
+		<div class="container" id="main">
+			<div class="jumbotron">
+				<div class="jumbotron-photo center">
+				</div>
+				<div class="jumbotron-contents">
+					<h1 class="text-center" style="margin-top: 10px">Welcome</h1>
+					<p>欢迎使用GT-Clock网络时钟! 在开始使用之前, 我们需要在页面上应用一部分常用的设置, 点击"保存并应用"确认您的设置.</p>
+					<p>当您需要脱机使用GT-Clock时, 您只需本地设置好时间, 时钟将会按照设置的时间运行. 若需使用扩展功能, 请连接Wifi, 确保设备接入互联网.</p>
+					<p>Thanks for using GT network clock, we need to apply some settings before start using it. To confirm all settings by click "Save & Apply" button.</p>
+				</div>
+			</div>
+			<div class="row clearfix">
+				<div class="col-xs-12 col-md-6">
+					<div class="panel panel-primary">
+						<div class="panel-heading">
+							<h3 class="panel-title">时间设置</h3>
+						</div>
+						
+						<ul class="list-group">
+							<li class="list-group-item">
+								<label>本地当前时间</label>
+								<div class="input-group">
+									<input type="text" class="form-control dtset" id="idt" placeholder="yyyy-MM-dd HH:mm:ss" readonly/>
+									<span class="input-group-btn"><button class="btn btn-primary" type="button" id="bsldt">同步本机时间</button></span>
+								</div>
+								<p class="help-block">轻触输入框调出时间选择框, 或单击"同步本机时间"将本机时间同步给页面. 完毕后页面会自动更新时间, 并在保存应用时将最新的时间发送给设备.</p>
+							</li>
+							<li class="list-group-item">
+								<label><input type="checkbox" id="cundt"> 通过网络时间服务器进行时间同步</label>
+								<div class="alert alert-warning">您的设备尚未接入互联网, 时间同步服务可能无法正常运行</div>
+								<p class="help-block">通过网络NTP服务器获取最新的网络时间, 并同步至设备中.</p>
+								<div class="input-group">
+									<span class="input-group-addon">首选时间服务器</span>
+									<select class="form-control" id="sts1" disabled></select>
+								</div><br>
+								<div class="input-group">
+									<span class="input-group-addon">备选时间服务器</span>
+									<select class="form-control" id="sts2" disabled></select>
+								</div><br>
+								<div class="input-group">
+									<span class="input-group-addon">当前时区</span>
+									<span class="input-group-addon">UTC</span>
+									<select class="form-control" id="stz" disabled></select>
+									<span class="input-group-btn">
+									<button class="btn btn-primary" type="button" id="bsltz" disabled>同步本机时区</button>
+								</span>
+								</div><br>
+								<div class="input-group">
+									<span class="input-group-addon">夏令时</span>
+									<select class="form-control" id="sdst" disabled>
+										<option value="0">无</option>
+										<option value="-0.5">快半小时</option>
+										<option value="-1">快1小时</option>
+										<option value="-1.5">快1.5小时</option>
+										<option value="-2">快2小时</option>
+										<option value="+0.5">慢半小时</option>
+										<option value="+1">慢1小时</option>
+										<option value="+1.5">慢1.5小时</option>
+										<option value="+2">慢2小时</option>
+									</select>
+								</div><br>
+								<div class="input-group">
+									<span class="input-group-addon">同步频率</span>
+									<select class="form-control" id="ssf" disabled>
+										<option value="1">每天凌晨</option>
+										<option value="2">每周天凌晨</option>
+										<option value="3">每月1日</option>
+										<option value="4">每年初</option>
+										<option value="5">手动同步</option>
+									</select>
+								</div>
+							</li>
+							<li class="list-group-item">
+								<label>RTC设备</label>
+								<p class="help-block">选择一个RTC设备, 将时间交由该设备存储.</p>
+								<p class="help-block">确保RTC设备后备电池工作正常, 否则断电后可能遗失正常时间.</p>
+								<div class="input-group">
+									<span class="input-group-addon">RTC设备</span>
+									<select class="form-control" id="srtc">
+										<option value="1">DS3231</option>
+										<option value="2">STM32</option>
+									</select>
+								</div><br>
+							</li>
+						</ul>
+					</div>
+					
+					<div class="panel panel-primary">
+						<div class="panel-heading">
+							<h3 class="panel-title">显示设置</h3>
+						</div>
+						<div class="panel-body">
+							<label>设置时间显示方式, 字体和点阵微调</label>
+							<div class="input-group">
+								<span class="input-group-addon">预览</span>
+								<div class="form-control" style="overflow: hidden">
+									<div id="tfp"></div>
+								</div>
+							</div><br>
+							<div class="input-group">
+								<span class="input-group-addon">时间字体</span>
+								<select class="form-control" id="tf">
+									<option value="0">R Pro Bold 5x7</option>
+									<option value="1">R Bold 5x7</option>
+									<option value="2">R Bold Serif 5x7</option>
+									<option value="3">RC Bold 5x7</option>
+									<option value="4">R Std 5x7</option>
+									<option value="5">RuilxFixedSys 5x7</option>
+									<option value="6">RH Sans 5x7</option>
+									<option value="7">Casio LCD 5x7</option>
+									<option value="8">Minecraftia 5x7</option>
+									<option value="9">R Sans 5x7</option>
+									<option value="10">R 4511 5x7</option>
+									<option value="11">R Sans Pro 5x7</option>
+									<option value="12">R Pro 5x7</option>
+									<option value="13">OCR A 5x7</option>
+									<option value="14">R Hand 5x7</option>
+									<option value="15">R SMG 5x7</option>
+									<option value="16">R SMG Bold 5x7</option>
+									<option value="17">R Kanji 5x7</option>
+									<option value="18">R Kanji Pro 5x7</option>
+									<option value="19">R Half Bold 5x7</option>
+									<option value="20">R LSD 5x7</option>
+									<option value="21">R Block 5x7</option>
+									<option value="22">R Small 5x7</option>
+									<option value="23">R Sidy 5x7</option>
+									<option value="24">R Shift Sym 5x7</option>
+									<option value="25">R Sq 5x7</option>
+									<option value="26">R Sq Pro 5x7</option>
+									<option value="27">R Sq Std 5x7</option>
+									<option value="28">R Sq Serif 5x7</option>
+									<option value="29">Georgia 5x7</option>
+									<option value="30">R 6H 5x7</option>
+									<option value="31">Simsun 5x8</option>
+									<option value="32">Commodore64 6x7</option>
+									<option value="33">NesPixel 7x7</option>
+								</select>
+							</div><br>
+							<div class="input-group">
+								<span class="input-group-addon">时间显示</span>
+								<select class="form-control" id="sdm">
+									<option value="1">时分秒(小字体)(24H)</option>
+									<option value="2">时分(12H)</option>
+									<option value="2">时分(24H)</option>
+									<option value="3">时分秒(大字体)(24H)</option>
+									<option value="4">时分秒(中字体)(24H)</option>
+								</select>
+							</div><br>
+							<div class="input-group">
+								<span class="input-group-addon">对齐微调</span>
+								<select class="form-control" id="sta">
+									<option value="1">靠顶</option>
+									<option value="2">靠底</option>
+								</select>
+							</div>
+							<p class="help-block">如果选择的是高度为7的字体该可以配置显示靠顶或者靠底, 在相对位置预留一像素的宽度</p>
+						</div>
+						<ul class="list-group">
+							<li class="list-group-item">
+								<label>普通字体</label>
+								<div class="input-group">
+									<span class="input-group-addon">预览</span>
+									<div class="form-control" style="overflow: hidden">
+										<div id="fp"></div>
+									</div>
+								</div><br>
+								<div class="input-group">
+									<span class="input-group-addon">字体</span>
+									<select class="form-control" id="sf">
+										<option value="0">RuilxFixedSys</option>
+										<option value="1">R Pro Bold</option>
+										<option value="2">RC Bold</option>
+										<option value="3">Minecraftia</option>
+										<option value="4">OCR A</option>
+										<option value="5">R SMG</option>
+										<option value="6">Simsun</option>
+										<option value="7">Commodore64</option>
+										<option value="8">NesPixel</option>
+									</select>
+								</div><br>
+							</li>
+							<li class="list-group-item">
+								<label>设置日期显示方式</label>
+								<div class="input-group">
+									<span class="input-group-addon">日期格式</span>
+									<select class="form-control" id="sdf">
+										<option value="1">2019-12-31</option>
+										<option value="2">19-12-31</option>
+										<option value="3">2019/12/31</option>
+										<option value="4">19/12/31</option>
+										<option value="5">31/12/2019</option>
+										<option value="6">31/12/19</option>
+										<option value="7">12/31/2019</option>
+										<option value="8">12/31/19</option>
+										<option value="9">Dec. 31, 2019</option>
+										<option value="10">31 Dec, 2019</option>
+										<option value="11">2019年12月31日</option>
+										<option value="12">二〇一九年十二月三十一日</option>
+										<option value="13">令和元年12月31日</option>
+										<option value="14">れいわ1年12月31日</option>
+										<option value="15">R1.12.31</option>
+									</select>
+								</div><br>
+								<label><input type="checkbox" id="c3"> 非两位日期前补0#c3</label>
+								<p>当月和日不超过两位数时, 在其前面补0</p>
+							</li>
+							<li class="list-group-item">
+								<label>设置星期显示方式</label>
+								<div class="input-group">
+									<span class="input-group-addon">星期格式</span>
+									<select class="form-control" id="swf">
+										<option value="1">Sun. Mon. Tue. Wed. Thu. Fri. Sat.</option>
+										<option value="2">Sunday Monday Tuesday Wednesday Thursday Friday Saturday</option>
+										<option value="3">周日 周一 周二 周三 周四 周五 周六</option>
+										<option value="4">日 月 火 水 木 金 土</option>
+									</select>
+								</div><br>
+								<div class="input-group">
+									<span class="input-group-addon">星期位置</span>
+									<select class="form-control" id="swl">
+										<option value="1">在日期之前</option>
+										<option value="2">在日期之后</option>
+									</select>
+								</div><br>
+							</li>
+						</ul>
+					</div>
+				</div>
+			
+				<div class="col-xs-12 col-md-6">
+					<div class="panel panel-primary">
+						<div class="panel-heading">
+							<h3 class="panel-title">温度设置</h3>
+						</div>
+						<div class="panel-body">
+							<label>设置温度模式, 显示方式</label>
+							<div class="input-group">
+								<span class="input-group-addon">温度来源</span>
+								<select class="form-control" id="std">
+									<option value="1">使用DS3231温度计量</option>
+									<option value="2">使用DS18B20温度计量</option>
+								</select>
+							</div><br>
+							<div class="input-group">
+								<span class="input-group-addon">温度单位</span>
+								<select class="form-control" id="stu">
+									<option value="1">摄氏温标(℃)</option>
+									<option value="2">华氏温标(℉)</option>
+									<option value="3">开氏温标(Ｋ)</option>
+									<option value="4">列氏温标(Re)</option>
+								</select>
+							</div><br>
+							<div class="input-group">
+								<span class="input-group-addon">温度自动显示</span>
+								<select class="form-control" id="stad">
+									<option value="1">不自动显示</option>
+									<option value="2">每整点</option>
+									<option value="3">每天8时整</option>
+									<option value="4">每天8时, 16时整</option>
+								</select>
+							</div>
+						</div>
+					</div>
+					
+					<div class="panel panel-primary">
+						<div class="panel-heading">
+							<h3 class="panel-title">其他设置</h3>
+						</div>
+						<div class="panel-body">
+							<label>设置整点提醒, 自动亮度</label>
+							<div class="input-group">
+								<span class="input-group-addon">整点提醒</span>
+								<select class="form-control" id="shr">
+									<option value="1">滴滴声</option>
+									<option value="2">不提醒</option>
+								</select>
+							</div>
+						</div>
+						<ul class="list-group">
+							<li class="list-group-item">
+								<label><input type="checkbox" id="c4"> 夜间不发出声音#c4</label>
+								<p>在夜间停止蜂鸣器工作以便不影响夜间休息</p>
+							</li>
+							<li class="list-group-item">
+								<label><input type="checkbox" id="c5"> 自动调整亮度#c5</label>
+								<p>使用光感元件来自动调整屏幕亮度</p>
+							</li>
+							<li class="list-group-item">
+								<label><input type="checkbox" id="c6"> 自动屏幕方向#c6</label>
+								<p>使用重力开关来自动调整屏幕方向</p>
+							</li>
+						</ul>
+					</div>
+					
+					<div class="panel panel-primary">
+						<div class="panel-heading">
+							<h3 class="panel-title">网络设置</h3>
+						</div>
+						<div class="panel-body">
+							<label>设置WiFi连接点</label>
+							<p class="help-block">
+								设备载有ESP8266无线收发器, 可以连接外部的2.4GHz无线发射点使设备接入无线网. 您可以手动输入网络接入点的信息或在下面的可用网络接入点中选择您的接入点输入密码并保存, 设备将在重新启动后尝试连接指定接入点
+							</p>
+							<div class="input-group">
+								<span class="input-group-addon">ESSID</span>
+								<input type="text" class="form-control" id="iessid" placeholder=""/>
+								<span class="input-group-btn">
+									<button class="btn btn-primary" type="button" id="bws">扫描可用网络</button>
+								</span>
+							</div><br>
+							<div class="input-group">
+								<span class="input-group-addon">密码</span>
+								<input type="password" class="form-control" id="iwp" placeholder="未更改密码" />
+							</div>
+							<p class="help-block">若接入点未设置密码或未保存更改的密码, 请将此处留空</p>
+						</div>
+						<ul class="list-group">
+							<li class="list-group-item">
+								<label>可用网络</label>
+								<div class="input-group">
+									<select class="form-control" id="swa">
+										<option value="1">One</option>
+										<option value="2">Two</option>
+										<option value="3">Three</option>
+										<option value="4">Four</option>
+										<option value="5">Five</option>
+										<option value="6">Six</option>
+										<option value="7">Seven</option>
+										<option value="8">Eight</option>
+									</select>
+									<span class="input-group-btn">
+										<button class="btn btn-success" type="button" id="bwc">选择此网络</button>
+									</span>
+								</div><br>
+							</li>
+							<li class="list-group-item">
+								<label>DNS解析点</label>
+								<div class="input-group">
+									<span class="input-group-addon">DNS</span>
+									<input type="text" class="form-control" id="idns"/>
+								</div>
+								<p>DNS解析点留空则使用默认的DNS解析地址</p>
+							</li>
+						</ul>
+					</div>
+					
+					<div class="panel panel-danger">
+						<div class="panel-heading">
+							<h3 class="panel-title">设置</h3>
+						</div>
+						<ul class="list-group">
+							<li class="list-group-item">
+								<label>可用网络#s</label>
+								<div class="input-group">
+									<select class="form-control" id="s">
+										<option value="1">One</option>
+										<option value="2">Two</option>
+										<option value="3">Three</option>
+										<option value="4">Four</option>
+										<option value="5">Five</option>
+										<option value="6">Six</option>
+										<option value="7">Seven</option>
+										<option value="8">Eight</option>
+									</select>
+									<span class="input-group-btn">
+										<button class="btn btn-success" type="button" id="p">选择此网络#p</button>
+									</span>
+								</div><br>
+							</li>
+						
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<nav class="navbar navbar-inverse mb0">
+			<div class="container-fluid">
+				<div class="navbar-collapse navbar-right">
+					<button type="button" class="btn btn-danger navbar-btn" id="bs">保存并应用#bs</button>
+				</div>
+				<div class="navbar-header">
+					<a href="javascript:void(0);" class="navbar-brand">Copyright 2010 - 2020 GT-Soft Studio</a>
+				</div>
+			</div>
+		</nav>
+		
+		<script type="text/javascript" src="assets/jquery2.min.js"></script>
+		<script type="text/javascript" src="assets/bootstrap.min.js"></script>
+		<script type="text/javascript" src="assets/moment.min.js"></script>
+		<script type="text/javascript" src="assets/moment_zh-cn.js"></script>
+		<script type="text/javascript" src="assets/datetimepicker.min.js"></script>
+		<script type="text/javascript" src="assets/h.js"></script>
+		<script type="text/javascript">
+			$(function(){
+				let
+					timeFontTrigger = function(t, targetValue){
+						$(t).css("background-position-y", -targetValue * 24);
+					},
+					setEnable = function(jds, e){
+						jds.forEach(function(v){
+							$(v).attr("disabled", e);
+						});
+					},
+					mf = "YYYY-MM-DD HH:mm:ss";
+				$.get("assets/nav.html", function(d){
+					$("#nav").html(d);
+				}).fail(function(){
+					showError("The specified URL returns an error");
+				});
+				$.getJSON("assets/setup.json", function(j){
+					if(typeof(j) != "object"){
+						throw Error("Setup file was corrupted.");
+					}
+					for(let k in j){
+						try {
+							if (typeof (j[k]) != "object") {
+								throw Error("Setup file item was corrupted");
+							}
+							for(let val in j[k]){
+								selInsOpt($(k), val, j[k][val]);
+								console.log("输入到:" + k + " 选项:" + j[k][val] + " 值:" + val);
+							}
+						} catch(e){
+							console.error(e);
+							continue;
+						}
+					}
+				}).fail(function(){
+					showError("The specific URL returns an error.");
+				});
+				$(".dtset").datetimepicker({format: "YYYY-MM-DD HH:mm:ss",ignoreReadonly:true,widgetPositioning:{horizontal:"auto",vertical:"bottom"}});
+				
+				$("#bsltz").click(function(){
+					$("#stz").val(moment().utcOffset() / 60);
+				});
+				$("#cundt").change(function(e){
+					setEnable(["#sts1", "#sts2", "#stz", "#ssf", "#sdst", "#bsltz"], !e.target.checked);
+					e.target.checked && $("#bsltz").click();
+				});
+				$("#tf").change(function(e){
+					timeFontTrigger("#tfp", e.target.value);
+				});
+				$("#sf").change(function(e){
+					timeFontTrigger("#fp", e.target.value);
+				});
+				$("#bwc").click(function(e){
+					$("#iessid").val($("#swa").val());
+				});
+				$(function(){
+					let
+						tid = -1,
+						ct = 0,
+						udt = function(jd){
+							ct.add(1, "second");
+							jd.val(ct.format(mf));
+						};
+					$("#idt").focus(function(e){
+						if(tid != -1){
+							clearInterval(tid);
+							tid = -1;
+							console.log("Timer Cleared");
+						}
+					}).blur(function(e){
+						if(tid == -1){
+							if($(this).val() != ""){
+								ct = moment($(this).val(), mf);
+								if(ct.isValid){
+									tid = setInterval(udt, 1000, $(this));
+									console.log("Set Interval: " + tid);
+								}
+							}
+						}
+					}).blur();
+					$("#bsldt").click(function(){
+						ct = moment();
+						$("#idt").val(ct.format(mf)).blur();
+					});
+				});
+				
+			})
+		</script>
+	</body>
+</html>
