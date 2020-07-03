@@ -1,0 +1,3 @@
+[submodule "STM32/CMSIS"]
+	path = STM32/CMSIS
+	url = https://github.com/zhiyb/CMSIS-ST.git
