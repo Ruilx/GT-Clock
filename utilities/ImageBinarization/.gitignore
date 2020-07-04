@@ -1,0 +1,17 @@
+# This is git ignore file
+
+*.bak
+*.old
+
+# jetbrains work directories
+.idea
+
+# xemacs temporary files
+*.flc
+
+# vim temporary files
+.*.swp
+
+# Python byte code
+*.pyc
+__pycache__
