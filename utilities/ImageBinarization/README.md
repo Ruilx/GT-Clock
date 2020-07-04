@@ -1,6 +1,6 @@
-# ImageBinaryzation
+# ImageBinarization
 
-The tool can convert pixel font image to binary data or C-style char array with index area
+The tool can convert pixel font image to binary data or C-style byte array and index data
 
 This tool public under GNU General Public License Version 3, everyone can keep improving projects overall functions. 
 But you might to read [GPL3](https://www.gnu.org/licenses/) before starting construction.
