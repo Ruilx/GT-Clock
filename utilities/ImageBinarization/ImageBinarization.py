@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys
+import sys, os
 
 from PIL import Image
 import numpy
 import struct
 from InfoPacker import InfoPacker
 
-LICENSE = "LICENSE"
+LICENSE = os.path.join(os.path.dirname(sys.argv[0]), "LICENSE")
 
 MSB_AT_TOP = 1
 LSB_AT_TOP = -1
@@ -236,7 +236,7 @@ class ImageBinaryzation(object):
 
 def commitGPL3():
 	content = ""
-	fd = open(LICENSE + ".txt", "r")
+	fd = open(LICENSE, "r")
 	if not fd:
 		raise RuntimeError("License not found, please read and agreed GPL3 license first.")
 	try:
