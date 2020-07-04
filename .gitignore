@@ -1,1 +1,95 @@
+# This is git ignore file
+
+*~
+*.autosave
+*.a
+*.core
+*.moc
+*.o
+*.obj
+*.orig
+*.rej
+*.so
+*.so.*
+*_pch.h.cpp
+*_resource.rc
+*.qm
+.#*
+*.*#
+core
+!core/
+tags
+.DS_Store
+*.debug
+Makefile*
+*.prl
+*.app
+*.bak
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+Thumbs.db
+*.res
+*.rc
+*.embed.manifest
+/.qmake.cache
+/.qmake.stash
 build-*
+
+# qtcreator generated files
+*.pro.user*
+*.creator.user*
+*.qbs.user*
+*.qmlproject.user*
+/src/app/Info.plist
+app_version.h
+/src/plugins/coreplugin/ide_version.h
+/share/qtcreator/externaltools
+phony.c
+
+# xemacs temporary files
+*.flc
+
+# vim temporary files
+.*.swp
+
+# Visual Studio generated files
+*.ib_pdb_index
+*.idb
+*.ilk
+*.pdb
+*.sln
+*.suo
+*.vcproj
+*vcproj.*.*.user
+*.ncb
+*.sdf
+*.opensdf
+*.vcxproj
+*vcxproj.*
+
+# gcov files
+*.gcov
+*.gcda
+*.gcno
+
+# MinGW generated files
+*.Debug
+*.Release
+
+# Python byte code
+*.pyc
+__pycache__
+
+# Windows executable file
+*.exe
+*.com
+
+debug/
+release/
+build/
+cache/
+/lib/
+/lib64/
+/*-debug/
+/*-release/
