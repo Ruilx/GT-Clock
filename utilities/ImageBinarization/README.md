@@ -10,7 +10,7 @@ in your root directory of every projects.
 
 ## Prepare
 
-Draw a height of 9 pixel image with pixel-accessed painter program like "mspaint"(Microsoft Paint)
+Draw a 9-pixel-height image with pixel-accessed painter program like "mspaint" (Microsoft Paint)
 with first line show the character width and rest of 8 lines save the character data.
 
 Pixels in white color are positive logic '0', pixel in black color are positive logic '1'.
