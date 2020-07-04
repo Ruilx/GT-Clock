@@ -68,6 +68,9 @@ phony.c
 *.vcxproj
 *vcxproj.*
 
+# Jetbrains working directory
+.idea
+
 # gcov files
 *.gcov
 *.gcda
