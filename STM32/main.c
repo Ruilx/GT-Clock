@@ -31,6 +31,8 @@ IDLE_HANDLER(&debug);
 int main()
 {
 	init();
+	__enable_irq();
+
 	for (;;) {
 		LIST_ITERATE(idle, basic_handler_t, p) (*p)();
 		__WFI();

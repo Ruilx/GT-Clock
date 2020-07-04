@@ -28,39 +28,14 @@ uint32_t clkAPB2()
 
 uint32_t clkTimer(uint32_t i)
 {
-	return 0;
-#if 0
-	uint32_t pre = RCC->DCKCFGR1 & RCC_DCKCFGR1_TIMPRE_Msk;
-	uint32_t div, clk;
+	unsigned int apb1rate = (((RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos) & 0b100) ? 2 : 1;
+	unsigned int apb2rate = (((RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos) & 0b100) ? 2 : 1;
 	switch (i) {
-	case 2:
-	case 3:
+	// APB1 clocked
 	case 4:
-	case 5:
-	case 6:
-	case 7:
-	case 12:
-	case 13:
-	case 14:
-		div = FIELD(RCC->CFGR, RCC_CFGR_PPRE1);
-		clk = clkAPB1();
-		break;
-	case 1:
-	case 8:
-	case 9:
-	case 10:
-	case 11:
-		div = FIELD(RCC->CFGR, RCC_CFGR_PPRE2);
-		clk = clkAPB2();
-		break;
-	default:
-		return 0;
+		return clkAPB1() * apb1rate;
 	}
-	if (pre)
-		return (div > 0b101) ? clk << 2u : clk;
-	else
-		return (div & 0b100) ? clk << 1u : clk;
-#endif
+	return 0;
 }
 
 void rcc_init()
