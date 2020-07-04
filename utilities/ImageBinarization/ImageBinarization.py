@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import sys, os
+import os, sys
 
 from PIL import Image
 import numpy
@@ -319,7 +319,7 @@ if __name__ == "__main__":
 		elif args.output == "stdout":
 			fd = sys.stdout
 		else:
-			fd = open(args.output, "w")
+			fd = open(args.output, "w", encoding='utf-8')
 			if fd:
 				fileFlag = True
 			else:
@@ -337,17 +337,17 @@ if __name__ == "__main__":
 				  'ALL_FUNC': OUTPUT_MODE_ALL_FUNC,
 				  'PREFER': OUTPUT_MODE_PREFER}[args.outputMode]
 
-	if "gpl3" in args.special:
+	if args.special and "gpl3" in args.special:
 		print("/*\n" + commitGPL3() + "*/", file=fd)
 
-	if "preprocessflag" in args.special:
+	if args.special and "preprocessflag" in args.special:
 		content = "#ifndef " + "_" + ip['name'].upper() + "_H_\n" + \
 			"#define " + "_" + ip['name'].upper() + "_H_\n"
 		print(content, file=fd)
 
 	b.binaryzationPrint(outputMode, file=fd)
 
-	if "preprocessflag" in args.special:
+	if args.special and "preprocessflag" in args.special:
 		print("#endif\n", file=fd)
 
 	if fileFlag:
