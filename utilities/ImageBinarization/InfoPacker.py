@@ -69,12 +69,15 @@ class InfoPacker(object):
 			'fontSetupPrefix': "setupFont",
 			'fontInfo': {
 				'logicality': "false",
-				'monoNumbers': "true",
 				'monoMask': "0xFF"
 			},
-			'displayFontStatus': True
+			'displayFontStatus': True,
+			'cStyleNull': "nullptr"
 		}
 		self.currentIndex = 0
+
+		if not ("A" <= self.conf['name'][0] <= "Z" or "a" <= self.conf['name'][0] <= "z" or self.conf['name'][0] == "_"):
+			raise RuntimeError("Font name only allow English letter or underline '_' at first character.")
 
 	def __setitem__(self, key, value):
 		if key not in self.conf:
@@ -110,20 +113,37 @@ class InfoPacker(object):
 	def cStyleDataGenerator(self, attributePrefix = "", attributeSuffix = ""):
 		return self.__cStyleCodeGenerator(self.conf['fontDataSuffix'], attributePrefix, attributeSuffix)
 
-	def cStyleSetupFuncGenerator(self, fontIndex, startUnicode, endUnicode):
-		return """
-void {FontSetupPrefix}{FontName}(fontInfo *font){{
-	if(font != nullptr){{
+	def cStyleFontInfoStruct(self):
+		return """#ifndef _FONT_INFO_STRUCT_
+#define _FONT_INFO_STRUCT_
+typedef struct FontInfo_t {
+	uint8_t fontIndex;
+	char fontName[16];
+	uint16_t startUnicode;
+	uint16_t endUnicode;
+	uint_8 blockLength;
+	bool logicality;
+	bool monospace;
+	uint8_t monoMask;
+	const unsigned char *index;
+	const unsigned char *data;
+} FontInfo;
+#endif
+"""
+
+	def cStyleSetupFuncGenerator(self, fontIndex, startUnicode, endUnicode, monospace, forceWriteIndex):
+		return """void {FontSetupPrefix}{FontName}(fontInfo *font){{
+	if(font != {Null}){{
 		font->fontIndex = {FontIndex};
 		strncpy(font->fontName, "{FontDisplayName}", {FontDisplayNameLengthAdd1});
 		font->startUnicode = {StartUnicode};
 		font->endUnicode = {EndUnicode};
 		font->blockLength = {BlockLength};
 		font->logicality = {Logicality};
-		font->monoNumbers = {MonoNumbers};
+		font->monospace = {Monospace};
 		font->monoMask = {MonoMask};
-		font->index = {FontName}{FontIndexSuffix};
-		font->data = {FontName}{FontDataSuffix};
+		font->index = {Index};
+		font->data = {Data};
 	}}
 }}
 """.format(FontSetupPrefix=self.conf['fontSetupPrefix'],
@@ -135,10 +155,11 @@ void {FontSetupPrefix}{FontName}(fontInfo *font){{
 		   EndUnicode=endUnicode,
 		   BlockLength=self.conf['blockSize'],
 		   Logicality=self.conf['fontInfo']['logicality'],
-		   MonoNumbers=self.conf['fontInfo']['monoNumbers'],
+		   Monospace="true" if monospace else "false",
 		   MonoMask=self.conf['fontInfo']['monoMask'],
-		   FontIndexSuffix=self.conf['fontIndexSuffix'],
-		   FontDataSuffix=self.conf['fontDataSuffix'])
+		   Index=(self.conf['name'] + self.conf['fontIndexSuffix']) if not monospace or forceWriteIndex else self.conf['cStyleNull'],
+		   Data=self.conf['name'] + self.conf['fontDataSuffix'],
+		   Null=self.conf['cStyleNull'])
 
 	def transaction(self, unicodeOrder, data: bytes, tab: int = 1):
 		length = len(data)
