@@ -17,7 +17,7 @@
 #define PPS	(LPS * (PANELS + 1) * 8)
 
 //#define CHECK_OVERRUN
-//#define PROFILING
+#define PROFILING
 
 #define DMA		DMA1
 #define DMA_CHANNEL	DMA1_Channel3
@@ -28,8 +28,10 @@
 #define DMA_CCR		((0b11 << DMA_CCR_PL_Pos) | DMA_CCR_MINC_Msk | DMA_CCR_DIR_Msk | \
 			 (0b00 << DMA_CCR_MSIZE_Pos) | (0b00 << DMA_CCR_PSIZE_Pos))
 
+#define BUF_SIZE	(PANELS + 1)
+
 static struct {
-	uint8_t buf[2][GSCALE][PANELS + 1];
+	uint8_t buf[2][GSCALE][BUF_SIZE];
 	unsigned int rbuf, wbuf;
 	unsigned int ridx;
 	unsigned int lsw, bsw;
@@ -250,31 +252,26 @@ static inline void matrix_line_calc()
 		do {
 			next = GSCALE - 1;
 			// Find next grayscale change
-			for (unsigned int i = 0; i < 8; i++) {
-				uint8_t vfb = pfb[i];
-				if (vfb > step && vfb < next)
-					next = vfb;
-			}
+			for (unsigned int i = 0; i < 8; i++)
+				if (pfb[i] > step && pfb[i] < next)
+					next = pfb[i];
 			// Update grayscale value
 			for (unsigned int i = 0; i < 8; i++)
 				if (pfb[i] == step)
 					v |= 0x80 >> i;
 			// Apply current grayscale value
 			while (step != next) {
-				*pbuf = v;
-				pbuf += PANELS + 1;
 				step++;
+				*pbuf = v;
+				pbuf += BUF_SIZE;
 			}
 		} while (next != GSCALE - 1);
 		buf.buf[wbuf][GSCALE - 1][pnl] = 0xff;
 	}
 
 	// Update line driver
-	uint8_t *pbuf = &buf.buf[wbuf][0][PANELS];
-	for (unsigned int gs = 0; gs < GSCALE; gs++) {
-		*pbuf = lmask;
-		pbuf += PANELS + 1;
-	}
+	for (unsigned int gs = 0; gs < GSCALE; gs++)
+		buf.buf[wbuf][gs][PANELS] = lmask;
 
 	// Done, switch active buffer
 	buf.wbuf = !wbuf;
@@ -296,7 +293,7 @@ void DMA1_Channel3_IRQHandler()
 
 	static unsigned int i = 8;
 	if (i) {
-		printf(ESC_DEBUG "matrix: irq %u -> %u\n", s, e);
+		printf(ESC_DEBUG "%lu\tmatrix: irq %u -> %u\n", systick_cnt(), s, e);
 		i--;
 	}
 #endif
@@ -306,13 +303,12 @@ static inline void matrix_line()
 {
 	if (buf.bsw)
 		buf.rbuf = !buf.wbuf;
-	void *next = &buf.buf[buf.rbuf][buf.ridx];
 	// Disable DMA
 	DMA_CHANNEL->CCR = DMA_CCR;
 	// Transfer size
 	DMA_CHANNEL->CNDTR = PANELS + 1;
 	// Memory address
-	DMA_CHANNEL->CMAR = (uint32_t)(next);
+	DMA_CHANNEL->CMAR = (uint32_t)&buf.buf[buf.rbuf][buf.ridx];
 	// Start DMA
 	DMA_CHANNEL->CCR = DMA_CCR | DMA_CCR_EN_Msk;
 #ifdef CHECK_OVERRUN
@@ -334,15 +330,14 @@ static inline void matrix_line()
 void TIM4_IRQHandler()
 {
 	// Update latching registers
-	unsigned int lsw = !!buf.lsw;
 	// Disable OE
-	if (lsw)
+	if (buf.lsw)
 		GPIOB->BSRR = GPIO_BSRR_BS4_Msk;
 	// Pulse ST
 	GPIOA->BSRR = GPIO_BSRR_BS15_Msk;
 	GPIOA->BSRR = GPIO_BSRR_BR15_Msk;
 	// Enable OE
-	if (lsw)
+	if (buf.lsw)
 		GPIOB->BSRR = GPIO_BSRR_BR4_Msk;
 
 #ifdef CHECK_OVERRUN
