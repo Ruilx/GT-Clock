@@ -179,7 +179,7 @@ class ImageBinaryzation(object):
 		self.statusStr = ""
 
 	def __generateStatusInfo(self):
-		return "Using image: '{ImgPath}' size {ImgSize}, unicode from {UnicodeFrom} to {UnicodeTo}/{UnicodePlan}, grayscale threshold: {Threshold}, converted by ImageBinaryzation.\n".format(
+		return "Using image: '{ImgPath}' size {ImgSize}, unicode from {UnicodeFrom} to {UnicodeTo}/{UnicodePlan}, grayscale threshold: {Threshold}, converted by ImageBinarization.\n".format(
 				ImgPath=self.conf['img'],
 				ImgSize=str(self.imageHandle.size),
 				UnicodeFrom=self.conf['startUnicode'],

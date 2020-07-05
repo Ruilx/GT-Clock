@@ -76,7 +76,7 @@ class InfoPacker(object):
 		}
 		self.currentIndex = 0
 
-		if not ("A" < self.conf['name'][0] < "Z" or "a" < self.conf['name'][0] < "z" or self.conf['name'][0] == "_"):
+		if not ("A" <= self.conf['name'][0] <= "Z" or "a" <= self.conf['name'][0] <= "z" or self.conf['name'][0] == "_"):
 			raise RuntimeError("Font name only allow English letter or underline '_' at first character.")
 
 	def __setitem__(self, key, value):
