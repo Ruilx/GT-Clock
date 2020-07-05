@@ -1,6 +1,6 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include <stdint.h>
+unsigned int matrix_refresh_cnt();
 
 #endif // MATRIX_H

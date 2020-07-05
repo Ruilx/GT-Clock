@@ -61,6 +61,15 @@ StaticLibrary {
         files: ["system/mem_test.c"]
     }
 
+    Group {
+        name: "Critical"
+        cpp.optimization: "fast"
+        files: [
+            "peripheral/matrix.c",
+            "peripheral/matrix.h",
+        ]
+    }
+
     files: [
         "common/common.c",
         "common/common.h",
@@ -69,8 +78,6 @@ StaticLibrary {
         "common/macros.h",
         "common/debug.h",
         "common/device.h",
-        "peripheral/matrix.c",
-        "peripheral/matrix.h",
         "system/syscall.c",
         "system/system.c",
         "system/system.h",

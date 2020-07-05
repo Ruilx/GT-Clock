@@ -15,18 +15,28 @@ static inline void init()
 	printf(ESC_INIT "%lu\tboot: Initialisation done\n", systick_cnt());
 }
 
+
+#if DEBUG
+#include <peripheral/matrix.h>
+
 static void debug()
 {
-#if 0
 	static uint32_t v = 0;
 	if ((systick_cnt() - v) >= 1000) {
-		printf(ESC_DEBUG "%lu\tdebug: Tick\n", systick_cnt());
+		// Matrix refresh
+		static unsigned int matrix_cnt = 0;
+		unsigned int matrix_cnt_now = matrix_refresh_cnt();
+		unsigned int matrix_cnt_delta = matrix_cnt_now - matrix_cnt;
+		matrix_cnt = matrix_cnt_now;
+
+		printf(ESC_DEBUG "%lu\tdebug: FPS: Matrix %u\n",
+		       systick_cnt(), matrix_cnt_delta);
 		v += 1000;
 	}
-#endif
 }
 
 IDLE_HANDLER(&debug);
+#endif
 
 int main()
 {

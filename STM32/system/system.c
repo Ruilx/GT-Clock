@@ -107,8 +107,6 @@ void Reset_Handler(void)
 {
 	// Initialise stask pointer
 	asm("ldr sp, =__stack_end__");
-	// Disable all interrupts
-	__disable_irq();
 
 	// Configure the Vector Table location add offset address
 	SCB->VTOR = (uint32_t)g_pfnVectors;
@@ -129,7 +127,7 @@ void Reset_Handler(void)
 		*p++ = 0;
 
 	// Start program
-	(&_main)();
+	asm("b _main" : : "r"(_main));
 }
 
 // Default handler for unexpected interrupts
