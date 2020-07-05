@@ -247,7 +247,7 @@ static inline void matrix_line_calc()
 {
 	unsigned int line = data.wline;
 	// Update line counter
-	data.wline = (data.wline + 1) % LINES;
+	data.wline = (line + 1) % LINES;
 	// Interleaaved, line order 0, 4, 2, 6, 1, 5, 3, 7
 	line = (line & ~5) | ((line & 1) << 2) | ((line & 4) >> 2);
 

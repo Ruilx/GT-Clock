@@ -79,6 +79,7 @@ StaticLibrary {
         "common/macros.h",
         "common/debug.h",
         "common/device.h",
+        "peripheral/i2c_slave.c",
         "system/syscall.c",
         "system/system.c",
         "system/system.h",
