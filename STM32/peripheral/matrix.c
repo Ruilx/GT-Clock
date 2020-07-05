@@ -17,7 +17,9 @@
 #define PPS	(LPS * (PANELS + 1) * 8)
 
 //#define CHECK_OVERRUN
+#ifdef DEBUG
 #define PROFILING
+#endif
 
 #define DMA		DMA1
 #define DMA_CHANNEL	DMA1_Channel3
@@ -36,6 +38,7 @@ static struct {
 	unsigned int ridx;
 	unsigned int lsw, bsw;
 	unsigned int rline;
+	unsigned int refcnt;
 } buf = {0};
 
 #if 0
@@ -290,6 +293,8 @@ void DMA1_Channel3_IRQHandler()
 	unsigned int s = irq;
 #endif
 	matrix_line_calc();
+	if (buf.rline == 0)
+		buf.refcnt++;
 #ifdef PROFILING
 	unsigned int e = irq;
 
@@ -299,6 +304,11 @@ void DMA1_Channel3_IRQHandler()
 		i--;
 	}
 #endif
+}
+
+unsigned int matrix_refresh_cnt()
+{
+	return buf.refcnt;
 }
 
 static inline void matrix_line()
