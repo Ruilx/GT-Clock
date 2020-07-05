@@ -18,7 +18,7 @@ Project {
 
     CppApplication {
         name: project.name
-        type: ["application", "hex", "size"]
+        type: ["application", "hex", "size", "map"]
         Depends {name: "core"}
         Depends {name: "gcc-none"}
 
@@ -35,7 +35,7 @@ Project {
         }
 
         Group {     // Properties for the produced executable
-            fileTagsFilter: ["application", "hex", "bin"]
+            fileTagsFilter: ["application", "hex", "bin", "map"]
             qbs.install: true
         }
     }

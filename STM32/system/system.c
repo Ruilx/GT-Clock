@@ -10,7 +10,7 @@
 #include <system/irq.h>
 #include "system.h"
 
-#define STDOUT_BUFFER_SIZE	4096
+#define STDOUT_BUFFER_SIZE	1024
 
 // Vector table base address
 extern const uint32_t g_pfnVectors[];

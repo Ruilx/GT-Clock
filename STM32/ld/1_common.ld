@@ -3,7 +3,7 @@ ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
 __stack_end__ = 0x20000000 + 20 * 1024;     /* end of RAM */
-__heap_size__ = 6 * 1024;                   /* Heap size */
+__heap_size__ = 4 * 1024;                   /* Heap size */
 
 /* Flash disk regions */
 __prog_start__	= ORIGIN(PROG);

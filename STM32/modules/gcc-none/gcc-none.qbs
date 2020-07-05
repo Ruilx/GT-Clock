@@ -53,4 +53,21 @@ Module {
             return cmd;
         }
     }
+
+    Rule {
+        id: map
+        inputs: ["application"]
+        Artifact {
+            fileTags: ["map"]
+            filePath: input.fileName + ".map"
+        }
+
+        prepare: {
+            var args = ['-f', 'sysv', '--size-sort', '-r', input.filePath];
+            var cmd = new Command(product.cpp.objcopyPath.replace("objcopy", "nm"), args);
+            cmd.stdoutFilePath = output.filePath;
+            cmd.description = "generating " + output.fileName;
+            return cmd;
+        }
+    }
 }

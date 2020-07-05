@@ -13,7 +13,7 @@ StaticLibrary {
 
     cpp.driverFlags: {
         var flags = [];
-        if (project.bootloader)
+        //if (project.bootloader)
             flags.push("--specs=nano.specs");
         return flags;
     }
@@ -56,14 +56,15 @@ StaticLibrary {
     Group {
         name: "Memory test"
         condition: false
-        //cpp.optimization: "fast"
+        cpp.optimization: "none"
         cpp.commonCompilerFlags: ["-ffast-math", "-O3"]
         files: ["system/mem_test.c"]
     }
 
     Group {
         name: "Critical"
-        cpp.optimization: "fast"
+        cpp.optimization: "none"
+        cpp.commonCompilerFlags: ["-O3"]
         files: [
             "peripheral/matrix.c",
             "peripheral/matrix.h",

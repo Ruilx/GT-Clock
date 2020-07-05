@@ -11,9 +11,11 @@
 #define LINES	8
 #define LGSCALE	8
 #define GSCALE	(1 << LGSCALE)
-#define FPS	100
+#define FPS	120
 
-#define LPS	(FPS * LINES * GSCALE)
+// Last GSCALE is unused
+#define LPS	(FPS * LINES * (GSCALE - 1))
+// Last PANEL byte is line driver
 #define PPS	(LPS * (PANELS + 1) * 8)
 
 //#define CHECK_OVERRUN
@@ -33,13 +35,18 @@
 #define BUF_SIZE	(PANELS + 1)
 
 static struct {
-	uint8_t buf[2][GSCALE][BUF_SIZE];
-	unsigned int rbuf, wbuf;
-	unsigned int ridx;
-	unsigned int lsw, bsw;
-	unsigned int rline;
-	unsigned int refcnt;
-} buf = {0};
+	uint8_t buf[2][GSCALE - 1][BUF_SIZE];
+
+	unsigned int rbuf;	// Active read buffer
+	unsigned int ridx;	// Read index
+	unsigned int lsw;	// Line switching
+	unsigned int bsw;	// Buffer switching
+
+	unsigned int wbuf;	// Pending write buffer
+	unsigned int wline;	// Pending write line
+
+	unsigned int refcnt;	// Frame refresh counter
+} data = {0};
 
 #if 0
 static uint8_t fb[LINES][PANELS * 8] = {
@@ -229,23 +236,23 @@ INIT_HANDLER(&matrix_init);
 
 static inline void matrix_buf_init()
 {
-	buf.rbuf = 0;
-	buf.wbuf = 1;
+	data.rbuf = 0;
+	data.wbuf = 1;
 	// Disable all line drivers
-	for (unsigned int gs = 0; gs < GSCALE; gs++)
-		buf.buf[buf.rbuf][gs][PANELS] = 0xff;
+	for (unsigned int gs = 0; gs < GSCALE - 1; gs++)
+		data.buf[data.rbuf][gs][PANELS] = 0xff;
 }
 
 static inline void matrix_line_calc()
 {
-	unsigned int line = buf.rline;
+	unsigned int line = data.wline;
 	// Update line counter
-	buf.rline = (buf.rline + 1) % LINES;
+	data.wline = (data.wline + 1) % LINES;
 	// Interleaaved, line order 0, 4, 2, 6, 1, 5, 3, 7
 	line = (line & ~5) | ((line & 1) << 2) | ((line & 4) >> 2);
 
 	// Generate grayscale buffer
-	unsigned int wbuf = !!buf.wbuf;
+	unsigned int wbuf = !!data.wbuf;
 	uint8_t *pfbs = &fb[line][0];
 	uint8_t lmask = ~(1 << line);
 	for (unsigned int pnl = 0; pnl < PANELS; pnl++) {
@@ -253,7 +260,7 @@ static inline void matrix_line_calc()
 		uint8_t v = 0x00;
 		uint8_t step = 0;
 		uint8_t next;
-		uint8_t *pbuf = &buf.buf[wbuf][0][pnl];
+		uint8_t *pbuf = &data.buf[wbuf][0][pnl];
 		do {
 			next = GSCALE - 1;
 			// Find next grayscale change
@@ -271,15 +278,15 @@ static inline void matrix_line_calc()
 				pbuf += BUF_SIZE;
 			}
 		} while (next != GSCALE - 1);
-		buf.buf[wbuf][GSCALE - 1][pnl] = 0xff;
+		//buf.buf[wbuf][GSCALE - 1][pnl] = 0xff;
 	}
 
 	// Update line driver
-	for (unsigned int gs = 0; gs < GSCALE; gs++)
-		buf.buf[wbuf][gs][PANELS] = lmask;
+	for (unsigned int gs = 0; gs < GSCALE - 1; gs++)
+		data.buf[wbuf][gs][PANELS] = lmask;
 
 	// Done, switch active buffer
-	buf.wbuf = !wbuf;
+	data.wbuf = !wbuf;
 }
 
 #ifdef PROFILING
@@ -293,8 +300,8 @@ void DMA1_Channel3_IRQHandler()
 	unsigned int s = irq;
 #endif
 	matrix_line_calc();
-	if (buf.rline == 0)
-		buf.refcnt++;
+	if (data.wline == 0)
+		data.refcnt++;
 #ifdef PROFILING
 	unsigned int e = irq;
 
@@ -308,19 +315,19 @@ void DMA1_Channel3_IRQHandler()
 
 unsigned int matrix_refresh_cnt()
 {
-	return buf.refcnt;
+	return data.refcnt;
 }
 
 static inline void matrix_line()
 {
-	if (buf.bsw)
-		buf.rbuf = !buf.wbuf;
+	if (data.bsw)
+		data.rbuf = !data.wbuf;
 	// Disable DMA
 	DMA_CHANNEL->CCR = DMA_CCR;
 	// Transfer size
 	DMA_CHANNEL->CNDTR = PANELS + 1;
 	// Memory address
-	DMA_CHANNEL->CMAR = (uint32_t)&buf.buf[buf.rbuf][buf.ridx];
+	DMA_CHANNEL->CMAR = (uint32_t)&data.buf[data.rbuf][data.ridx];
 	// Start DMA
 	DMA_CHANNEL->CCR = DMA_CCR | DMA_CCR_EN_Msk;
 #ifdef CHECK_OVERRUN
@@ -329,27 +336,30 @@ static inline void matrix_line()
 #endif
 
 	// Line switching after DMA complete
-	buf.lsw = buf.ridx == 0;
+	data.lsw = data.ridx == 0;
 	// Update line buffer index
-	buf.ridx = (buf.ridx + 1) % GSCALE;
+	data.ridx++;
+	if (data.ridx == GSCALE - 1)
+		data.ridx = 0;
+	//buf.ridx = (buf.ridx + 1) % GSCALE;
 	// Trigger buffer update
-	if (buf.bsw)
+	if (data.bsw)
 		NVIC_SetPendingIRQ(DMA_CHANNEL_IRQ);
 	// Buffer switching after DMA complete
-	buf.bsw = buf.ridx == 0;
+	data.bsw = data.ridx == 0;
 }
 
 void TIM4_IRQHandler()
 {
 	// Update latching registers
 	// Disable OE
-	if (buf.lsw)
+	if (data.lsw)
 		GPIOB->BSRR = GPIO_BSRR_BS4_Msk;
 	// Pulse ST
 	GPIOA->BSRR = GPIO_BSRR_BS15_Msk;
 	GPIOA->BSRR = GPIO_BSRR_BR15_Msk;
 	// Enable OE
-	if (buf.lsw)
+	if (data.lsw)
 		GPIOB->BSRR = GPIO_BSRR_BR4_Msk;
 
 #ifdef CHECK_OVERRUN
