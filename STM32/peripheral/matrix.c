@@ -212,7 +212,7 @@ static void matrix_init()
 	NVIC_SetPriority(DMA_CHANNEL_IRQ, NVIC_EncodePriority(pg, NVIC_PRIORITY_MATRIX_CALC, 0));
 	NVIC_EnableIRQ(DMA_CHANNEL_IRQ);
 
-	// Initialise buffers and DMA
+	// Initialise buffers and start DMA
 	matrix_buf_init();
 	matrix_line();
 
@@ -226,9 +226,11 @@ INIT_HANDLER(&matrix_init);
 
 static inline void matrix_buf_init()
 {
-	buf.rbuf = 1;
-	buf.wbuf = 0;
-	matrix_line_calc();
+	buf.rbuf = 0;
+	buf.wbuf = 1;
+	// Disable all line drivers
+	for (unsigned int gs = 0; gs < GSCALE; gs++)
+		buf.buf[buf.rbuf][gs][PANELS] = 0xff;
 }
 
 static inline void matrix_line_calc()
