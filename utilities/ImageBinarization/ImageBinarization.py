@@ -9,6 +9,13 @@ from InfoPacker import InfoPacker
 
 LICENSE = os.path.join(os.path.dirname(sys.argv[0]), "LICENSE")
 
+"""
+GT-Clock Utilities
+Font image binarization tools
+@author: Ruilx
+@2020/07/04 15:46
+"""
+
 MSB_AT_TOP = 1
 LSB_AT_TOP = -1
 def getModeStr(mode):
@@ -35,10 +42,12 @@ OUTPUT_MODE_INDEX_FUNC = 0b00001100
 OUTPUT_MODE_STATUS_COMMENT = 0b00010000
 OUTPUT_MODE_SETUP_FUNC = 0b00100000
 OUTPUT_MODE_IMG_STATS = 0b01000000
+OUTPUT_MODE_STRUCT = 0b10000000
 OUTPUT_MODE_PLAIN = OUTPUT_MODE_DATA_PLAIN | OUTPUT_MODE_INDEX_PLAIN
 OUTPUT_MODE_FUNC = OUTPUT_MODE_DATA_FUNC | OUTPUT_MODE_INDEX_FUNC
 OUTPUT_MODE_ALL_FUNC = OUTPUT_MODE_FUNC | OUTPUT_MODE_SETUP_FUNC
 OUTPUT_MODE_PREFER = OUTPUT_MODE_ALL_FUNC | OUTPUT_MODE_STATUS_COMMENT | OUTPUT_MODE_IMG_STATS
+OUTPUT_MODE_COMPLETELY = OUTPUT_MODE_PREFER | OUTPUT_MODE_STRUCT
 
 class ImageBinaryzation(object):
 	def __init__(self, img: str, fontIndex: int, packer: InfoPacker, startUnicode: int, endUnicode: int):
@@ -52,7 +61,8 @@ class ImageBinaryzation(object):
 			'widthDetectMode': WIDTH_DETECT_MODE_SAME_COLOR,
 			'startUnicode': startUnicode,
 			'endUnicode': endUnicode,
-			'binaryzationGrayscaleThreshold': 0x7F
+			'binaryzationGrayscaleThreshold': 0x7F,
+			'forceWriteIndex': False  # True: still write index data if fonts are monospaced
 		}
 		self.currentUnicode = startUnicode
 		self.imageHandle = Image.open(img).convert("L")
@@ -101,6 +111,9 @@ class ImageBinaryzation(object):
 		self.dataSize = 0
 		self.statusStr = ""
 
+		self.monospace = True
+		self.monospaceWidth = 0
+
 		self.ready = False
 
 	def __setitem__(self, key, value):
@@ -146,6 +159,12 @@ class ImageBinaryzation(object):
 		self.dataBytes += dataBytes
 		self.dataSize += dataSize
 		self.statusStr += status
+		# Check font if it's monospaced
+		if self.monospace:
+			if self.monospaceWidth and self.monospaceWidth != dataBytes:
+				self.monospace = False
+			else:
+				self.monospaceWidth = dataBytes
 		self.currentUnicode += 1
 		return True
 
@@ -171,7 +190,8 @@ class ImageBinaryzation(object):
 		"With options: {}".format(
 			", ".join([getModeStr(self.conf['mode']), getLogicStr(self.conf['logic']),
 					   getWidthDetectLocStr(self.conf['widthDetectLoc']),
-					   getWidthDetectModeStr(self.conf['widthDetectMode'])])
+					   getWidthDetectModeStr(self.conf['widthDetectMode']),
+					   "MONOSPACE" if self.monospace else ""])
 		)
 
 	def binaryzationPrint(self, output=OUTPUT_MODE_ALL_FUNC, **kwargs):
@@ -187,18 +207,23 @@ class ImageBinaryzation(object):
 		if "file" in kwargs and kwargs['file'] != sys.stdin:
 			fd = kwargs['file']
 
+		if output & OUTPUT_MODE_STRUCT:
+			print(self.packer.cStyleFontInfoStruct(), file=fd)
+
 		if output & OUTPUT_MODE_INDEX_PLAIN:
-			if output & OUTPUT_MODE_INDEX_FUNC == OUTPUT_MODE_INDEX_FUNC:
-				attrPre = ""
-				attrSuf = ""
-				if 'attributePrefix' in kwargs:
-					attrPre = kwargs['attributePrefix']
-				if 'attributeSuffix' in kwargs:
-					attrSuf = kwargs['attributeSuffix']
-				print(self.packer.cStyleIndexGenerator(attrPre, attrSuf).format(self.indexStr), file=fd)
-			else:
-				print(self.indexStr, file=fd)
-			print(file=fd)
+			# Monospaced font can omit index data.
+			if not self.monospace or self.conf['forceWriteIndex']:
+				if output & OUTPUT_MODE_INDEX_FUNC == OUTPUT_MODE_INDEX_FUNC:
+					attrPre = ""
+					attrSuf = ""
+					if 'attributePrefix' in kwargs:
+						attrPre = kwargs['attributePrefix']
+					if 'attributeSuffix' in kwargs:
+						attrSuf = kwargs['attributeSuffix']
+					print(self.packer.cStyleIndexGenerator(attrPre, attrSuf).format(self.indexStr), file=fd)
+				else:
+					print(self.indexStr, file=fd)
+				print(file=fd)
 		if output & OUTPUT_MODE_DATA_PLAIN:
 			if output & OUTPUT_MODE_DATA_FUNC == OUTPUT_MODE_DATA_FUNC:
 				attrPre = ""
@@ -213,16 +238,17 @@ class ImageBinaryzation(object):
 			print(file=fd)
 		if output & OUTPUT_MODE_SETUP_FUNC:
 			self.packer['fontInfo']['logicality'] = "true" if self.conf['logic'] == POSITIVE_LOGIC else "false"
-			print(self.packer.cStyleSetupFuncGenerator(self.fontIndex, self.conf['startUnicode'], self.currentUnicode), file=fd)
+			print(self.packer.cStyleSetupFuncGenerator(self.fontIndex, self.conf['startUnicode'], self.currentUnicode, self.monospace, self.conf['forceWriteIndex']), file=fd)
 		if output & OUTPUT_MODE_STATUS_COMMENT:
 			print("/*", file=fd)
 			print("%7s %5s %+6s %5s %8s" % ("Char", "Width", "Adjust", "Index", "Total"), file=fd)
 			print(self.statusStr, end="", file=fd)
+			indexBytes = self.indexBytes if not self.monospace or self.conf['forceWriteIndex'] else 0
 			print("Font Size Status: Index section %d byte%s, Pure Data %d byte%s, Data section %d byte%s, Total %d byte%s." % (
-				self.indexBytes, "s" if self.indexBytes != 1 else "",
+				indexBytes, "s" if indexBytes != 1 else "",
 				self.dataBytes, "s" if self.dataBytes != 1 else "",
 				self.dataSize, "s" if self.dataSize != 1 else "",
-				self.indexBytes + self.dataSize, "s" if self.indexBytes + self.dataSize != 1 else ""
+				indexBytes + self.dataSize, "s" if indexBytes + self.dataSize != 1 else ""
 			), file=fd)
 			if not output & OUTPUT_MODE_IMG_STATS:
 				print("*/", file=fd)
@@ -267,19 +293,20 @@ if __name__ == "__main__":
 	parser.add_argument("--comment-location", type=int, default=1, choices={-1, 1}, dest="commentLocation", help="C style output comment location. -1: before data, 1: after data. Default: 1")
 	parser.add_argument("--comment-alignment", type=int, default=1, choices={-1, 1}, dest="commentAlignment", help="C style output comment alignment(only after data location. -1: align left, 1: align right. Default: 1")
 	parser.add_argument("--c-style-array-type", type=str, default="const unsigned char", dest="cStyleArrayType", help="C style variable type. Default=\"const unsigned char\"")
+	parser.add_argument("--c-style-null", type=str, default="nullptr", dest="cStyleNull", help="C Style null pointer string. Default: nullptr")
 	parser.add_argument("--font-index-suffix", type=str, default="_index", dest="fontIndexSuffix", help="C style index variable name suffix. Default=\"_index\"")
 	parser.add_argument("--font-data-suffix", type=str, default="_data", dest="fontDataSuffix", help="C style data variable name suffix. Default=\"_data\"")
 	parser.add_argument("--font-setup-prefix", type=str, default="setupFont", dest="fontSetupPrefix", help="C style font setup function name prefix. Default=\"setupFont\"")
-	parser.add_argument("--font-info-mono-numbers", type=str, default="true", choices={"true", "false"}, dest="fontInfoMonoNumbers", help="C style font info struct property 'monoNumbers'. True: numbers are monospaced. Default: true")
 	parser.add_argument("--font-info-mono-mask", type=str, default="0xFF", dest="fontInfoMonoMask", help="C style font info struct property 'monoMask'. Default: 0xFF, means 8 Column all selected.")
+	parser.add_argument("--force-write-index", action="store_true", dest="forceWriteIndex", help="Monospace font will omit index by default, use this flag can force to write index")
 	parser.add_argument("-m", "--mode", type=str, choices={"MSB_AT_TOP", "LSB_AT_TOP"}, default="MSB_AT_TOP", dest="mode", help="Binary bit order specified in image. Default: MSB_AT_TOP")
 	parser.add_argument("-l", "--logic", type=str, choices={"POSITIVE_LOGIC", "NEGATIVE_LOGIC"}, default="NEGATIVE_LOGIC", dest="logic", help="Binary bit logic for pixel 'ON'. Default: NEGATIVE_LOGIC")
 	parser.add_argument("--width-detect-location", type=str, choices={"WIDTH_DETECT_AT_TOP", "WIDTH_DETECT_AT_BOTTOM"}, default="WIDTH_DETECT_AT_TOP", dest="widthDetectLocation", help="Character width detect line position in image. Default: WIDTH_DETECT_AT_TOP")
 	parser.add_argument("--width-detect-mode", type=str, choices={"WIDTH_DETECT_MODE_SAME_COLOR"}, default="WIDTH_DETECT_MODE_SAME_COLOR", dest="widthDetectMode", help="Character width detect mode. Default: WIDTH_DETECT_MODE_SAME_COLOR, same character with continuously same color.")
 	parser.add_argument("-o", "--output", type=str, default="", dest="output", help="Specific result output. Default: stdout, Support: stdout, stderr, FILE_NAME")
-	parser.add_argument("--output-mode", type=str, default="PREFER", choices={"DATA_PLAIN", "DATA_FUNC", "INDEX_PLAIN", "INDEX_FUNC", "STATUS_COMMENT", "SETUP_FUNC", "IMG_STATS", "PLAIN", "FUNC", "ALL_FUNC", "PREFER"}, dest="outputMode", help="Specific result output content.")
+	parser.add_argument("--output-mode", type=str, default="PREFER", choices={"DATA_PLAIN", "DATA_FUNC", "INDEX_PLAIN", "INDEX_FUNC", "STATUS_COMMENT", "SETUP_FUNC", "IMG_STATS", "PLAIN", "FUNC", "ALL_FUNC", "PREFER", "COMPLETELY"}, dest="outputMode", help="Specific result output content.")
 	parser.add_argument("-t", "--threshold", type=int, default=0x7F, dest="threshold", help="Grayscale pixel 'ON'/'OFF' threshold value. Default: 0x7F(127).")
-	parser.add_argument("--special", action="append", dest="special", choices=["gpl3", "preprocessflag"], help="Special operation. gpl3: adding GPL3 license at top. preprocessflag: adding C-style preprocess sign around data")
+	parser.add_argument("--special", action="append", dest="special", choices=["gpl3", "preprocessflag", "fontstruct"], help="Special operation. gpl3: adding GPL3 license at top. preprocessflag: adding C-style preprocess sign around data. fontstruct: define font struct code before setup (aka. OUTPUT_MODE_STRUCT).")
 
 	args = parser.parse_args()
 	name = None
@@ -296,8 +323,9 @@ if __name__ == "__main__":
 	ip['fontIndexSuffix'] = args.fontIndexSuffix
 	ip['fontDataSuffix'] = args.fontDataSuffix
 	ip['fontSetupPrefix'] = args.fontSetupPrefix
-	ip['fontInfo']['monoNumbers'] = args.fontInfoMonoNumbers
+	#ip['fontInfo']['monoNumbers'] = args.fontInfoMonoNumbers
 	ip['fontInfo']['monoMask'] = args.fontInfoMonoMask
+	ip['cStyleNull'] = args.cStyleNull
 
 	mode = {'MSB_AT_TOP': MSB_AT_TOP, 'LSB_AT_TOP': LSB_AT_TOP}[args.mode]
 	logic = {'NEGATIVE_LOGIC': NEGATIVE_LOGIC, 'POSITIVE_LOGIC': POSITIVE_LOGIC}[args.logic]
@@ -310,6 +338,7 @@ if __name__ == "__main__":
 	b['widthDetectLoc'] = widthDetectLocation
 	b['widthDetectMode'] = widthDetectMode
 	b['binaryzationGrayscaleThreshold'] = args.threshold
+	b['forceWriteIndex'] = args.forceWriteIndex
 
 	fd = sys.stdout
 	fileFlag = False
@@ -335,7 +364,11 @@ if __name__ == "__main__":
 				  'PLAIN': OUTPUT_MODE_PLAIN,
 				  'FUNC': OUTPUT_MODE_FUNC,
 				  'ALL_FUNC': OUTPUT_MODE_ALL_FUNC,
-				  'PREFER': OUTPUT_MODE_PREFER}[args.outputMode]
+				  'PREFER': OUTPUT_MODE_PREFER,
+				  'COMPLETELY': OUTPUT_MODE_COMPLETELY}[args.outputMode]
+
+	if args.special and "fontstruct" in args.special:
+		outputMode |= OUTPUT_MODE_STRUCT
 
 	if args.special and "gpl3" in args.special:
 		print("/*\n" + commitGPL3() + "*/", file=fd)
