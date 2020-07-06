@@ -145,7 +145,7 @@ static void matrix_init()
 	// Configure GPIOs
 	// PB3  SH SPI1: Alternate function output push-pull, 50MHz
 	// PB4  OE:      Output push-pull, 50MHz
-	// PB5  DE SPI1: Alternate function output push-pull, 50MHz
+	// PB5  DS SPI1: Alternate function output push-pull, 50MHz
 	// PA15 ST:      Output push-pull, 50MHz
 	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN_Msk | RCC_APB2ENR_IOPBEN_Msk | RCC_APB2ENR_AFIOEN_Msk;
 	GPIOB->CRL = (GPIOB->CRL & ~(GPIO_CRL_CNF3_Msk | GPIO_CRL_MODE3_Msk |
@@ -241,6 +241,16 @@ static inline void matrix_buf_init()
 	// Disable all line drivers
 	for (unsigned int gs = 0; gs < GSCALE - 1; gs++)
 		data.buf[data.rbuf][gs][PANELS] = 0xff;
+
+	// Test pattern
+	for (unsigned int line = 0; line < LINES; line++)
+		for (unsigned int pnl = 0; pnl < PANELS && pnl < 4; pnl++)
+			for (unsigned int i = 0; i < 8; i++)
+				fb[line][pnl * 8 + i] = line * 4 * 8 + pnl * 8 + i;
+	for (unsigned int line = 0; line < LINES; line++)
+		for (unsigned int pnl = 4; pnl < PANELS; pnl++)
+			for (unsigned int i = 0; i < 8; i++)
+				fb[line][pnl * 8 + i] = (line * 8 + i) * 4;
 }
 
 static inline void matrix_line_calc()

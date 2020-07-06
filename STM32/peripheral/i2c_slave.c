@@ -7,7 +7,23 @@
 
 #define I2C_ADDR	0x1c
 
-I2C_TypeDef *i2c = I2C2;
+typedef enum {Idle, WaitTx, WaitRx, ActiveTx, ActiveRx} state_t;
+typedef enum {BufInvalid = 0,
+	      BufTx = 2, BufTxSegment = 4, BufTxComplete = 6,
+	      BufRx = 3, BufRxSegment = 5, BufRxComplete = 7} buf_t;
+
+static struct {
+	volatile state_t state;
+	struct {
+		buf_t type;
+		unsigned int size;
+		unsigned int pos;
+		uint8_t *p;
+	} buf;
+	struct {
+		uint8_t addr;
+	} reg;
+} data = {0};
 
 static void i2c_slave_init()
 {
@@ -25,8 +41,9 @@ static void i2c_slave_init()
 	// Disable and configure I2C peripheral
 	// Clock stretching enabled, general call disabled, I2C mode
 	I2C2->CR1 = 0;
-	// DMA disabled, interrupts enabled, set APB clock frequency
-	I2C2->CR2 = I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk |
+	// DMA disabled, buffer interrupts enabled, event interrupts enabled
+	// Set APB clock frequency
+	I2C2->CR2 = I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk |
 		    ((clkAPB1() / 1000000) << I2C_CR2_FREQ_Pos);
 	// Configure I2C address, 7-bit mode
 	I2C2->OAR1 = (I2C_ADDR << I2C_OAR1_ADD1_Pos);
@@ -53,72 +70,288 @@ static void i2c_slave_init()
 
 INIT_HANDLER(&i2c_slave_init);
 
+static void i2c_slave_tx()
+{
+	switch (data.buf.type) {
+	case BufRx:
+	case BufRxSegment:
+		data.buf.type = BufRxComplete;
+		// fall through
+	case BufRxComplete:
+	case BufTxComplete:
+	case BufInvalid:
+		// Wait for TX buffer
+#if DEBUG > 5
+		printf(ESC_WRITE "%lu\ti2c irq: TX wait\n", systick_cnt());
+#endif
+		// Disable interrupts for now
+		I2C2->CR2 &= ~(I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk);
+		data.state = WaitTx;
+		break;
+	case BufTxSegment:
+		if (data.buf.pos == data.buf.size) {
+			// Wait for TX buffer
+#if DEBUG > 5
+			printf(ESC_WRITE "%lu\ti2c irq: TX segment wait\n", systick_cnt());
+#endif
+			// Disable interrupts for now
+			I2C2->CR2 &= ~(I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk);
+			data.state = WaitTx;
+			break;
+		}
+		// fall through
+	case BufTx:
+		// TX buffer valid or empty
+		if (I2C2->SR1 & I2C_SR1_TXE_Msk) {
+			uint8_t v = 0;
+#if DEBUG > 5
+			printf(ESC_WRITE "%lu\ti2c irq: TX %s" ESC_DATA, systick_cnt(),
+			       data.buf.size != data.buf.pos ? "" : ESC_ERROR "invalid ");
+#endif
+			if (data.buf.size != data.buf.pos) {
+				v = *(data.buf.p + data.buf.pos);
+				data.buf.pos++;
+			}
+#if DEBUG > 5
+			printf("0x%02x\n", v);
+#endif
+			I2C2->DR = v;
+		}
+		// Enable interrupts
+		I2C2->CR2 |= I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk;
+		data.state = ActiveTx;
+	}
+}
+
+static void i2c_slave_rx()
+{
+	switch (data.buf.type) {
+	case BufTx:
+	case BufTxSegment:
+		data.buf.type = BufTxComplete;
+		// fall through
+	case BufRxComplete:
+	case BufTxComplete:
+	case BufInvalid:
+		// Wait for RX buffer
+#if DEBUG > 5
+		printf(ESC_READ "%lu\ti2c irq: RX wait\n", systick_cnt());
+#endif
+		// Disable interrupts for now
+		I2C2->CR2 &= ~(I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk);
+		data.state = WaitRx;
+		break;
+	case BufRxSegment:
+		if (data.buf.pos == data.buf.size) {
+			// Wait for RX buffer
+#if DEBUG > 5
+			printf(ESC_READ "%lu\ti2c irq: RX wait\n", systick_cnt());
+#endif
+			// Disable interrupts for now
+			I2C2->CR2 &= ~(I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk);
+			data.state = WaitRx;
+			break;
+		}
+		// fall through
+	case BufRx:
+		// RX buffer valid or empty
+		if (I2C2->SR1 & I2C_SR1_RXNE_Msk) {
+			// NAK if no more buffer space available
+			// No, slave does not NAK
+			//if (data.buf.size <= 1)
+			//	I2C2->CR1 &= ~I2C_CR1_ACK_Msk;
+			// Read RX buffer
+			uint8_t v = I2C2->DR;
+#if DEBUG > 5
+			printf(ESC_READ "%lu\ti2c irq: RX %s" ESC_DATA "0x%02x\n", systick_cnt(),
+			       data.buf.size != data.buf.pos ? "" : ESC_ERROR "dropped ", v);
+#endif
+			if (data.buf.size != data.buf.pos) {
+				*(data.buf.p + data.buf.pos) = v;
+				data.buf.pos++;
+			}
+		}
+		// Enable interrupts
+		I2C2->CR2 |= I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk;
+		data.state = ActiveRx;
+	}
+}
+
+static void i2c_slave_done()
+{
+#if DEBUG > 5
+	printf(ESC_DISABLE "%lu\ti2c irq: stop\n", systick_cnt());
+#endif
+
+	switch (data.buf.type) {
+	case BufTx:
+	case BufTxSegment:
+		data.buf.type = BufTxComplete;
+		break;
+	case BufRx:
+	case BufRxSegment:
+		data.buf.type = BufRxComplete;
+		break;
+	default:
+		break;
+	}
+	data.state = Idle;
+
+	// Re-enable ACK and clear stop flag
+	I2C2->CR1 |= I2C_CR1_ACK_Msk;
+	// Enable interrupts
+	I2C2->CR2 |= I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk;
+}
+
+static void i2c_slave_addr()
+{
+	// Addressed, switch to transmitter or receiver mode
+	uint8_t sr2 = I2C2->SR2;
+#if DEBUG > 5
+	printf(ESC_ENABLE "%lu\ti2c irq: addr 0x%04x\n", systick_cnt(), sr2);
+#endif
+
+	if (sr2 & I2C_SR2_TRA_Msk)
+		i2c_slave_tx();
+	else
+		i2c_slave_rx();
+}
+
 void I2C2_EV_IRQHandler()
 {
-	static I2C_TypeDef *i2c = I2C2;
-
 	uint16_t sr1 = I2C2->SR1;
-	unsigned int processed = 0;
 
-	printf(ESC_DEBUG "%lu\ti2c: irq 0x%04x\n", systick_cnt(), sr1);
-
-	if (sr1 & I2C_SR1_RXNE_Msk) {
-		// Byte received
-		uint8_t v = I2C2->DR;
-		printf(ESC_GREEN "%lu\ti2c: read: 0x%02x\n", systick_cnt(), v);
-		processed = 1;
-	}
-	if (sr1 & I2C_SR1_STOPF_Msk) {
-		// Stop condition
-		printf(ESC_BLUE "%lu\ti2c: stop\n", systick_cnt());
-		// Set ACK again
-		I2C2->SR1;
-		I2C2->CR1 = I2C_CR1_PE_Msk | I2C_CR1_ACK_Msk;
-		processed = 1;
-	}
-	if (sr1 & I2C_SR1_ADDR_Msk) {
-		// Addressed
-		printf(ESC_YELLOW "%lu\ti2c: addr\n", systick_cnt());
-		I2C2->SR1;
-		uint16_t sr2 = I2C2->SR2;
-		processed = 1;
-	}
-	if (sr1 & I2C_SR1_TXE_Msk) {
-		// TX empty
-		printf(ESC_RED "%lu\ti2c: write\n", systick_cnt());
-		I2C2->DR = 0x39;
-		processed = 1;
-	}
-
+#if DEBUG > 5
+	printf(ESC_DEBUG "%lu\ti2c irq: SR1 0x%04x\n", systick_cnt(), sr1);
 	//flushCache();
+#endif
 
-	if (!processed)
-		dbgbkpt();
+	// For slave mode, possible event interrupts are:
+	// ADDR		Address matched
+	// STOPF	Stop condition
+	// BTF only	???
+	// TXE		Transmit buffer empty
+	// RXNE		Receive buffer not empty
+
+	switch (data.state) {
+	case Idle:
+		if (sr1 & I2C_SR1_RXNE_Msk)
+			i2c_slave_rx();
+		else if (sr1 & I2C_SR1_ADDR_Msk)
+			i2c_slave_addr();
+		else if (sr1 & I2C_SR1_STOPF_Msk)
+			i2c_slave_done();
+		else
+			dbgbkpt();
+		break;
+	case WaitTx:
+	case ActiveTx:
+		if (sr1 & I2C_SR1_STOPF_Msk)
+			i2c_slave_done();
+		else if (sr1 & I2C_SR1_ADDR_Msk)
+			i2c_slave_addr();
+		else if (sr1 & I2C_SR1_TXE_Msk)
+			i2c_slave_tx();
+		else
+			dbgbkpt();
+		break;
+	case WaitRx:
+	case ActiveRx:
+		if (sr1 & I2C_SR1_RXNE_Msk)
+			i2c_slave_rx();
+		else if (sr1 & I2C_SR1_STOPF_Msk)
+			i2c_slave_done();
+		else if (sr1 & I2C_SR1_ADDR_Msk)
+			i2c_slave_addr();
+		else
+			dbgbkpt();
+		break;
+	}
 }
 
 void I2C2_ER_IRQHandler()
 {
 	uint16_t sr1 = I2C2->SR1;
-	uint16_t sr2 = I2C2->SR2;
-	unsigned int processed = 0;
 
-	printf(ESC_DEBUG "%lu\ti2c: irq err 0x%04x 0x%04x\n", systick_cnt(), sr1, sr2);
+#if DEBUG > 5
+	printf(ESC_DEBUG "%lu\ti2c err irq: SR1 0x%04x\n", systick_cnt(), sr1);
+	//flushCache();
+#endif
 
-	if (sr1 & I2C_SR1_BERR_Msk) {
-		// Bus error
-		printf(ESC_ERROR "%lu\ti2c: bus error\n", systick_cnt());
-		I2C2->SR1 = ~I2C_SR1_BERR_Msk;
-		processed = 1;
-	}
 	if (sr1 & I2C_SR1_AF_Msk) {
 		// No acknowledgement
-		printf(ESC_ERROR "%lu\ti2c: nak\n", systick_cnt());
+#if DEBUG > 5
+		printf(ESC_ERROR "%lu\ti2c err irq: nak\n", systick_cnt());
+#endif
+		i2c_slave_done();
 		I2C2->SR1 = ~I2C_SR1_AF_Msk;
-		processed = 1;
+	} else if (sr1 & I2C_SR1_BERR_Msk) {
+		// Bus error
+#if DEBUG > 5
+		printf(ESC_ERROR "%lu\ti2c err irq: bus error\n", systick_cnt());
+#endif
+		I2C2->SR1 = ~I2C_SR1_BERR_Msk;
+	} else {
+		dbgbkpt();
+	}
+}
+
+static void i2c_slave_process()
+{
+	I2C_TypeDef *i2c = I2C2;
+
+	static uint8_t buf[8];
+
+	switch (data.buf.type) {
+	case BufTxComplete:
+		printf(ESC_WRITE "%lu\ti2c: TX complete %u bytes" ESC_DATA,
+		       systick_cnt(), data.buf.pos);
+		for (unsigned int i = 0; i < data.buf.pos; i++)
+			printf(" 0x%02x", data.buf.p[i]);
+		printf("\n");
+		data.buf.type = BufInvalid;
+		break;
+	case BufRxComplete:
+		printf(ESC_READ "%lu\ti2c: RX complete %u bytes" ESC_DATA,
+		       systick_cnt(), data.buf.pos);
+		for (unsigned int i = 0; i < data.buf.pos; i++)
+			printf(" 0x%02x", data.buf.p[i]);
+		printf("\n");
+		data.buf.type = BufInvalid;
+		break;
+	default:
+		break;
 	}
 
-	//flushCache();
-
-	if (!processed)
-		dbgbkpt();
+	switch (data.state) {
+	case WaitTx:
+		printf(ESC_WRITE "%lu\ti2c: TX buffer\n", systick_cnt());
+		if (data.buf.type != BufInvalid)
+			dbgbkpt();
+		data.buf.p = buf;
+		data.buf.size = sizeof(buf);
+		data.buf.pos = 0;
+		data.buf.type = BufTx;
+		//data.state = ActiveTx;
+		// Enable interrupt
+		I2C2->CR2 |= I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk;
+		break;
+	case WaitRx:
+		printf(ESC_READ "%lu\ti2c: RX buffer\n", systick_cnt());
+		if (data.buf.type != BufInvalid)
+			dbgbkpt();
+		data.buf.p = buf;
+		data.buf.size = sizeof(buf);
+		data.buf.pos = 0;
+		data.buf.type = BufRx;
+		//data.state = ActiveRx;
+		// Enable interrupt
+		I2C2->CR2 |= I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk;
+		break;
+	default:
+		break;
+	}
 }
+
+IDLE_HANDLER(&i2c_slave_process);
+
