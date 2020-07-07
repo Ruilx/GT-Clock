@@ -354,3 +354,12 @@ void matrix_set_pixel(unsigned int x, unsigned int y, uint8_t v)
 {
 	fb[y][x] = v;
 }
+
+void *matrix_fb(unsigned int *w, unsigned int *h)
+{
+	if (w)
+		*w = PANELS * 8;
+	if (h)
+		*h = LINES;
+	return &fb[0][0];
+}
