@@ -4,6 +4,7 @@
 #include <system/systick.h>
 #include <system/clocks.h>
 #include <system/irq.h>
+#include "i2c_slave.h"
 
 #define I2C_ADDR	0x1c
 
@@ -27,6 +28,8 @@ static struct {
 		unsigned int segment;
 	} reg;
 } data = {0};
+
+LIST(i2c_slave_reg, i2c_slave_reg_handler_t);
 
 static void i2c_slave_init()
 {
@@ -299,61 +302,23 @@ void I2C2_ER_IRQHandler()
 	}
 }
 
-#include <peripheral/matrix.h>
-static uint8_t regs[256];
-
-enum {FuncX = 0x10, FuncY = 0x11, FuncV = 0x12, FuncP = 0x13};
-
-static void *i2c_slave_reg_data(uint8_t id, unsigned int *segment, unsigned int *size)
+static void *i2c_slave_reg_data(unsigned int write, unsigned int id, unsigned int *segment, unsigned int *size)
 {
-	if (id == FuncP) {
-		unsigned int w = 0, h = 0;
-		unsigned int x = regs[FuncX], y = regs[FuncY];
-		uint8_t *p = matrix_fb(&w, &h);
-		unsigned int ofs = y * w + x;
-		p += ofs;
-		*segment = 0;
-		*size = ofs >= w * h ? 0 : w * h - ofs;
-		return p;
+	LIST_ITERATE(i2c_slave_reg, i2c_slave_reg_handler_t, phdr) {
+		void *p = phdr->data(write, id, segment, size);
+		if (p)
+			return p;
 	}
 
 	*segment = 0;
-	*size = 1;
-	return &regs[id];
+	*size = 0;
+	return 0;
 }
 
-static void *i2c_slave_reg_read(uint8_t id, unsigned int *segment, unsigned int *size)
+static void i2c_slave_reg_write_complete(unsigned int id, unsigned int segment, unsigned int size, void *p)
 {
-	void *p = i2c_slave_reg_data(id, segment, size);
-#if DEBUG > 5
-	printf(ESC_READ "%lu\ti2c reg: read 0x%02x, segment %u, %u bytes\n",
-	       systick_cnt(), id, *segment, *size);
-#endif
-	return p;
-}
-
-static void *i2c_slave_reg_write(uint8_t id, unsigned int *segment, unsigned int *size)
-{
-	void *p = i2c_slave_reg_data(id, segment, size);
-#if DEBUG > 5
-	printf(ESC_WRITE "%lu\ti2c reg: write 0x%02x, segment %u, %u bytes\n",
-	       systick_cnt(), id, *segment, *size);
-#endif
-	return p;
-}
-
-static void i2c_slave_reg_write_complete(uint8_t id, unsigned int segment, unsigned int size, void *p)
-{
-	if (id == FuncV)
-		matrix_set_pixel(regs[FuncX], regs[FuncY], regs[FuncV]);
-#if DEBUG > 5
-	uint8_t *ptr = p;
-	printf(ESC_WRITE "%lu\ti2c reg: write 0x%02x complete, segment %u, %u bytes" ESC_DATA,
-	       systick_cnt(), id, segment, size);
-	for (unsigned int i = 0; i < data.buf.pos; i++)
-		printf(" 0x%02x", ptr[i]);
-	printf("\n");
-#endif
+	LIST_ITERATE(i2c_slave_reg, i2c_slave_reg_handler_t, phdr)
+		phdr->write_complete(id, segment, size, p);
 }
 
 static inline void i2c_slave_reg_rx_buf()
@@ -374,7 +339,7 @@ static inline void i2c_slave_reg_rx_buf()
 		if (data.buf.type != BufRxSegment || data.buf.pos != 1)
 			dbgbkpt();
 		data.reg.segment = 0;
-		data.buf.p = i2c_slave_reg_write(data.reg.id, &data.reg.segment, &data.buf.size);
+		data.buf.p = i2c_slave_reg_data(1, data.reg.id, &data.reg.segment, &data.buf.size);
 		data.buf.pos = 0;
 		data.buf.type = data.reg.segment ? BufRxSegment : BufRx;
 		data.reg.state = RegActive;
@@ -383,7 +348,7 @@ static inline void i2c_slave_reg_rx_buf()
 		// Register write segment complete
 		if (data.buf.type != BufRxSegment || data.buf.pos != data.buf.size)
 			dbgbkpt();
-		data.buf.p = i2c_slave_reg_write(data.reg.id, &data.reg.segment, &data.buf.size);
+		data.buf.p = i2c_slave_reg_data(1, data.reg.id, &data.reg.segment, &data.buf.size);
 		data.buf.pos = 0;
 		data.buf.type = data.reg.segment ? BufRxSegment : BufRx;
 		break;
@@ -405,7 +370,7 @@ static inline void i2c_slave_reg_tx_buf()
 		data.reg.segment = 0;
 	else if (data.buf.type != BufTxSegment || data.buf.pos != data.buf.size)
 		dbgbkpt();
-	data.buf.p = i2c_slave_reg_read(data.reg.id, &data.reg.segment, &data.buf.size);
+	data.buf.p = i2c_slave_reg_data(0, data.reg.id, &data.reg.segment, &data.buf.size);
 	data.buf.pos = 0;
 	data.buf.type = data.reg.segment ? BufTxSegment : BufTx;
 }
