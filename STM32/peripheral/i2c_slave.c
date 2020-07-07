@@ -324,20 +324,22 @@ static void *i2c_slave_reg_data(uint8_t id, unsigned int *segment, unsigned int 
 
 static void *i2c_slave_reg_read(uint8_t id, unsigned int *segment, unsigned int *size)
 {
-	return i2c_slave_reg_data(id, segment, size);
-#if 0
+	void *p = i2c_slave_reg_data(id, segment, size);
+#if DEBUG > 5
 	printf(ESC_READ "%lu\ti2c reg: read 0x%02x, segment %u, %u bytes\n",
 	       systick_cnt(), id, *segment, *size);
 #endif
+	return p;
 }
 
 static void *i2c_slave_reg_write(uint8_t id, unsigned int *segment, unsigned int *size)
 {
-	return i2c_slave_reg_data(id, segment, size);
-#if 0
+	void *p = i2c_slave_reg_data(id, segment, size);
+#if DEBUG > 5
 	printf(ESC_WRITE "%lu\ti2c reg: write 0x%02x, segment %u, %u bytes\n",
 	       systick_cnt(), id, *segment, *size);
 #endif
+	return p;
 }
 
 static void i2c_slave_reg_write_complete(uint8_t id, unsigned int segment, unsigned int size, void *p)
@@ -410,9 +412,10 @@ static inline void i2c_slave_reg_tx_buf()
 
 static void i2c_slave_process()
 {
-	I2C_TypeDef *i2c = I2C2;
-
-	static uint8_t buf[8];
+	// Only process data buffer if I2C is at idle or waiting state
+	state_t state = data.state;
+	if (state != Idle && state != WaitTx && state != WaitRx)
+		return;
 
 	switch (data.buf.type) {
 	case BufTxComplete:
@@ -439,7 +442,9 @@ static void i2c_slave_process()
 		break;
 	}
 
-	switch (data.state) {
+	switch (state) {
+	case Idle:
+		break;
 	case WaitTx:
 #if DEBUG > 5
 		printf(ESC_WRITE "%lu\ti2c: TX buffer\n", systick_cnt());
@@ -459,7 +464,7 @@ static void i2c_slave_process()
 		I2C2->CR2 |= I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk;
 		break;
 	default:
-		break;
+		dbgbkpt();
 	}
 }
 
