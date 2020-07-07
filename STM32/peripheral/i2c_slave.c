@@ -7,10 +7,11 @@
 
 #define I2C_ADDR	0x1c
 
-typedef enum {Idle, WaitTx, WaitRx, ActiveTx, ActiveRx} state_t;
+typedef enum {Idle = 0, WaitTx, WaitRx, ActiveTx, ActiveRx} state_t;
 typedef enum {BufInvalid = 0,
 	      BufTx = 2, BufTxSegment = 4, BufTxComplete = 6,
 	      BufRx = 3, BufRxSegment = 5, BufRxComplete = 7} buf_t;
+typedef enum {RegIdle = 0, RegAddr, RegActive} reg_t;
 
 static struct {
 	volatile state_t state;
@@ -21,7 +22,9 @@ static struct {
 		uint8_t *p;
 	} buf;
 	struct {
-		uint8_t addr;
+		reg_t state;
+		uint8_t id;
+		unsigned int segment;
 	} reg;
 } data = {0};
 
@@ -296,6 +299,102 @@ void I2C2_ER_IRQHandler()
 	}
 }
 
+static uint8_t regs[256];
+
+static unsigned int i2c_slave_reg_size(uint8_t id)
+{
+	return 1;
+}
+
+static void *i2c_slave_reg_read(uint8_t id, unsigned int *segment, unsigned int *size)
+{
+	*segment = 0;
+	*size = 1;
+	void *p = &regs[id];
+
+	printf(ESC_READ "%lu\ti2c reg: read 0x%02x, segment %u, %u bytes\n",
+	       systick_cnt(), id, *segment, *size);
+	return p;
+}
+
+static void *i2c_slave_reg_write(uint8_t id, unsigned int *segment, unsigned int *size)
+{
+	*segment = 0;
+	*size = 1;
+	void *p = &regs[id];
+
+	printf(ESC_WRITE "%lu\ti2c reg: write 0x%02x, segment %u, %u bytes\n",
+	       systick_cnt(), id, *segment, *size);
+	return p;
+}
+
+#include <peripheral/matrix.h>
+static void i2c_slave_reg_write_complete(uint8_t id, unsigned int segment, unsigned int size, void *p)
+{
+	if (id == 0x12)
+		matrix_set_pixel(regs[0x10], regs[0x11], regs[0x12]);
+
+	uint8_t *ptr = p;
+
+	printf(ESC_WRITE "%lu\ti2c reg: write 0x%02x complete, segment %u, %u bytes" ESC_DATA,
+	       systick_cnt(), id, segment, size);
+	for (unsigned int i = 0; i < data.buf.pos; i++)
+		printf(" 0x%02x", ptr[i]);
+	printf("\n");
+}
+
+static inline void i2c_slave_reg_rx_buf()
+{
+	switch (data.reg.state) {
+	case RegIdle:
+		// Register idle, wait for ID
+		if (data.buf.type != BufInvalid)
+			dbgbkpt();
+		data.buf.p = &data.reg.id;
+		data.buf.size = 1;
+		data.buf.pos = 0;
+		data.buf.type = BufRxSegment;
+		data.reg.state = RegAddr;
+		break;
+	case RegAddr:
+		// Register ID received
+		if (data.buf.type != BufRxSegment || data.buf.pos != 1)
+			dbgbkpt();
+		data.reg.segment = 0;
+		data.buf.p = i2c_slave_reg_write(data.reg.id, &data.reg.segment, &data.buf.size);
+		data.buf.pos = 0;
+		data.buf.type = data.reg.segment ? BufRxSegment : BufRx;
+		data.reg.state = RegActive;
+		break;
+	case RegActive:
+		// Register write segment complete
+		if (data.buf.type != BufRxSegment || data.buf.pos != data.buf.size)
+			dbgbkpt();
+		data.buf.p = i2c_slave_reg_write(data.reg.id, &data.reg.segment, &data.buf.size);
+		data.buf.pos = 0;
+		data.buf.type = data.reg.segment ? BufRxSegment : BufRx;
+		break;
+	default:
+		dbgbkpt();
+	}
+}
+
+static inline void i2c_slave_reg_rx_complete()
+{
+	i2c_slave_reg_write_complete(data.reg.id, data.reg.segment, data.buf.pos, data.buf.p);
+	data.reg.state = RegIdle;
+	data.buf.type = BufInvalid;
+}
+
+static inline void i2c_slave_reg_tx_buf()
+{
+	static uint8_t buf[8];
+	data.buf.p = buf;
+	data.buf.size = sizeof(buf);
+	data.buf.pos = 0;
+	data.buf.type = BufTx;
+}
+
 static void i2c_slave_process()
 {
 	I2C_TypeDef *i2c = I2C2;
@@ -317,7 +416,7 @@ static void i2c_slave_process()
 		for (unsigned int i = 0; i < data.buf.pos; i++)
 			printf(" 0x%02x", data.buf.p[i]);
 		printf("\n");
-		data.buf.type = BufInvalid;
+		i2c_slave_reg_rx_complete();
 		break;
 	default:
 		break;
@@ -328,24 +427,16 @@ static void i2c_slave_process()
 		printf(ESC_WRITE "%lu\ti2c: TX buffer\n", systick_cnt());
 		if (data.buf.type != BufInvalid)
 			dbgbkpt();
-		data.buf.p = buf;
-		data.buf.size = sizeof(buf);
-		data.buf.pos = 0;
-		data.buf.type = BufTx;
-		//data.state = ActiveTx;
-		// Enable interrupt
+		i2c_slave_reg_tx_buf();
+		data.state = ActiveTx;
+		// Enable interrupts
 		I2C2->CR2 |= I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk;
 		break;
 	case WaitRx:
 		printf(ESC_READ "%lu\ti2c: RX buffer\n", systick_cnt());
-		if (data.buf.type != BufInvalid)
-			dbgbkpt();
-		data.buf.p = buf;
-		data.buf.size = sizeof(buf);
-		data.buf.pos = 0;
-		data.buf.type = BufRx;
-		//data.state = ActiveRx;
-		// Enable interrupt
+		i2c_slave_reg_rx_buf();
+		data.state = ActiveRx;
+		// Enable interrupts
 		I2C2->CR2 |= I2C_CR2_ITBUFEN_Msk | I2C_CR2_ITEVTEN_Msk;
 		break;
 	default:
@@ -354,4 +445,3 @@ static void i2c_slave_process()
 }
 
 IDLE_HANDLER(&i2c_slave_process);
-

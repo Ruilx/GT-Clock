@@ -349,3 +349,8 @@ void TIM4_IRQHandler()
 	irq++;
 #endif
 }
+
+void matrix_set_pixel(unsigned int x, unsigned int y, uint8_t v)
+{
+	fb[y][x] = v;
+}
