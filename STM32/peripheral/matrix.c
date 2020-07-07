@@ -19,7 +19,7 @@
 #define PPS	(LPS * (PANELS + 1) * 8)
 
 //#define CHECK_OVERRUN
-#ifdef DEBUG
+#if DEBUG > 4
 #define PROFILING
 #endif
 
@@ -247,7 +247,6 @@ static inline void matrix_line_calc()
 				pbuf += BUF_SIZE;
 			}
 		} while (next != GSCALE - 1);
-		//buf.buf[wbuf][GSCALE - 1][pnl] = 0xff;
 	}
 
 	// Update line driver

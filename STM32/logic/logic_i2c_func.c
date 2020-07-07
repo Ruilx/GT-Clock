@@ -4,9 +4,34 @@
 #include <peripheral/i2c_slave.h>
 #include <peripheral/matrix.h>
 
+typedef enum {FuncX = 0x10, FuncY = 0x11, FuncPtr = 0x12, FuncDebug = 0xff} func_t;
+
 static uint8_t regs[256];
 
-typedef enum {FuncX = 0x10, FuncY = 0x11, FuncPtr = 0x12} func_t;
+#if DEBUG
+static void debug()
+{
+	static uint32_t v = 0;
+	if (!regs[FuncDebug]) {
+		v = systick_cnt();
+		return;
+	}
+
+	if ((systick_cnt() - v) >= 1000) {
+		// Matrix refresh
+		static unsigned int matrix_cnt = 0;
+		unsigned int matrix_cnt_now = matrix_refresh_cnt();
+		unsigned int matrix_cnt_delta = matrix_cnt_now - matrix_cnt;
+		matrix_cnt = matrix_cnt_now;
+
+		printf(ESC_DEBUG "%lu\tdebug: FPS: Matrix %u\n",
+		       systick_cnt(), matrix_cnt_delta);
+		v += 1000;
+	}
+}
+
+IDLE_HANDLER(&debug);
+#endif
 
 static void *logic_i2c_fb(unsigned int *size)
 {
