@@ -79,6 +79,7 @@ StaticLibrary {
         "common/macros.h",
         "common/debug.h",
         "common/device.h",
+        "logic/logic_i2c_fb.c",
         "logic/logic_i2c_func.c",
         "peripheral/i2c_slave.c",
         "peripheral/i2c_slave.h",
