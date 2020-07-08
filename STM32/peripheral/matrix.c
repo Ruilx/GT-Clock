@@ -49,8 +49,9 @@ static struct {
 	// Frame buffer
 	uint8_t fb[2][LINES][PANELS * 8];
 
-	unsigned int fbidx;	// Active frame buffer
-	unsigned int refcnt;	// Frame refresh counter
+	volatile unsigned int rfb;	// Active frame buffer
+	unsigned int wfb;		// Standby frame buffer
+	unsigned int refcnt;		// Frame refresh counter
 } data = {0};
 
 static inline void matrix_buf_init();
@@ -155,7 +156,8 @@ static inline void matrix_buf_init()
 {
 	data.rbuf = 0;
 	data.wbuf = 1;
-	data.fbidx = 0;
+	data.wfb = 1;
+	data.rfb = 0;
 	// Disable all line drivers
 	for (unsigned int gs = 0; gs < GSCALE - 1; gs++)
 		data.buf[data.rbuf][gs][PANELS] = 0xff;
@@ -189,7 +191,7 @@ static inline void matrix_line_calc()
 
 	// Generate grayscale buffer
 	unsigned int wbuf = !!data.wbuf;
-	uint8_t *pfbs = &data.fb[data.fbidx][line][0];
+	uint8_t *pfbs = &data.fb[data.rfb][line][0];
 	uint8_t lmask = ~(1 << line);
 	for (unsigned int pnl = 0; pnl < PANELS; pnl++) {
 		uint8_t *pfb = pfbs + pnl * 8;
@@ -234,9 +236,11 @@ void DMA1_Channel3_IRQHandler()
 #ifdef PROFILING
 	unsigned int s = irq;
 #endif
-	matrix_line_calc();
-	if (data.wline == 0)
+	if (data.wline == 0) {
+		data.rfb = !data.wfb;
 		data.refcnt++;
+	}
+	matrix_line_calc();
 #ifdef PROFILING
 	unsigned int e = irq;
 
@@ -322,17 +326,18 @@ void *matrix_fb(unsigned int active, unsigned int *w, unsigned int *h)
 		*w = PANELS * 8;
 	if (h)
 		*h = LINES;
-	return &data.fb[active ^ data.fbidx][0][0];
+	return &data.fb[active ^ data.wfb][0][0];
 }
 
 void matrix_fb_swap()
 {
-	data.fbidx = !data.fbidx;
+	data.wfb = !data.wfb;
+	while (data.rfb == data.wfb);
 }
 
 void matrix_fb_copy()
 {
 	for (unsigned int line = 0; line < LINES; line++)
 		for (unsigned int pix = 0; pix < PANELS * 8; pix++)
-			data.fb[!data.fbidx][line][pix] = data.fb[data.fbidx][line][pix];
+			data.fb[data.wfb][line][pix] = data.fb[!data.wfb][line][pix];
 }

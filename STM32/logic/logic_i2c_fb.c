@@ -24,7 +24,7 @@ static void *fb_ptr(unsigned int *size)
 {
 	unsigned int w = 0, h = 0;
 	unsigned int x = regs[FuncX], y = regs[FuncY];
-	uint8_t *p = matrix_fb(!!regs[FuncSwap], &w, &h);
+	uint8_t *p = matrix_fb(!regs[FuncSwap], &w, &h);
 	unsigned int ofs = y * w + x;
 	p += ofs;
 	*size = ofs >= w * h ? 0 : w * h - ofs;
@@ -58,15 +58,6 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 {
 	if (id < FUNC_BASE || id >= (FUNC_BASE + FUNC_SIZE))
 		return;
-
-#if DEBUG > 5
-	uint8_t *ptr = p;
-	printf(ESC_WRITE "%lu\tlogic fb: write 0x%02x complete, segment %u, %u bytes" ESC_DATA,
-	       systick_cnt(), id, segment, size);
-	for (unsigned int i = 0; i < data.buf.pos; i++)
-		printf(" 0x%02x", ptr[i]);
-	printf("\n");
-#endif
 
 	// Check register written
 	func_t start = id - FUNC_BASE;

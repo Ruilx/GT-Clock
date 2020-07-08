@@ -1,7 +1,6 @@
 // Animation layer: Breathing
 
 #include <debug.h>
-#include <device.h>
 #include <peripheral/matrix.h>
 #include <logic/logic_animation.h>
 
@@ -15,4 +14,4 @@ static void proc(unsigned int tick)
 			*(p + line * w + pix) = v;
 }
 
-LOGIC_ANI_HANDLER() = {&proc};
+//LOGIC_ANI_HANDLER() = {&proc};

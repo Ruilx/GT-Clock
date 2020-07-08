@@ -1,6 +1,9 @@
 #include <debug.h>
 #include <system/systick.h>
 #include <peripheral/i2c_slave.h>
+// For debug prints
+#include <peripheral/matrix.h>
+#include <logic/logic_animation.h>
 
 #define FUNC_BASE	0xf0
 #define FUNC_SIZE	0x10
@@ -14,10 +17,6 @@ typedef enum {
 
 static uint8_t regs[FUNC_SIZE];
 
-#if DEBUG
-#include <peripheral/matrix.h>
-#include <logic/logic_animation.h>
-
 static void debug()
 {
 	static uint32_t v = 0;
@@ -27,7 +26,7 @@ static void debug()
 	}
 
 	if ((systick_cnt() - v) >= 1000) {
-		printf(ESC_DEBUG "%lu\tdebug: FPS: ", systick_cnt());
+		printf(ESC_DEBUG "%lu\tdebug: cnt: ", systick_cnt());
 
 		// Matrix refresh
 		static unsigned int matrix_cnt = 0;
@@ -49,7 +48,6 @@ static void debug()
 }
 
 IDLE_HANDLER(&debug);
-#endif
 
 static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment, unsigned int *size)
 {

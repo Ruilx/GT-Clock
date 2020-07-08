@@ -80,6 +80,7 @@ StaticLibrary {
         "common/debug.h",
         "common/device.h",
         "logic/logic_ani_breath.c",
+        "logic/logic_ani_sine.c",
         "logic/logic_animation.c",
         "logic/logic_animation.h",
         "logic/logic_i2c_animation.c",
