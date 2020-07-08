@@ -4,7 +4,21 @@
 #include <peripheral/i2c_slave.h>
 #include <peripheral/matrix.h>
 
-typedef enum {FuncX = 0x10, FuncY = 0x11, FuncPtr = 0x12, FuncDebug = 0xff} func_t;
+typedef enum {
+	// Framebuffer functions 0x10 - 0x1f
+	// FuncSwap
+	//   Write 0 to access active FB
+	//   Write 1 to access standby FB
+	//   Write 0x80 to copy active FB to standby FB
+	//   Write 0xff to activate standby FB
+	// FuncX, FuncY
+	//   Starting offset of FuncPtr
+	FuncSwap = 0x10, FuncX = 0x1d, FuncY = 0x1e, FuncPtr = 0x1f,
+	// Extra
+	// FuncDebug
+	//   Show FPS prints if DEBUG is enabled
+	FuncDebug = 0xff,
+} func_t;
 
 static uint8_t regs[256];
 
@@ -37,7 +51,7 @@ static void *logic_i2c_fb(unsigned int *size)
 {
 	unsigned int w = 0, h = 0;
 	unsigned int x = regs[FuncX], y = regs[FuncY];
-	uint8_t *p = matrix_fb(&w, &h);
+	uint8_t *p = matrix_fb(!!regs[FuncSwap], &w, &h);
 	unsigned int ofs = y * w + x;
 	p += ofs;
 	*size = ofs >= w * h ? 0 : w * h - ofs;
@@ -46,14 +60,14 @@ static void *logic_i2c_fb(unsigned int *size)
 
 static void *logic_i2c_data(unsigned int write, unsigned int id, unsigned int *segment, unsigned int *size)
 {
-	func_t func = id;
-	switch (func) {
+	switch ((func_t)id) {
+	case FuncSwap:
 	case FuncX:
 	case FuncY:
 		if (*segment == 0) {
 			// Segment 0: X, Y
 			*segment = 1;
-			*size = func == FuncX ? 2 : 1;
+			*size = FuncPtr - id;
 			return &regs[id];
 		}
 		// fall through
@@ -78,6 +92,21 @@ static void logic_i2c_write_complete(unsigned int id, unsigned int segment, unsi
 		printf(" 0x%02x", ptr[i]);
 	printf("\n");
 #endif
+
+	// Skip if no data was written
+	if (segment == 1 && size == 0)
+		return;
+
+	switch ((func_t)id) {
+	case FuncSwap:
+		if (regs[FuncSwap] == 0xff)
+			matrix_fb_swap();
+		else if (regs[FuncSwap] == 0x80)
+			matrix_fb_copy();
+		break;
+	default:
+		break;
+	}
 }
 
 I2C_SLAVE_REG_HANDLER() = {&logic_i2c_data, &logic_i2c_write_complete};
