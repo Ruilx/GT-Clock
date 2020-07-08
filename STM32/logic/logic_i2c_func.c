@@ -3,7 +3,7 @@
 #include <peripheral/i2c_slave.h>
 // For debug prints
 #include <peripheral/matrix.h>
-#include <logic/logic_animation.h>
+#include <logic/logic_layers.h>
 
 #define FUNC_BASE	0xf0
 #define FUNC_SIZE	0x10
@@ -44,12 +44,12 @@ static void debug()
 		matrix_cnt = matrix_cnt_now;
 		printf("Matrix %u", matrix_cnt_delta);
 
-		// Debug refresh
-		static unsigned int ani_cnt = 0;
-		unsigned int ani_cnt_now = logic_animation_refresh_cnt();
-		unsigned int ani_cnt_delta = ani_cnt_now - ani_cnt;
-		ani_cnt = ani_cnt_now;
-		printf(", Ani %u", ani_cnt_delta);
+		// Layers refresh
+		static unsigned int layers_cnt = 0;
+		unsigned int layers_cnt_now = logic_layers_refresh_cnt();
+		unsigned int layers_cnt_delta = layers_cnt_now - layers_cnt;
+		layers_cnt = layers_cnt_now;
+		printf(", Layers %u", layers_cnt_delta);
 
 		printf("\n");
 		v += 1000;

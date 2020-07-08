@@ -1,10 +1,11 @@
-// Animation layer: Breathing
+// Layer: Breathing
+// Parameters:
 
 #include <debug.h>
 #include <peripheral/matrix.h>
-#include <logic/logic_animation.h>
+#include <logic/logic_layers.h>
 
-static void proc(unsigned int tick)
+static void proc(unsigned int tick, void *param, void *ptr)
 {
 	unsigned int w = 0, h = 0;
 	uint8_t *p = matrix_fb(0, &w, &h);
@@ -14,4 +15,13 @@ static void proc(unsigned int tick)
 			*(p + line * w + pix) = v;
 }
 
-//LOGIC_ANI_HANDLER() = {&proc};
+static void *config(void *param, unsigned int size, unsigned int *ok)
+{
+	return 0;
+}
+
+LOGIC_LAYER_HANDLER() = {
+	.id = LayerIdBreath,
+	.config = &config,
+	.proc = &proc,
+};
