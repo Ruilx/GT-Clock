@@ -150,7 +150,7 @@ static void matrix_init()
 	printf(ESC_INIT "%lu\tmatrix: Initialisation done\n", systick_cnt());
 }
 
-INIT_HANDLER(&matrix_init);
+INIT_HANDLER() = &matrix_init;
 
 static inline void matrix_buf_init()
 {
@@ -329,10 +329,14 @@ void *matrix_fb(unsigned int active, unsigned int *w, unsigned int *h)
 	return &data.fb[active ^ data.wfb][0][0];
 }
 
+unsigned int matrix_fb_ready()
+{
+	return data.rfb != data.wfb;
+}
+
 void matrix_fb_swap()
 {
 	data.wfb = !data.wfb;
-	while (data.rfb == data.wfb);
 }
 
 void matrix_fb_copy()

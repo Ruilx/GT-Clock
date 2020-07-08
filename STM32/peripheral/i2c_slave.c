@@ -74,7 +74,7 @@ static void i2c_slave_init()
 	printf(ESC_INIT "%lu\ti2c: Initialisation done\n", systick_cnt());
 }
 
-INIT_HANDLER(&i2c_slave_init);
+INIT_HANDLER() = &i2c_slave_init;
 
 static void i2c_slave_tx()
 {
@@ -433,4 +433,4 @@ static void i2c_slave_process()
 	}
 }
 
-IDLE_HANDLER(&i2c_slave_process);
+IDLE_HANDLER() = &i2c_slave_process;

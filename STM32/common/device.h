@@ -6,8 +6,8 @@
 
 // Common system level lists
 typedef void (*const basic_handler_t)();
-#define INIT_HANDLER(func)	LIST_ITEM(init, basic_handler_t) = func
-#define IDLE_HANDLER(func)	LIST_ITEM(idle, basic_handler_t) = func
+#define INIT_HANDLER()	LIST_ITEM(init, basic_handler_t)
+#define IDLE_HANDLER()	LIST_ITEM(idle, basic_handler_t)
 
 #define FIELD(r, f)		(((r) & (f##_Msk)) >> (f##_Pos))
 

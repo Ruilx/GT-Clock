@@ -30,7 +30,7 @@ static void usb_disabled()
 	printf(ESC_DISABLE "%lu\tusb: Disabled\n", systick_cnt());
 }
 
-INIT_HANDLER(&usb_disabled);
+INIT_HANDLER() = &usb_disabled;
 
 int main()
 {

@@ -30,6 +30,8 @@ static void proc()
 	_tick = tick;
 	if (!data.enable)
 		return;
+	if (!matrix_fb_ready())
+		return;
 
 	LIST_ITERATE(logic_ani, logic_ani_handler_t, phdr)
 		phdr->proc(tick);
@@ -38,4 +40,4 @@ static void proc()
 	data.refcnt++;
 }
 
-IDLE_HANDLER(&proc);
+IDLE_HANDLER() = &proc;

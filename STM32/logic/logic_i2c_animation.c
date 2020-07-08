@@ -13,6 +13,16 @@ typedef enum {
 
 static uint8_t regs[FUNC_SIZE];
 
+#if 1
+static void init()
+{
+	regs[FuncEnable] = 1;
+	logic_animation_enable(1);
+}
+
+INIT_HANDLER() = &init;
+#endif
+
 static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment, unsigned int *size)
 {
 	if (id < FUNC_BASE || id >= (FUNC_BASE + FUNC_SIZE))

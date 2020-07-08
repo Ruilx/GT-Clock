@@ -210,7 +210,7 @@ void system_debug_process()
 	}
 }
 
-IDLE_HANDLER(&system_debug_process);
+IDLE_HANDLER() = &system_debug_process;
 
 void flushCache()
 {

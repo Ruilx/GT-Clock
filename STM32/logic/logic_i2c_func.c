@@ -17,6 +17,15 @@ typedef enum {
 
 static uint8_t regs[FUNC_SIZE];
 
+#if 1
+static void init()
+{
+	regs[FuncDebug] = 1;
+}
+
+INIT_HANDLER() = &init;
+#endif
+
 static void debug()
 {
 	static uint32_t v = 0;
@@ -47,7 +56,7 @@ static void debug()
 	}
 }
 
-IDLE_HANDLER(&debug);
+IDLE_HANDLER() = &debug;
 
 static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment, unsigned int *size)
 {

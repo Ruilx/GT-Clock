@@ -97,7 +97,7 @@ static void heap_debug()
 	dbgprintf(ESC_DEBUG "%lu\tcore: HEAP RAM allocated %u bytes\n", systick_cnt(), hsize);
 }
 
-IDLE_HANDLER(&heap_debug);
+IDLE_HANDLER() = &heap_debug;
 #endif
 
 int _close(int file)
