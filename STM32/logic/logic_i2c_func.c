@@ -1,7 +1,6 @@
 #include <debug.h>
 #include <system/systick.h>
 #include <peripheral/i2c_slave.h>
-#include <peripheral/matrix.h>
 
 #define FUNC_BASE	0xf0
 #define FUNC_SIZE	0x10
@@ -16,6 +15,9 @@ typedef enum {
 static uint8_t regs[FUNC_SIZE];
 
 #if DEBUG
+#include <peripheral/matrix.h>
+#include <logic/logic_animation.h>
+
 static void debug()
 {
 	static uint32_t v = 0;
@@ -25,14 +27,23 @@ static void debug()
 	}
 
 	if ((systick_cnt() - v) >= 1000) {
+		printf(ESC_DEBUG "%lu\tdebug: FPS: ", systick_cnt());
+
 		// Matrix refresh
 		static unsigned int matrix_cnt = 0;
 		unsigned int matrix_cnt_now = matrix_refresh_cnt();
 		unsigned int matrix_cnt_delta = matrix_cnt_now - matrix_cnt;
 		matrix_cnt = matrix_cnt_now;
+		printf("Matrix %u", matrix_cnt_delta);
 
-		printf(ESC_DEBUG "%lu\tdebug: FPS: Matrix %u\n",
-		       systick_cnt(), matrix_cnt_delta);
+		// Debug refresh
+		static unsigned int ani_cnt = 0;
+		unsigned int ani_cnt_now = logic_animation_refresh_cnt();
+		unsigned int ani_cnt_delta = ani_cnt_now - ani_cnt;
+		ani_cnt = ani_cnt_now;
+		printf(", Ani %u", ani_cnt_delta);
+
+		printf("\n");
 		v += 1000;
 	}
 }
