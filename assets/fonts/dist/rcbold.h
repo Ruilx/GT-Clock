@@ -213,7 +213,7 @@ static const unsigned char rcbold_data [] = {
 	 0xef,0xc7,0xbb,0x83,0x83,0xff, /* <del> */
 };
 
-static const FontInfo fontrcbold = {
+static const FontInfo font_rcbold = {
 	4,
 	"RC Bold",
 	32,

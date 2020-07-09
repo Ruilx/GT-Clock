@@ -28,7 +28,7 @@ static const unsigned char rboldserif_data [] = {
 	 0x09,0x09,0x6d,0x01,0x01,0xff,     /* 9 */
 };
 
-static const FontInfo fontrboldserif = {
+static const FontInfo font_rboldserif = {
 	3,
 	"R Bold Serif",
 	48,

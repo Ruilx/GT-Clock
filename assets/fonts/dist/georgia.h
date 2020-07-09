@@ -28,7 +28,7 @@ static const unsigned char georgia_data [] = {
 	 0xcf,0xb5,0xb5,0xb5,0xc3,0xff,     /* 9 */
 };
 
-static const FontInfo fontgeorgia = {
+static const FontInfo font_georgia = {
 	30,
 	"Georgia",
 	48,

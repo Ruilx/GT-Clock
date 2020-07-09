@@ -213,7 +213,7 @@ static const unsigned char minecraft_data [] = {
 	 0xef,0xd7,0xbb,0xbb,0x83,0xff, /* <del> */
 };
 
-static const FontInfo fontminecraft = {
+static const FontInfo font_minecraft = {
 	37,
 	"Minecraft",
 	32,

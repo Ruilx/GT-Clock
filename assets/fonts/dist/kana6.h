@@ -208,7 +208,7 @@ static const unsigned char kana6_data [] = {
 	 0xbf,0xdf,0xe7,0x79,0xbf,0xff,     /* ヾ */
 };
 
-static const FontInfo fontkana6 = {
+static const FontInfo font_kana6 = {
 	64,
 	"Kana6",
 	12353,

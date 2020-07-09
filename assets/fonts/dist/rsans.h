@@ -28,7 +28,7 @@ static const unsigned char rsans_data [] = {
 	 0x0d,0x6d,0x6d,0x6d,0x01,0xff,     /* 9 */
 };
 
-static const FontInfo fontrsans = {
+static const FontInfo font_rsans = {
 	10,
 	"R Sans",
 	48,

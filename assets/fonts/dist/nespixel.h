@@ -114,7 +114,7 @@ static const unsigned char nespixel_data [] = {
 	 0xff,0xe1,0xc1,0x9d,0xc1,0xe1,0xff,0xff, /* <del> */
 };
 
-static const FontInfo fontnespixel = {
+static const FontInfo font_nespixel = {
 	34,
 	"NesPixel",
 	32,

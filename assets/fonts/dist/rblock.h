@@ -28,7 +28,7 @@ static const unsigned char rblock_data [] = {
 	 0x1f,0x7f,0xef,0x7d,0x11,0xff,     /* 9 */
 };
 
-static const FontInfo fontrblock = {
+static const FontInfo font_rblock = {
 	22,
 	"R Block",
 	48,

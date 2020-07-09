@@ -28,7 +28,7 @@ static const unsigned char rsmall_data [] = {
 	 0xff,0x8b,0xab,0x83,0xff,0xff,     /* 9 */
 };
 
-static const FontInfo fontrsmall = {
+static const FontInfo font_rsmall = {
 	23,
 	"R Small",
 	48,

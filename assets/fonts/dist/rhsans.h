@@ -28,7 +28,7 @@ static const unsigned char rhsans_data [] = {
 	 0x8f,0x75,0x75,0x75,0x83,0xff,     /* 9 */
 };
 
-static const FontInfo fontrhsans = {
+static const FontInfo font_rhsans = {
 	7,
 	"RH Sans",
 	48,

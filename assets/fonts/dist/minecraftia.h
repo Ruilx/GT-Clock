@@ -213,7 +213,7 @@ static const unsigned char minecraftia_data [] = {
 	 0xef,0xd7,0xbb,0xbb,0x83,0xff, /* <del> */
 };
 
-static const FontInfo fontminecraftia = {
+static const FontInfo font_minecraftia = {
 	9,
 	"Minecraftia",
 	32,

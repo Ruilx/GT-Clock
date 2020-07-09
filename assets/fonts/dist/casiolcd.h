@@ -28,7 +28,7 @@ static const unsigned char casiolcd_data [] = {
 	 0x9f,0x6d,0x6d,0x6b,0x87,0xff,     /* 9 */
 };
 
-static const FontInfo fontcasiolcd = {
+static const FontInfo font_casiolcd = {
 	8,
 	"Casio LCD",
 	48,

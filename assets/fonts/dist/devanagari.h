@@ -28,7 +28,7 @@ static const unsigned char devanagari_data [] = {
 	 0x0f,0x67,0x6b,0x6d,0x0f,0xff,     /* 9 */
 };
 
-static const FontInfo fontdevanagari = {
+static const FontInfo font_devanagari = {
 	35,
 	"Devanagari",
 	48,

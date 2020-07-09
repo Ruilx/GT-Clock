@@ -28,7 +28,7 @@ static const unsigned char rsidy_data [] = {
 	 0x0d,0x6d,0xff,0x6d,0x01,0xff,     /* 9 */
 };
 
-static const FontInfo fontrsidy = {
+static const FontInfo font_rsidy = {
 	24,
 	"R Sidy",
 	48,

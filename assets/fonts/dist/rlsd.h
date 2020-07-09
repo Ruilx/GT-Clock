@@ -28,7 +28,7 @@ static const unsigned char rlsd_data [] = {
 	 0xff,0x9f,0x6d,0x6d,0x93,0xff,     /* 9 */
 };
 
-static const FontInfo fontrlsd = {
+static const FontInfo font_rlsd = {
 	21,
 	"R LSD",
 	48,

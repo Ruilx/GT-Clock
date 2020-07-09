@@ -114,7 +114,7 @@ static const unsigned char ocra_data [] = {
 	 0xef,0xd7,0xbb,0xbb,0x83,0xff, /* <del> */
 };
 
-static const FontInfo fontocra = {
+static const FontInfo font_ocra = {
 	14,
 	"OCR A",
 	32,

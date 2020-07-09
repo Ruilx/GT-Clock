@@ -28,7 +28,7 @@ static const unsigned char rhand_data [] = {
 	 0x9f,0x6f,0x6d,0xa3,0x1f,0xff,     /* 9 */
 };
 
-static const FontInfo fontrhand = {
+static const FontInfo font_rhand = {
 	15,
 	"R Hand",
 	48,

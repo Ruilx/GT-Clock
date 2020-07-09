@@ -28,7 +28,7 @@ static const unsigned char rkanjipro_data [] = {
 	 0xdd,0x03,0xdf,0xc1,0xfd,0xff,     /* 9 */
 };
 
-static const FontInfo fontrkanjipro = {
+static const FontInfo font_rkanjipro = {
 	19,
 	"R Kanji Pro",
 	48,

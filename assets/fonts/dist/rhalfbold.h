@@ -28,7 +28,7 @@ static const unsigned char rhalfbold_data [] = {
 	 0x07,0x05,0x75,0x75,0x01,0xff,     /* 9 */
 };
 
-static const FontInfo fontrhalfbold = {
+static const FontInfo font_rhalfbold = {
 	20,
 	"R Half Bold",
 	48,

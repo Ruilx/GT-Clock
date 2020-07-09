@@ -28,7 +28,7 @@ static const unsigned char rpro_data [] = {
 	 0x07,0x75,0x75,0x75,0x01,0xff,     /* 9 */
 };
 
-static const FontInfo fontrpro = {
+static const FontInfo font_rpro = {
 	13,
 	"R Pro",
 	48,

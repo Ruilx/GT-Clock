@@ -28,7 +28,7 @@ static const unsigned char r4511_data [] = {
 	 0x0f,0x6f,0x6f,0x6f,0x01,0xff,     /* 9 */
 };
 
-static const FontInfo fontr4511 = {
+static const FontInfo font_r4511 = {
 	11,
 	"R4511",
 	48,

@@ -114,7 +114,7 @@ static const unsigned char rsmg_data [] = {
 	 0xd7,0xbb,0x7d,0x7d,0x11,0xff, /* <del> */
 };
 
-static const FontInfo fontrsmg = {
+static const FontInfo font_rsmg = {
 	16,
 	"R SMG",
 	32,

@@ -28,7 +28,7 @@ static const unsigned char rshiftsym_data [] = {
 	 0xff,0xff,0x83,0x7d,0xff,0xff,     /* 9 */
 };
 
-static const FontInfo fontrshiftsym = {
+static const FontInfo font_rshiftsym = {
 	25,
 	"R Shift Sym",
 	48,

@@ -28,7 +28,7 @@ static const unsigned char rsqstd_data [] = {
 	 0xdf,0xab,0xab,0xab,0xc7,0xff,     /* 9 */
 };
 
-static const FontInfo fontrsqstd = {
+static const FontInfo font_rsqstd = {
 	28,
 	"R Sq Std",
 	48,

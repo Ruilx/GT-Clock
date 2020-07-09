@@ -28,7 +28,7 @@ static const unsigned char rbold_data [] = {
 	 0x0d,0x0d,0x6d,0x01,0x01,0xff,     /* 9 */
 };
 
-static const FontInfo fontrbold = {
+static const FontInfo font_rbold = {
 	2,
 	"R Bold",
 	48,

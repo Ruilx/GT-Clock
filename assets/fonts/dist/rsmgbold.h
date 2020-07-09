@@ -28,7 +28,7 @@ static const unsigned char rsmgbold_data [] = {
 	 0x1f,0x0d,0x6d,0x01,0x11,0xff,     /* 9 */
 };
 
-static const FontInfo fontrsmgbold = {
+static const FontInfo font_rsmgbold = {
 	17,
 	"R SMG bold",
 	48,

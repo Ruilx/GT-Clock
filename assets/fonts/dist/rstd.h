@@ -28,7 +28,7 @@ static const unsigned char rstd_data [] = {
 	 0x8f,0x75,0x75,0x75,0x83,0xff,     /* 9 */
 };
 
-static const FontInfo fontrstd = {
+static const FontInfo font_rstd = {
 	5,
 	"R Std",
 	48,

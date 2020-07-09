@@ -28,7 +28,7 @@ static const unsigned char r6h_data [] = {
 	 0xcf,0xb5,0xb5,0xb5,0xc3,0xff,     /* 9 */
 };
 
-static const FontInfo fontr6h = {
+static const FontInfo font_r6h = {
 	31,
 	"R 6H",
 	48,

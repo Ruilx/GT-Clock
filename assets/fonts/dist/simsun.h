@@ -114,7 +114,7 @@ static const unsigned char simsun_data [] = {
 	 0xef,0xd7,0xbb,0xbb,0x83,0xff, /* <del> */
 };
 
-static const FontInfo fontsimsun = {
+static const FontInfo font_simsun = {
 	32,
 	"Simsun",
 	32,

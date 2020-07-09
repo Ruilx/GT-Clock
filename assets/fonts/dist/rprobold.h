@@ -213,7 +213,7 @@ static const unsigned char rprobold_data [] = {
 	 0xef,0xc7,0xbb,0x83,0x83,0x00, /* <del> */
 };
 
-static const FontInfo fontrprobold = {
+static const FontInfo font_rprobold = {
 	1,
 	"R Pro Bold",
 	32,

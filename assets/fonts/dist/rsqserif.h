@@ -28,7 +28,7 @@ static const unsigned char rsqserif_data [] = {
 	 0xdf,0xab,0xab,0xab,0xc7,0xff,     /* 9 */
 };
 
-static const FontInfo fontrsqserif = {
+static const FontInfo font_rsqserif = {
 	29,
 	"R Sq Serif",
 	48,

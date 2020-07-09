@@ -28,7 +28,7 @@ static const unsigned char arabic_data [] = {
 	 0x0f,0x6f,0x6f,0x6f,0x01,0xff,     /* 9 */
 };
 
-static const FontInfo fontarabic = {
+static const FontInfo font_arabic = {
 	36,
 	"Arabic",
 	48,

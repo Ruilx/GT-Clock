@@ -114,7 +114,7 @@ static const unsigned char commodore64_data [] = {
 	 0xff,0xef,0xc7,0x83,0xef,0xef,0xef,0xff, /* <del> */
 };
 
-static const FontInfo fontcommodore64 = {
+static const FontInfo font_commodore64 = {
 	33,
 	"Commodore64",
 	32,
