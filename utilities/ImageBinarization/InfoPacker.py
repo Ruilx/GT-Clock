@@ -156,8 +156,8 @@ typedef struct FontInfo_t {
 		   Logicality=self.conf['fontInfo']['logicality'],
 		   Monospace="true" if monospace else "false",
 		   NumberHeight=self.conf['fontInfo']['numberHeight'],
-		   Index=(self.conf['name'] + self.conf['fontIndexSuffix']) if not monospace or forceWriteIndex else self.conf['cStyleNull'],
-		   Data=self.conf['name'] + self.conf['fontDataSuffix'],)
+		   Index=(self.conf['fontIndexPrefix'] + self.conf['name'] + self.conf['fontIndexSuffix']) if not monospace or forceWriteIndex else self.conf['cStyleNull'],
+		   Data=self.conf['fontDataPrefix'] + self.conf['name'] + self.conf['fontDataSuffix'])
 
 	def transaction(self, unicodeOrder, data: bytes, tab: int = 1):
 		length = len(data)
