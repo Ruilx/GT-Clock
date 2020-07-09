@@ -296,7 +296,7 @@ if __name__ == "__main__":
 	parser.add_argument("--c-style-null", type=str, default="nullptr", dest="cStyleNull", help="C Style null pointer string. Default: nullptr")
 	parser.add_argument("--font-index-suffix", type=str, default="_index", dest="fontIndexSuffix", help="C style index variable name suffix. Default=\"_index\"")
 	parser.add_argument("--font-data-suffix", type=str, default="_data", dest="fontDataSuffix", help="C style data variable name suffix. Default=\"_data\"")
-	parser.add_argument("--font-setup-prefix", type=str, default="font", dest="fontSetupPrefix", help="C style font setup function name prefix. Default=\"font\"")
+	parser.add_argument("--font-setup-prefix", type=str, default="font_", dest="fontSetupPrefix", help="C style font setup function name prefix. Default=\"font\"")
 	parser.add_argument("--font-info-mono-mask", type=str, default="0xFF", dest="fontInfoMonoMask", help="C style font info struct property 'monoMask'. Default: 0xFF, means 8 Column all selected.")
 	parser.add_argument("--force-write-index", action="store_true", dest="forceWriteIndex", help="Monospace font will omit index by default, use this flag can force to write index")
 	parser.add_argument("-m", "--mode", type=str, choices={"MSB_AT_TOP", "LSB_AT_TOP"}, default="MSB_AT_TOP", dest="mode", help="Binary bit order specified in image. Default: MSB_AT_TOP")
