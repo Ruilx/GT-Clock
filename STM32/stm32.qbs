@@ -12,7 +12,7 @@ Project {
     property string swver_str: ("0000" + swver.toString(16)).slice(-4)
 
     references: [
-        "CMSIS",
+        "cmsis",
         "core.qbs",
     ]
 
