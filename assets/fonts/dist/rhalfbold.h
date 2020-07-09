@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RHALFBOLD_H_
 #define _RHALFBOLD_H_
 
-const unsigned char rhalfbold_data [] = {
+static const unsigned char rhalfbold_data [] = {
 	 0x01,0x01,0x7d,0x7d,0x01,0xff,     /* 0 */
 	 0xff,0xbd,0x01,0x01,0xfd,0xff,     /* 1 */
 	 0x39,0x71,0x65,0x0d,0x1d,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rhalfbold_data [] = {
 	 0x3f,0x71,0x61,0x0f,0x1f,0xff,     /* 7 */
 	 0x01,0x01,0x6d,0x6d,0x01,0xff,     /* 8 */
 	 0x07,0x05,0x75,0x75,0x01,0xff,     /* 9 */
-}
+};
 
-void setupFontrhalfbold(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 20;
-		strncpy(font->fontName, "R Half Bold", 12);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rhalfbold_data;
-	}
-}
+static const FontInfo fontrhalfbold = {
+	20,
+	"R Half Bold",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rhalfbold_data,
+};
 
 /*
    Char Width Adjust Index    Total

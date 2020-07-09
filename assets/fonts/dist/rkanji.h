@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RKANJI_H_
 #define _RKANJI_H_
 
-const unsigned char rkanji_data [] = {
+static const unsigned char rkanji_data [] = {
 	 0xc7,0xbb,0xbb,0xbb,0xc7,0xff,     /* 0 */
 	 0xef,0xef,0xef,0xef,0xef,0xff,     /* 1 */
 	 0xfb,0xbb,0xbb,0xbb,0xfb,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rkanji_data [] = {
 	 0xf7,0x83,0xeb,0xdb,0xd3,0xff,     /* 7 */
 	 0xfb,0xc7,0xff,0x87,0xfb,0xff,     /* 8 */
 	 0xdb,0x87,0xdf,0xc3,0xfb,0xff,     /* 9 */
-}
+};
 
-void setupFontrkanji(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 18;
-		strncpy(font->fontName, "R Kanji", 8);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rkanji_data;
-	}
-}
+static const FontInfo fontrkanji = {
+	18,
+	"R Kanji",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rkanji_data,
+};
 
 /*
    Char Width Adjust Index    Total

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _NESPIXEL_H_
 #define _NESPIXEL_H_
 
-const unsigned char nespixel_data [] = {
+static const unsigned char nespixel_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0x8f,0x04,0x04,0x8f,0xff,0xff,0xff,     /* ! */
 	 0xff,0xff,0x1f,0xff,0x1f,0xff,0xff,0xff,     /* " */
@@ -112,22 +112,20 @@ const unsigned char nespixel_data [] = {
 	 0xff,0xff,0x7d,0x11,0x83,0xef,0xff,0xff,     /* } */
 	 0xe7,0xcf,0xcf,0xe7,0xf3,0xf3,0xe7,0xff,     /* ~ */
 	 0xff,0xe1,0xc1,0x9d,0xc1,0xe1,0xff,0xff, /* <del> */
-}
+};
 
-void setupFontnespixel(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 34;
-		strncpy(font->fontName, "NesPixel", 9);
-		font->startUnicode = 32;
-		font->endUnicode = 128;
-		font->blockLength = 8;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = nespixel_data;
-	}
-}
+static const FontInfo fontnespixel = {
+	34,
+	"NesPixel",
+	32,
+	128,
+	8,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	nespixel_data,
+};
 
 /*
    Char Width Adjust Index    Total

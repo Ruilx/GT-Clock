@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _MINECRAFT_H_
 #define _MINECRAFT_H_
 
-const unsigned char minecraft_index [] = {
+static const unsigned char minecraft_index [] = {
 	 0x00,0x06,  /* <sp> */
 	 0x02,0x03,     /* ! */
 	 0x03,0x04,     /* " */
@@ -114,7 +114,7 @@ const unsigned char minecraft_index [] = {
 	 0xB6,0x06, /* <del> */
 };
 
-const unsigned char minecraft_data [] = {
+static const unsigned char minecraft_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0x05,0xff,     /* ! */
 	 0x3f,0xff,0x3f,0xff,0x00,0x00,     /* " */
@@ -213,20 +213,18 @@ const unsigned char minecraft_data [] = {
 	 0xef,0xd7,0xbb,0xbb,0x83,0xff, /* <del> */
 };
 
-void setupFontminecraft(FontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 37;
-		strncpy(font->fontName, "Minecraft", 10);
-		font->startUnicode = 32;
-		font->endUnicode = 128;
-		font->blockLength = 3;
-		font->logicality = false;
-		font->monospace = false;
-		font->monoMask = 0xFF;
-		font->index = minecraft_index;
-		font->data = minecraft_data;
-	}
-}
+static const FontInfo fontminecraft = {
+	37,
+	"Minecraft",
+	32,
+	128,
+	3,
+	false,
+	false,
+	0xFF,
+	minecraft_index,
+	minecraft_data,
+};
 
 /*
    Char Width Adjust Index    Total

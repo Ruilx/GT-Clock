@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _COMMODORE64_H_
 #define _COMMODORE64_H_
 
-const unsigned char commodore64_data [] = {
+static const unsigned char commodore64_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0xff,0x05,0x05,0xff,0xff,0xff,     /* ! */
 	 0xff,0x1f,0x1f,0xff,0xff,0x1f,0x1f,0xff,     /* " */
@@ -114,20 +114,18 @@ const unsigned char commodore64_data [] = {
 	 0xff,0xef,0xc7,0x83,0xef,0xef,0xef,0xff, /* <del> */
 };
 
-void setupFontcommodore64(FontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 33;
-		strncpy(font->fontName, "Commodore64", 12);
-		font->startUnicode = 32;
-		font->endUnicode = 128;
-		font->blockLength = 8;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = commodore64_data;
-	}
-}
+static const FontInfo fontcommodore64 = {
+	33,
+	"Commodore64",
+	32,
+	128,
+	8,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	commodore64_data,
+};
 
 /*
    Char Width Adjust Index    Total

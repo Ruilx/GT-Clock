@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _CASIOLCD_H_
 #define _CASIOLCD_H_
 
-const unsigned char casiolcd_data [] = {
+static const unsigned char casiolcd_data [] = {
 	 0x83,0x75,0x6d,0x5d,0x83,0xff,     /* 0 */
 	 0xff,0xbd,0x01,0xfd,0xff,0xff,     /* 1 */
 	 0xbd,0x79,0x75,0x6d,0x9d,0xff,     /* 2 */
@@ -28,20 +28,18 @@ const unsigned char casiolcd_data [] = {
 	 0x9f,0x6d,0x6d,0x6b,0x87,0xff,     /* 9 */
 };
 
-void setupFontcasiolcd(FontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 8;
-		strncpy(font->fontName, "Casio LCD", 10);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = casiolcd_data;
-	}
-}
+static const FontInfo fontcasiolcd = {
+	8,
+	"Casio LCD",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	casiolcd_data,
+};
 
 /*
    Char Width Adjust Index    Total

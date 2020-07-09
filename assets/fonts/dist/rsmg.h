@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSMG_H_
 #define _RSMG_H_
 
-const unsigned char rsmg_data [] = {
+static const unsigned char rsmg_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x05,0xff,0xff,0xff,     /* ! */
 	 0xff,0x3f,0xff,0x3f,0xff,0xff,     /* " */
@@ -112,22 +112,20 @@ const unsigned char rsmg_data [] = {
 	 0xff,0x7d,0x11,0xff,0xff,0xff,     /* } */
 	 0x1f,0x7f,0x93,0xfd,0xf1,0xff,     /* ~ */
 	 0xd7,0xbb,0x7d,0x7d,0x11,0xff, /* <del> */
-}
+};
 
-void setupFontrsmg(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 16;
-		strncpy(font->fontName, "R SMG", 6);
-		font->startUnicode = 32;
-		font->endUnicode = 128;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rsmg_data;
-	}
-}
+static const FontInfo fontrsmg = {
+	16,
+	"R SMG",
+	32,
+	128,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rsmg_data,
+};
 
 /*
    Char Width Adjust Index    Total

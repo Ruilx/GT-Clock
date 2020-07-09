@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RCBOLD_H_
 #define _RCBOLD_H_
 
-const unsigned char rcbold_index [] = {
+static const unsigned char rcbold_index [] = {
 	 0x00,0x06,  /* <sp> */
 	 0x02,0x06,     /* ! */
 	 0x04,0x06,     /* " */
@@ -112,9 +112,9 @@ const unsigned char rcbold_index [] = {
 	 0xC8,0x05,     /* } */
 	 0xCA,0x07,     /* ~ */
 	 0xCD,0x06, /* <del> */
-}
+};
 
-const unsigned char rcbold_data [] = {
+static const unsigned char rcbold_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x05,0x05,0xff,0xff,     /* ! */
 	 0xff,0x3f,0xff,0x3f,0xff,0xff,     /* " */
@@ -211,22 +211,20 @@ const unsigned char rcbold_data [] = {
 	 0x7d,0x11,0x83,0xef,0xff,0x00,     /* } */
 	 0xef,0xdf,0xcf,0xe7,0xf7,0xef,0xff,0x00,0x00,     /* ~ */
 	 0xef,0xc7,0xbb,0x83,0x83,0xff, /* <del> */
-}
+};
 
-void setupFontrcbold(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 4;
-		strncpy(font->fontName, "RC Bold", 8);
-		font->startUnicode = 32;
-		font->endUnicode = 128;
-		font->blockLength = 3;
-		font->logicality = false;
-		font->monospace = false;
-		font->monoMask = 0xFF;
-		font->index = rcbold_index;
-		font->data = rcbold_data;
-	}
-}
+static const FontInfo fontrcbold = {
+	4,
+	"RC Bold",
+	32,
+	128,
+	3,
+	false,
+	false,
+	0xFF,
+	rcbold_index,
+	rcbold_data,
+};
 
 /*
    Char Width Adjust Index    Total

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSQPRO_H_
 #define _RSQPRO_H_
 
-const unsigned char rsqpro_data [] = {
+static const unsigned char rsqpro_data [] = {
 	 0x83,0xbb,0xbb,0xbb,0x83,0xff,     /* 0 */
 	 0xff,0xff,0x83,0xff,0xff,0xff,     /* 1 */
 	 0xe3,0xab,0xab,0xab,0x8b,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rsqpro_data [] = {
 	 0x9f,0xbf,0xbf,0xbf,0x83,0xff,     /* 7 */
 	 0x83,0xab,0xab,0xab,0x83,0xff,     /* 8 */
 	 0x8f,0xab,0xab,0xab,0x83,0xff,     /* 9 */
-}
+};
 
-void setupFontrsqpro(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 27;
-		strncpy(font->fontName, "R Sq Pro", 9);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rsqpro_data;
-	}
-}
+static const FontInfo fontrsqpro = {
+	27,
+	"R Sq Pro",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rsqpro_data,
+};
 
 /*
    Char Width Adjust Index    Total

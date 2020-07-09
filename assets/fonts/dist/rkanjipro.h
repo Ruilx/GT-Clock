@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RKANJIPRO_H_
 #define _RKANJIPRO_H_
 
-const unsigned char rkanjipro_data [] = {
+static const unsigned char rkanjipro_data [] = {
 	 0xc7,0xbb,0xbb,0xbb,0xc7,0xff,     /* 0 */
 	 0xef,0xef,0xef,0xef,0xef,0xff,     /* 1 */
 	 0xfb,0xbb,0xbb,0xbb,0xfb,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rkanjipro_data [] = {
 	 0xf7,0x01,0xed,0xdd,0xd9,0xff,     /* 7 */
 	 0xf9,0x87,0xff,0x0f,0xf1,0xff,     /* 8 */
 	 0xdd,0x03,0xdf,0xc1,0xfd,0xff,     /* 9 */
-}
+};
 
-void setupFontrkanjipro(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 19;
-		strncpy(font->fontName, "R Kanji Pro", 12);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rkanjipro_data;
-	}
-}
+static const FontInfo fontrkanjipro = {
+	19,
+	"R Kanji Pro",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rkanjipro_data,
+};
 
 /*
    Char Width Adjust Index    Total

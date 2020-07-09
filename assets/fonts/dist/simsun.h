@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _SIMSUN_H_
 #define _SIMSUN_H_
 
-const unsigned char simsun_data [] = {
+static const unsigned char simsun_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x82,0xff,0xff,0xff,     /* ! */
 	 0xff,0x1f,0xff,0x1f,0xff,0xff,     /* " */
@@ -112,22 +112,20 @@ const unsigned char simsun_data [] = {
 	 0xff,0x7e,0x18,0xe7,0xff,0xff,     /* } */
 	 0xbf,0x7f,0x7f,0xbf,0xbf,0x7f,     /* ~ */
 	 0xef,0xd7,0xbb,0xbb,0x83,0xff, /* <del> */
-}
+};
 
-void setupFontsimsun(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 32;
-		strncpy(font->fontName, "Simsun", 7);
-		font->startUnicode = 32;
-		font->endUnicode = 128;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = simsun_data;
-	}
-}
+static const FontInfo fontsimsun = {
+	32,
+	"Simsun",
+	32,
+	128,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	simsun_data,
+};
 
 /*
    Char Width Adjust Index    Total

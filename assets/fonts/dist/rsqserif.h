@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSQSERIF_H_
 #define _RSQSERIF_H_
 
-const unsigned char rsqserif_data [] = {
+static const unsigned char rsqserif_data [] = {
 	 0xc7,0xbb,0xbb,0xbb,0xc7,0xff,     /* 0 */
 	 0xff,0xdb,0x83,0xfb,0xff,0xff,     /* 1 */
 	 0xdb,0xb3,0xab,0xab,0xdb,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rsqserif_data [] = {
 	 0xbf,0xbb,0xb7,0xaf,0x9f,0xff,     /* 7 */
 	 0xd7,0xab,0xab,0xab,0xd7,0xff,     /* 8 */
 	 0xdf,0xab,0xab,0xab,0xc7,0xff,     /* 9 */
-}
+};
 
-void setupFontrsqserif(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 29;
-		strncpy(font->fontName, "R Sq Serif", 11);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rsqserif_data;
-	}
-}
+static const FontInfo fontrsqserif = {
+	29,
+	"R Sq Serif",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rsqserif_data,
+};
 
 /*
    Char Width Adjust Index    Total

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSANSPRO_H_
 #define _RSANSPRO_H_
 
-const unsigned char rsanspro_data [] = {
+static const unsigned char rsanspro_data [] = {
 	 0x01,0x7d,0x7d,0x7d,0x01,0xff,     /* 0 */
 	 0xff,0xff,0x01,0xff,0xff,0xff,     /* 1 */
 	 0xe1,0x6d,0x6d,0x6d,0x0d,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rsanspro_data [] = {
 	 0x7f,0x7f,0x7f,0x7f,0x01,0xff,     /* 7 */
 	 0x01,0x6d,0x6d,0x6d,0x01,0xff,     /* 8 */
 	 0x0f,0x6d,0x6d,0x6d,0x01,0xff,     /* 9 */
-}
+};
 
-void setupFontrsanspro(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 12;
-		strncpy(font->fontName, "R Sans Pro", 11);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rsanspro_data;
-	}
-}
+static const FontInfo fontrsanspro = {
+	12,
+	"R Sans Pro",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rsanspro_data,
+};
 
 /*
    Char Width Adjust Index    Total

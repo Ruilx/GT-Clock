@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RPRO_H_
 #define _RPRO_H_
 
-const unsigned char rpro_data [] = {
+static const unsigned char rpro_data [] = {
 	 0x01,0x7d,0x7d,0x7d,0x01,0xff,     /* 0 */
 	 0xff,0xff,0x01,0xff,0xff,0xff,     /* 1 */
 	 0xe1,0x6d,0x6d,0x6d,0x0d,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rpro_data [] = {
 	 0x3f,0x7f,0x7f,0x7f,0x01,0xff,     /* 7 */
 	 0x01,0x6d,0x6d,0x6d,0x01,0xff,     /* 8 */
 	 0x07,0x75,0x75,0x75,0x01,0xff,     /* 9 */
-}
+};
 
-void setupFontrpro(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 13;
-		strncpy(font->fontName, "R Pro", 6);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rpro_data;
-	}
-}
+static const FontInfo fontrpro = {
+	13,
+	"R Pro",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rpro_data,
+};
 
 /*
    Char Width Adjust Index    Total

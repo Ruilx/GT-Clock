@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _GEORGIA_H_
 #define _GEORGIA_H_
 
-const unsigned char georgia_data [] = {
+static const unsigned char georgia_data [] = {
 	 0xc7,0xbb,0xbb,0xbb,0xc7,0xff,     /* 0 */
 	 0xff,0xdb,0x83,0xfb,0xff,0xff,     /* 1 */
 	 0xdb,0xb3,0xab,0xab,0xdb,0xff,     /* 2 */
@@ -28,20 +28,18 @@ const unsigned char georgia_data [] = {
 	 0xcf,0xb5,0xb5,0xb5,0xc3,0xff,     /* 9 */
 };
 
-void setupFontgeorgia(FontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 30;
-		strncpy(font->fontName, "Georgia", 8);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = georgia_data;
-	}
-}
+static const FontInfo fontgeorgia = {
+	30,
+	"Georgia",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	georgia_data,
+};
 
 /*
    Char Width Adjust Index    Total

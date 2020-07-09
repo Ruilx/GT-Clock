@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSMALL_H_
 #define _RSMALL_H_
 
-const unsigned char rsmall_data [] = {
+static const unsigned char rsmall_data [] = {
 	 0xff,0x83,0xbb,0x83,0xff,0xff,     /* 0 */
 	 0xff,0xff,0x83,0xff,0xff,0xff,     /* 1 */
 	 0xff,0xa3,0xab,0x8b,0xff,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rsmall_data [] = {
 	 0xff,0x9f,0xbf,0x83,0xff,0xff,     /* 7 */
 	 0xff,0x83,0xab,0x83,0xff,0xff,     /* 8 */
 	 0xff,0x8b,0xab,0x83,0xff,0xff,     /* 9 */
-}
+};
 
-void setupFontrsmall(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 23;
-		strncpy(font->fontName, "R Small", 8);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rsmall_data;
-	}
-}
+static const FontInfo fontrsmall = {
+	23,
+	"R Small",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rsmall_data,
+};
 
 /*
    Char Width Adjust Index    Total

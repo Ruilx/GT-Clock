@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSMGBOLD_H_
 #define _RSMGBOLD_H_
 
-const unsigned char rsmgbold_data [] = {
+static const unsigned char rsmgbold_data [] = {
 	 0x11,0x11,0x7d,0x11,0x11,0xff,     /* 0 */
 	 0xff,0xff,0xff,0x11,0x11,0xff,     /* 1 */
 	 0xf1,0x61,0x6d,0x0d,0x1f,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rsmgbold_data [] = {
 	 0x1f,0x1f,0x7f,0x11,0x11,0xff,     /* 7 */
 	 0x11,0x01,0x6d,0x01,0x11,0xff,     /* 8 */
 	 0x1f,0x0d,0x6d,0x01,0x11,0xff,     /* 9 */
-}
+};
 
-void setupFontrsmgbold(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 17;
-		strncpy(font->fontName, "R SMG bold", 11);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rsmgbold_data;
-	}
-}
+static const FontInfo fontrsmgbold = {
+	17,
+	"R SMG bold",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rsmgbold_data,
+};
 
 /*
    Char Width Adjust Index    Total

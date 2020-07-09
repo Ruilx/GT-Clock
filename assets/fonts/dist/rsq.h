@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSQ_H_
 #define _RSQ_H_
 
-const unsigned char rsq_data [] = {
+static const unsigned char rsq_data [] = {
 	 0x83,0xbb,0xbb,0xbb,0x83,0xff,     /* 0 */
 	 0xff,0xff,0xff,0xff,0x83,0xff,     /* 1 */
 	 0xa3,0xab,0xab,0xab,0x8b,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rsq_data [] = {
 	 0xbf,0xbf,0xbf,0xbf,0x83,0xff,     /* 7 */
 	 0x83,0xab,0xab,0xab,0x83,0xff,     /* 8 */
 	 0x8b,0xab,0xab,0xab,0x83,0xff,     /* 9 */
-}
+};
 
-void setupFontrsq(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 26;
-		strncpy(font->fontName, "R Sq", 5);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rsq_data;
-	}
-}
+static const FontInfo fontrsq = {
+	26,
+	"R Sq",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rsq_data,
+};
 
 /*
    Char Width Adjust Index    Total

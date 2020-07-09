@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _OCRA_H_
 #define _OCRA_H_
 
-const unsigned char ocra_data [] = {
+static const unsigned char ocra_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x05,0xff,0xff,0xff,     /* ! */
 	 0x7f,0x3f,0x7f,0x3f,0x7f,0xff,     /* " */
@@ -112,22 +112,20 @@ const unsigned char ocra_data [] = {
 	 0xff,0x7d,0x93,0xef,0xff,0xff,     /* } */
 	 0xef,0xdf,0xef,0xf7,0xef,0xff,     /* ~ */
 	 0xef,0xd7,0xbb,0xbb,0x83,0xff, /* <del> */
-}
+};
 
-void setupFontocra(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 14;
-		strncpy(font->fontName, "OCR A", 6);
-		font->startUnicode = 32;
-		font->endUnicode = 128;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = ocra_data;
-	}
-}
+static const FontInfo fontocra = {
+	14,
+	"OCR A",
+	32,
+	128,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	ocra_data,
+};
 
 /*
    Char Width Adjust Index    Total

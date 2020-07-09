@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RHSANS_H_
 #define _RHSANS_H_
 
-const unsigned char rhsans_data [] = {
+static const unsigned char rhsans_data [] = {
 	 0x83,0x7d,0x7d,0x7d,0x83,0xff,     /* 0 */
 	 0xff,0xbf,0x01,0xff,0xff,0xff,     /* 1 */
 	 0x7d,0x79,0x75,0x6d,0x9d,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rhsans_data [] = {
 	 0x7f,0x7f,0x61,0x5f,0x3f,0xff,     /* 7 */
 	 0x93,0x6d,0x6d,0x6d,0x93,0xff,     /* 8 */
 	 0x8f,0x75,0x75,0x75,0x83,0xff,     /* 9 */
-}
+};
 
-void setupFontrhsans(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 7;
-		strncpy(font->fontName, "RH Sans", 8);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rhsans_data;
-	}
-}
+static const FontInfo fontrhsans = {
+	7,
+	"RH Sans",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rhsans_data,
+};
 
 /*
    Char Width Adjust Index    Total

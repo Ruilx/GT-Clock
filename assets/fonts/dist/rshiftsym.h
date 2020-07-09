@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSHIFTSYM_H_
 #define _RSHIFTSYM_H_
 
-const unsigned char rshiftsym_data [] = {
+static const unsigned char rshiftsym_data [] = {
 	 0xff,0x7d,0x83,0xff,0xff,0xff,     /* 0 */
 	 0xff,0xff,0x05,0xff,0xff,0xff,     /* 1 */
 	 0xb3,0x6d,0x61,0x7d,0x83,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rshiftsym_data [] = {
 	 0x93,0x6d,0x55,0xbb,0xf5,0xff,     /* 7 */
 	 0xbb,0xd7,0x01,0xd7,0xbb,0xff,     /* 8 */
 	 0xff,0xff,0x83,0x7d,0xff,0xff,     /* 9 */
-}
+};
 
-void setupFontrshiftsym(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 25;
-		strncpy(font->fontName, "R Shift Sym", 12);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rshiftsym_data;
-	}
-}
+static const FontInfo fontrshiftsym = {
+	25,
+	"R Shift Sym",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rshiftsym_data,
+};
 
 /*
    Char Width Adjust Index    Total

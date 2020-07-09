@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RBOLDSERIF_H_
 #define _RBOLDSERIF_H_
 
-const unsigned char rboldserif_data [] = {
+static const unsigned char rboldserif_data [] = {
 	 0x01,0x01,0x7d,0x01,0x01,0xff,     /* 0 */
 	 0xff,0x7d,0x01,0x01,0xfd,0xff,     /* 1 */
 	 0x21,0x21,0x6d,0x09,0x09,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rboldserif_data [] = {
 	 0x3f,0x3f,0x7f,0x01,0x01,0xff,     /* 7 */
 	 0x01,0x01,0x6d,0x01,0x01,0xff,     /* 8 */
 	 0x09,0x09,0x6d,0x01,0x01,0xff,     /* 9 */
-}
+};
 
-void setupFontrboldserif(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 3;
-		strncpy(font->fontName, "R Bold Serif", 13);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rboldserif_data;
-	}
-}
+static const FontInfo fontrboldserif = {
+	3,
+	"R Bold Serif",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rboldserif_data,
+};
 
 /*
    Char Width Adjust Index    Total

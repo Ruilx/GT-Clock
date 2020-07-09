@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RHAND_H_
 #define _RHAND_H_
 
-const unsigned char rhand_data [] = {
+static const unsigned char rhand_data [] = {
 	 0xc3,0xbd,0x7d,0x7b,0x87,0xff,     /* 0 */
 	 0xff,0xf9,0xc7,0x3f,0xff,0xff,     /* 1 */
 	 0xfb,0x7b,0x75,0x6d,0x9d,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rhand_data [] = {
 	 0x7f,0x69,0x67,0x57,0xbf,0xff,     /* 7 */
 	 0xf3,0x8d,0x6d,0x55,0x3b,0xff,     /* 8 */
 	 0x9f,0x6f,0x6d,0xa3,0x1f,0xff,     /* 9 */
-}
+};
 
-void setupFontrhand(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 15;
-		strncpy(font->fontName, "R Hand", 7);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rhand_data;
-	}
-}
+static const FontInfo fontrhand = {
+	15,
+	"R Hand",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rhand_data,
+};
 
 /*
    Char Width Adjust Index    Total

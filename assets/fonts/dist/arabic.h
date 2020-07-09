@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _ARABIC_H_
 #define _ARABIC_H_
 
-const unsigned char arabic_data [] = {
+static const unsigned char arabic_data [] = {
 	 0xff,0xff,0xc7,0xff,0xff,0xff,     /* 0 */
 	 0xff,0xff,0x01,0xff,0xff,0xff,     /* 1 */
 	 0x01,0x7f,0x7f,0x7f,0x7f,0xff,     /* 2 */
@@ -28,20 +28,18 @@ const unsigned char arabic_data [] = {
 	 0x0f,0x6f,0x6f,0x6f,0x01,0xff,     /* 9 */
 };
 
-static void setupFontarabic(FontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 36;
-		strncpy(font->fontName, "Arabic", 7);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = arabic_data;
-	}
-}
+static const FontInfo fontarabic = {
+	36,
+	"Arabic",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	arabic_data,
+};
 
 /*
    Char Width Adjust Index    Total

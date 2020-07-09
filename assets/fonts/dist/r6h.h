@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _R6H_H_
 #define _R6H_H_
 
-const unsigned char r6h_data [] = {
+static const unsigned char r6h_data [] = {
 	 0xc3,0xb5,0xad,0x9d,0xc3,0xff,     /* 0 */
 	 0xff,0xdd,0x81,0xfd,0xff,0xff,     /* 1 */
 	 0xdd,0xb9,0xb5,0xad,0xdd,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char r6h_data [] = {
 	 0xbf,0xbf,0xb1,0xaf,0x9f,0xff,     /* 7 */
 	 0xd3,0xad,0xad,0xad,0xd3,0xff,     /* 8 */
 	 0xcf,0xb5,0xb5,0xb5,0xc3,0xff,     /* 9 */
-}
+};
 
-void setupFontr6h(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 31;
-		strncpy(font->fontName, "R 6H", 5);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = r6h_data;
-	}
-}
+static const FontInfo fontr6h = {
+	31,
+	"R 6H",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	r6h_data,
+};
 
 /*
    Char Width Adjust Index    Total

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RUILXFIXEDSYS_H_
 #define _RUILXFIXEDSYS_H_
 
-const unsigned char ruilxfixedsys_data [] = {
+static const unsigned char ruilxfixedsys_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x05,0xff,0xff,0xff,     /* ! */
 	 0xff,0x3f,0xff,0x3f,0xff,0xff,     /* " */
@@ -112,22 +112,20 @@ const unsigned char ruilxfixedsys_data [] = {
 	 0xff,0x7d,0x93,0xef,0xff,0xff,     /* } */
 	 0xef,0xdf,0xef,0xf7,0xef,0xff,     /* ~ */
 	 0xef,0xd7,0xbb,0xbb,0x83,0xff, /* <del> */
-}
+};
 
-void setupFontruilxfixedsys(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 6;
-		strncpy(font->fontName, "RuilxFixedSys", 14);
-		font->startUnicode = 32;
-		font->endUnicode = 128;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = ruilxfixedsys_data;
-	}
-}
+static const FontInfo fontruilxfixedsys = {
+	6,
+	"RuilxFixedSys",
+	32,
+	128,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	ruilxfixedsys_data,
+};
 
 /*
    Char Width Adjust Index    Total

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RLSD_H_
 #define _RLSD_H_
 
-const unsigned char rlsd_data [] = {
+static const unsigned char rlsd_data [] = {
 	 0xff,0x93,0x7d,0x7d,0x93,0xff,     /* 0 */
 	 0xff,0xff,0xff,0xff,0x93,0xff,     /* 1 */
 	 0xff,0xf3,0x6d,0x6d,0x9f,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rlsd_data [] = {
 	 0xff,0xff,0x7f,0x7f,0x93,0xff,     /* 7 */
 	 0xff,0x93,0x6d,0x6d,0x93,0xff,     /* 8 */
 	 0xff,0x9f,0x6d,0x6d,0x93,0xff,     /* 9 */
-}
+};
 
-void setupFontrlsd(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 21;
-		strncpy(font->fontName, "R LSD", 6);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rlsd_data;
-	}
-}
+static const FontInfo fontrlsd = {
+	21,
+	"R LSD",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rlsd_data,
+};
 
 /*
    Char Width Adjust Index    Total

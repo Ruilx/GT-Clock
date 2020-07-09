@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RBLOCK_H_
 #define _RBLOCK_H_
 
-const unsigned char rblock_data [] = {
+static const unsigned char rblock_data [] = {
 	 0x11,0x7d,0xff,0x7d,0x11,0xff,     /* 0 */
 	 0xff,0xff,0x11,0xff,0xff,0xff,     /* 1 */
 	 0x71,0x7d,0xef,0x7d,0x1d,0xff,     /* 2 */
@@ -26,22 +26,20 @@ const unsigned char rblock_data [] = {
 	 0x7f,0x7f,0xff,0x7f,0x11,0xff,     /* 7 */
 	 0x11,0x7d,0xef,0x7d,0x11,0xff,     /* 8 */
 	 0x1f,0x7f,0xef,0x7d,0x11,0xff,     /* 9 */
-}
+};
 
-void setupFontrblock(fontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 22;
-		strncpy(font->fontName, "R Block", 8);
-		font->startUnicode = 48;
-		font->endUnicode = 58;
-		font->blockLength = 6;
-		font->logicality = false;
-		font->monospace = true;
-		font->monoMask = 0xFF;
-		font->index = nullptr;
-		font->data = rblock_data;
-	}
-}
+static const FontInfo fontrblock = {
+	22,
+	"R Block",
+	48,
+	58,
+	6,
+	false,
+	true,
+	0xFF,
+	nullptr,
+	rblock_data,
+};
 
 /*
    Char Width Adjust Index    Total

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _MINECRAFTIA_H_
 #define _MINECRAFTIA_H_
 
-const unsigned char minecraftia_index [] = {
+static const unsigned char minecraftia_index [] = {
 	 0x00,0x06,  /* <sp> */
 	 0x02,0x03,     /* ! */
 	 0x03,0x05,     /* " */
@@ -114,7 +114,7 @@ const unsigned char minecraftia_index [] = {
 	 0xB6,0x06, /* <del> */
 };
 
-const unsigned char minecraftia_data [] = {
+static const unsigned char minecraftia_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0x05,0xff,     /* ! */
 	 0xdf,0x3f,0xdf,0x3f,0xff,0x00,     /* " */
@@ -213,20 +213,18 @@ const unsigned char minecraftia_data [] = {
 	 0xef,0xd7,0xbb,0xbb,0x83,0xff, /* <del> */
 };
 
-void setupFontminecraftia(FontInfo *font){
-	if(font != nullptr){
-		font->fontIndex = 9;
-		strncpy(font->fontName, "Minecraftia", 12);
-		font->startUnicode = 32;
-		font->endUnicode = 128;
-		font->blockLength = 3;
-		font->logicality = false;
-		font->monospace = false;
-		font->monoMask = 0xFF;
-		font->index = minecraftia_index;
-		font->data = minecraftia_data;
-	}
-}
+static const FontInfo fontminecraftia = {
+	9,
+	"Minecraftia",
+	32,
+	128,
+	3,
+	false,
+	false,
+	0xFF,
+	minecraftia_index,
+	minecraftia_data,
+};
 
 /*
    Char Width Adjust Index    Total
