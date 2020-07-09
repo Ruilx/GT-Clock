@@ -81,6 +81,11 @@ void logic_layers_set_param(unsigned int layer, const void *p, unsigned int size
 	memcpy(data.layer[layer].param, p, size);
 }
 
+void *logic_layers_data(unsigned int layer)
+{
+	return data.layer[layer].p;
+}
+
 unsigned int logic_layers_update()
 {
 	unsigned int ok = 1;
@@ -155,7 +160,7 @@ static void init()
 			0x00,	// Flags
 			26,	// X offset
 			1,	// Y offset
-			2,	// String length
+			3,	// String length
 			37,	// Font ID
 		}, {
 			0x00,	// Flags
@@ -168,11 +173,29 @@ static void init()
 			0x22,	// Factor in hex
 		},
 	};
+	static const void *data[MAX_LAYERS] = {
+		0,
+		0,
+		0,
+		"ia!",
+		"ST",
+		0,
+	};
 
 	logic_layers_select(layers);
-	for (unsigned int layer = 0; layer < MAX_LAYERS; layer++)
+	for (unsigned int layer = 0; layer < MAX_LAYERS; layer++) {
+		if (layers[layer] == LayerIdNone)
+			break;
 		logic_layers_set_param(layer, params[layer], PARAM_SIZE);
+	}
 	logic_layers_update();
+	for (unsigned int layer = 0; layer < MAX_LAYERS; layer++) {
+		if (layers[layer] == LayerIdNone)
+			break;
+		void *p = logic_layers_data(layer);
+		if (data[layer] && p)
+			strcpy(p, data[layer]);
+	}
 }
 
 INIT_HANDLER() = &init;

@@ -21,6 +21,7 @@ unsigned int logic_layers_refresh_cnt();
 
 void logic_layers_select(const uint8_t *layers);
 void logic_layers_set_param(unsigned int layer, const void *p, unsigned int size);
+void *logic_layers_data(unsigned int layer);
 unsigned int logic_layers_update();
 
 void *logic_layers_alloc(unsigned int size);

@@ -45,8 +45,6 @@ static void *config(void *param, unsigned int *ok)
 	}
 	char *pc = ptr;
 	*pc = 0;
-	// TODO TEST
-	memcpy(pc, "ia", 3);
 	return ptr;
 }
 
