@@ -21,7 +21,7 @@ typedef struct FontInfo_t {
 	uint8_t blockLength;
 	bool logicality;
 	bool monospace;
-	uint8_t numberHeight,
+	uint8_t numberHeight;
 	const unsigned char *index;
 	const unsigned char *data;
 } FontInfo;
