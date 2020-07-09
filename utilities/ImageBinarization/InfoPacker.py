@@ -66,7 +66,7 @@ class InfoPacker(object):
 			'cStyleArrayType': "const unsigned char",
 			'fontIndexSuffix': "_index",
 			'fontDataSuffix': "_data",
-			'fontSetupPrefix': "setupFont",
+			'fontSetupPrefix': "font_",
 			'fontInfo': {
 				'logicality': "false",
 				'monoMask': "0xFF"
@@ -105,7 +105,7 @@ class InfoPacker(object):
 
 	def __cStyleCodeGenerator(self, suffix, attributePrefix = "", attributeSuffix = ""):
 		return " ".join(filter(lambda x: x != "", (attributePrefix, self.conf['cStyleArrayType'], self.conf['name'] + suffix, attributeSuffix, "[]" ,"= {{"))) + \
-			   "\n{}}}"
+			   "\n{}}};"
 
 	def cStyleIndexGenerator(self, attributePrefix = "", attributeSuffix = ""):
 		return self.__cStyleCodeGenerator(self.conf['fontIndexSuffix'], attributePrefix, attributeSuffix)
@@ -132,25 +132,22 @@ typedef struct FontInfo_t {
 """
 
 	def cStyleSetupFuncGenerator(self, fontIndex, startUnicode, endUnicode, monospace, forceWriteIndex):
-		return """void {FontSetupPrefix}{FontName}(fontInfo *font){{
-	if(font != {Null}){{
-		font->fontIndex = {FontIndex};
-		strncpy(font->fontName, "{FontDisplayName}", {FontDisplayNameLengthAdd1});
-		font->startUnicode = {StartUnicode};
-		font->endUnicode = {EndUnicode};
-		font->blockLength = {BlockLength};
-		font->logicality = {Logicality};
-		font->monospace = {Monospace};
-		font->monoMask = {MonoMask};
-		font->index = {Index};
-		font->data = {Data};
-	}}
-}}
+		return """static const FontInfo {FontSetupPrefix}{FontName} = {{
+	{FontIndex},
+	"{FontDisplayName}",
+	{StartUnicode},
+	{EndUnicode},
+	{BlockLength},
+	{Logicality},
+	{Monospace},
+	{MonoMask},
+	{Index},
+	{Data},
+}};
 """.format(FontSetupPrefix=self.conf['fontSetupPrefix'],
 		   FontName=self.conf['name'],
 		   FontIndex=fontIndex,
 		   FontDisplayName=self.conf['displayName'],
-		   FontDisplayNameLengthAdd1=len(self.conf['displayName']) + 1,
 		   StartUnicode=startUnicode,
 		   EndUnicode=endUnicode,
 		   BlockLength=self.conf['blockSize'],
@@ -158,8 +155,7 @@ typedef struct FontInfo_t {
 		   Monospace="true" if monospace else "false",
 		   MonoMask=self.conf['fontInfo']['monoMask'],
 		   Index=(self.conf['name'] + self.conf['fontIndexSuffix']) if not monospace or forceWriteIndex else self.conf['cStyleNull'],
-		   Data=self.conf['name'] + self.conf['fontDataSuffix'],
-		   Null=self.conf['cStyleNull'])
+		   Data=self.conf['name'] + self.conf['fontDataSuffix'],)
 
 	def transaction(self, unicodeOrder, data: bytes, tab: int = 1):
 		length = len(data)
