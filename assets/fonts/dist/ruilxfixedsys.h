@@ -124,7 +124,7 @@ static const FontInfo font_ruilxfixedsys = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = ruilxfixedsys_data,
+	.data = font_ruilxfixedsys_data,
 };
 
 /*

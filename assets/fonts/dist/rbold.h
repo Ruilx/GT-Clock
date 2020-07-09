@@ -38,7 +38,7 @@ static const FontInfo font_rbold = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rbold_data,
+	.data = font_rbold_data,
 };
 
 /*

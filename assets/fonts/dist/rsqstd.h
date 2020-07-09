@@ -38,7 +38,7 @@ static const FontInfo font_rsqstd = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rsqstd_data,
+	.data = font_rsqstd_data,
 };
 
 /*

@@ -38,7 +38,7 @@ static const FontInfo font_rshiftsym = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rshiftsym_data,
+	.data = font_rshiftsym_data,
 };
 
 /*

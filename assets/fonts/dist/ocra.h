@@ -124,7 +124,7 @@ static const FontInfo font_ocra = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = ocra_data,
+	.data = font_ocra_data,
 };
 
 /*

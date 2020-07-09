@@ -222,8 +222,8 @@ static const FontInfo font_rcbold = {
 	.logicality = false,
 	.monospace = false,
 	.numberHeight = 7,
-	.index = rcbold_index,
-	.data = rcbold_data,
+	.index = font_rcbold_index,
+	.data = font_rcbold_data,
 };
 
 /*

@@ -124,7 +124,7 @@ static const FontInfo font_nespixel = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = nespixel_data,
+	.data = font_nespixel_data,
 };
 
 /*

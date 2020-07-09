@@ -38,7 +38,7 @@ static const FontInfo font_rsqserif = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rsqserif_data,
+	.data = font_rsqserif_data,
 };
 
 /*

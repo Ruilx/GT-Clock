@@ -38,7 +38,7 @@ static const FontInfo font_arabic = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = arabic_data,
+	.data = font_arabic_data,
 };
 
 /*

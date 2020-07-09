@@ -38,7 +38,7 @@ static const FontInfo font_rhand = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rhand_data,
+	.data = font_rhand_data,
 };
 
 /*

@@ -38,7 +38,7 @@ static const FontInfo font_casiolcd = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = casiolcd_data,
+	.data = font_casiolcd_data,
 };
 
 /*

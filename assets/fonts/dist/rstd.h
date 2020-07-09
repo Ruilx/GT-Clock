@@ -38,7 +38,7 @@ static const FontInfo font_rstd = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rstd_data,
+	.data = font_rstd_data,
 };
 
 /*

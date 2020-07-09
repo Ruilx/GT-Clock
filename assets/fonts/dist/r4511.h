@@ -38,7 +38,7 @@ static const FontInfo font_r4511 = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = r4511_data,
+	.data = font_r4511_data,
 };
 
 /*

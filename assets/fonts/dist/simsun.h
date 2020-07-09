@@ -124,7 +124,7 @@ static const FontInfo font_simsun = {
 	.monospace = true,
 	.numberHeight = 8,
 	.index = nullptr,
-	.data = simsun_data,
+	.data = font_simsun_data,
 };
 
 /*

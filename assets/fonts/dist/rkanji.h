@@ -38,7 +38,7 @@ static const FontInfo font_rkanji = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rkanji_data,
+	.data = font_rkanji_data,
 };
 
 /*

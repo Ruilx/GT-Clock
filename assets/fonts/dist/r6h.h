@@ -38,7 +38,7 @@ static const FontInfo font_r6h = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = r6h_data,
+	.data = font_r6h_data,
 };
 
 /*

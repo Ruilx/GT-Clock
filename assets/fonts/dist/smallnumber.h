@@ -38,7 +38,7 @@ static const FontInfo font_smallnumber = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = smallnumber_data,
+	.data = font_smallnumber_data,
 };
 
 /*

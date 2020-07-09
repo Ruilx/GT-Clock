@@ -38,7 +38,7 @@ static const FontInfo font_rsmall = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rsmall_data,
+	.data = font_rsmall_data,
 };
 
 /*

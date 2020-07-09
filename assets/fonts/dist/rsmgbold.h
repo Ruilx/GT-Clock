@@ -38,7 +38,7 @@ static const FontInfo font_rsmgbold = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rsmgbold_data,
+	.data = font_rsmgbold_data,
 };
 
 /*

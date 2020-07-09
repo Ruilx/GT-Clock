@@ -38,7 +38,7 @@ static const FontInfo font_rhsans = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rhsans_data,
+	.data = font_rhsans_data,
 };
 
 /*

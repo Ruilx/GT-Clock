@@ -38,7 +38,7 @@ static const FontInfo font_rboldserif = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rboldserif_data,
+	.data = font_rboldserif_data,
 };
 
 /*

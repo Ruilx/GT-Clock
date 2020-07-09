@@ -38,7 +38,7 @@ static const FontInfo font_rpro = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rpro_data,
+	.data = font_rpro_data,
 };
 
 /*

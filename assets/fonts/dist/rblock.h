@@ -38,7 +38,7 @@ static const FontInfo font_rblock = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rblock_data,
+	.data = font_rblock_data,
 };
 
 /*

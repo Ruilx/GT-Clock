@@ -218,7 +218,7 @@ static const FontInfo font_kana6 = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = kana6_data,
+	.data = font_kana6_data,
 };
 
 /*

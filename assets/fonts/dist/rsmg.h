@@ -124,7 +124,7 @@ static const FontInfo font_rsmg = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rsmg_data,
+	.data = font_rsmg_data,
 };
 
 /*

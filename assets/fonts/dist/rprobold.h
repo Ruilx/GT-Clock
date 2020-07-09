@@ -222,8 +222,8 @@ static const FontInfo font_rprobold = {
 	.logicality = false,
 	.monospace = false,
 	.numberHeight = 7,
-	.index = rprobold_index,
-	.data = rprobold_data,
+	.index = font_rprobold_index,
+	.data = font_rprobold_data,
 };
 
 /*

@@ -38,7 +38,7 @@ static const FontInfo font_rsans = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rsans_data,
+	.data = font_rsans_data,
 };
 
 /*

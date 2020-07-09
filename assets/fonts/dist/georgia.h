@@ -38,7 +38,7 @@ static const FontInfo font_georgia = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = georgia_data,
+	.data = font_georgia_data,
 };
 
 /*

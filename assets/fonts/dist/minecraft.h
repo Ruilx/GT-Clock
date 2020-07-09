@@ -222,8 +222,8 @@ static const FontInfo font_minecraft = {
 	.logicality = false,
 	.monospace = false,
 	.numberHeight = 7,
-	.index = minecraft_index,
-	.data = minecraft_data,
+	.index = font_minecraft_index,
+	.data = font_minecraft_data,
 };
 
 /*

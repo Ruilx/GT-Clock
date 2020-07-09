@@ -38,7 +38,7 @@ static const FontInfo font_devanagari = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = devanagari_data,
+	.data = font_devanagari_data,
 };
 
 /*

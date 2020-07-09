@@ -38,7 +38,7 @@ static const FontInfo font_rhalfbold = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rhalfbold_data,
+	.data = font_rhalfbold_data,
 };
 
 /*

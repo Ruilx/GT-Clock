@@ -124,7 +124,7 @@ static const FontInfo font_commodore64 = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = commodore64_data,
+	.data = font_commodore64_data,
 };
 
 /*

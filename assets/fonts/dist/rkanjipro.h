@@ -38,7 +38,7 @@ static const FontInfo font_rkanjipro = {
 	.monospace = true,
 	.numberHeight = 7,
 	.index = nullptr,
-	.data = rkanjipro_data,
+	.data = font_rkanjipro_data,
 };
 
 /*
