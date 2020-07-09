@@ -87,8 +87,8 @@
 	"11": "Hours, Minutes and small Seconds(Commodore64)(24H)"
   },
   "#sta": {
-	"1": "Align to top",
-	"2": "Align to bottom"
+	"1": "Align top",
+	"2": "Align bottom"
   },
   "#sdf": {
 	"1": "2019-12-31",

@@ -53,68 +53,69 @@
 
 <div class="container" id="main">
 	<noscript>
-		<div class="alert alert-danger text-center">This page contains instant messaging quests and requires Javascript allowed during setup, otherwise, some options may not working property.</div>
+		<div class="alert alert-danger text-center">页面会使用异步通信加载及保存信息, 在使用期间需要允许您的浏览器使用Javascript, 否则设置将会出现问题.</div>
 	</noscript>
 	<div class="jumbotron">
 		<div class="jumbotron-photo center">
 		</div>
 		<div class="jumbotron-contents">
 			<h1 class="text-center" style="margin-top: 10px">Welcome</h1>
+			<p>欢迎使用GT-Clock网络时钟! 在开始使用之前, 我们需要在页面上应用一部分常用的设置, 点击"保存并应用"确认您的设置.</p>
+			<p>当您需要脱机使用GT-Clock时, 您只需本地设置好时间, 时钟将会按照设置的时间运行. 若需使用扩展功能, 请连接Wifi, 确保设备接入互联网.</p>
 			<p>Thanks for using GT network clock, we need to apply some settings before start using it. To confirm all settings by click "Save & Apply" button.</p>
-			<p>You can just satisfied the clock time locally from your PC or phone for minimum working. For advanced functions, please check WiFi settings and ensure the internet accessible.</p>
 		</div>
 	</div>
 	<div class="row clearfix">
 		<div class="col-xs-12 col-md-6">
 			<div class="panel panel-primary">
 				<div class="panel-heading">
-					<h3 class="panel-title">Time Settings</h3>
+					<h3 class="panel-title">时间设置</h3>
 				</div>
 				
 				<ul class="list-group">
 					<li class="list-group-item">
-						<label>Local time</label>
+						<label>本地当前时间</label>
 						<div class="input-group">
 							<input type="text" class="form-control dtset" id="idt" placeholder="yyyy-MM-dd HH:mm:ss" readonly/>
-							<span class="input-group-btn"><button class="btn btn-primary" type="button" id="bsldt">Sync Localtime</button></span>
+							<span class="input-group-btn"><button class="btn btn-primary" type="button" id="bsldt">同步本机时间</button></span>
 						</div>
-						<p class="help-block">Touch the input box to select time, or click "Sync Localtime" to assign localtime to page. It will automatically update when set and send to device at the end.</p>
+						<p class="help-block">轻触输入框调出时间选择框, 或单击"同步本机时间"将本机时间同步给页面. 完毕后页面会自动更新时间, 并在保存应用时将最新的时间发送给设备.</p>
 					</li>
 					<li class="list-group-item">
-						<label><input type="checkbox" id="cundt"> Time Synchronization via Internet</label>
-						<div class="alert alert-warning">Your device is not connected to the internet, time synchronization service may not work properly.</div>
-						<p class="help-block">Obtain the latest network time through the network NTP server and synchronize it to the device.</p>
+						<label><input type="checkbox" id="cundt"> 通过网络时间服务器进行时间同步</label>
+						<div class="alert alert-warning">您的设备尚未接入互联网, 时间同步服务可能无法正常运行</div>
+						<p class="help-block">通过网络NTP服务器获取最新的网络时间, 并同步至设备中.</p>
 						<div class="input-group">
-							<span class="input-group-addon">Preferred time server</span>
+							<span class="input-group-addon">首选时间服务器</span>
 							<select class="form-control" id="sts1" disabled></select>
 						</div><br>
 						<div class="input-group">
-							<span class="input-group-addon">Alternative time server</span>
+							<span class="input-group-addon">备选时间服务器</span>
 							<select class="form-control" id="sts2" disabled></select>
 						</div><br>
 						<div class="input-group">
-							<span class="input-group-addon">Timezone</span>
+							<span class="input-group-addon">当前时区</span>
 							<span class="input-group-addon">UTC</span>
 							<select class="form-control" id="stz" disabled></select>
 							<span class="input-group-btn">
-									<button class="btn btn-primary" type="button" id="bsltz" disabled>Sync local timezone</button>
+									<button class="btn btn-primary" type="button" id="bsltz" disabled>同步本机时区</button>
 								</span>
 						</div><br>
 						<div class="input-group">
-							<span class="input-group-addon">Summer time</span>
+							<span class="input-group-addon">夏令时</span>
 							<select class="form-control" id="sdst" disabled></select>
 						</div><br>
 						<div class="input-group">
-							<span class="input-group-addon">Synchronization frequency</span>
+							<span class="input-group-addon">同步频率</span>
 							<select class="form-control" id="ssf" disabled></select>
 						</div>
 					</li>
 					<li class="list-group-item">
 						<label>RTC设备</label>
-						<p class="help-block">Select an RTC device and let time storing in specified device.</p>
-						<p class="help-block">Ensure backup battery of RTC device working properly, otherwise may lost time after shutdown.</p>
+						<p class="help-block">选择一个RTC设备, 将时间交由该设备存储.</p>
+						<p class="help-block">确保RTC设备后备电池工作正常, 否则断电后可能遗失正常时间.</p>
 						<div class="input-group">
-							<span class="input-group-addon">RTC device</span>
+							<span class="input-group-addon">RTC设备</span>
 							<select class="form-control" id="srtc">
 								<option value="1">DS3231</option>
 								<option value="2">STM32</option>
@@ -126,63 +127,63 @@
 			
 			<div class="panel panel-primary">
 				<div class="panel-heading">
-					<h3 class="panel-title">Display setting</h3>
+					<h3 class="panel-title">显示设置</h3>
 				</div>
 				<div class="panel-body">
-					<label>Display mode, font and dot matrix tuning</label>
+					<label>设置时间显示方式, 字体和点阵微调</label>
 					<div class="input-group">
-						<span class="input-group-addon">Preview</span>
+						<span class="input-group-addon">预览</span>
 						<div class="form-control" style="overflow: hidden">
 							<div id="tfp"></div>
 						</div>
 					</div><br>
 					<div class="input-group">
-						<span class="input-group-addon">Time font</span>
+						<span class="input-group-addon">时间字体</span>
 						<select class="form-control" id="tf">
 							<option value="0">Please Wait...</option>
 						</select>
 					</div><br>
 					<div class="input-group">
-						<span class="input-group-addon">Time mode</span>
+						<span class="input-group-addon">时间显示</span>
 						<select class="form-control" id="sdm"></select>
 					</div><br>
 					<div class="input-group">
-						<span class="input-group-addon">Alignment</span>
+						<span class="input-group-addon">对齐微调</span>
 						<select class="form-control" id="sta"></select>
 					</div>
-					<p class="help-block">If choose a font with height of 7, it can configure alignment top or bottom to display, leaving a one pixel line blank in the relative position.</p>
+					<p class="help-block">如果选择的是高度为7的字体该可以配置显示靠顶或者靠底, 在相对位置预留一像素的宽度</p>
 				</div>
 				<ul class="list-group">
 					<li class="list-group-item">
-						<label>Normal font</label>
+						<label>普通字体</label>
 						<div class="input-group">
-							<span class="input-group-addon">preview</span>
+							<span class="input-group-addon">预览</span>
 							<div class="form-control" style="overflow: hidden">
 								<div id="fp"></div>
 							</div>
 						</div><br>
 						<div class="input-group">
-							<span class="input-group-addon">font</span>
+							<span class="input-group-addon">字体</span>
 							<select class="form-control" id="sf"></select>
 						</div><br>
 					</li>
 					<li class="list-group-item">
-						<label>Date display method</label>
+						<label>设置日期显示方式</label>
 						<div class="input-group">
-							<span class="input-group-addon">Date format</span>
+							<span class="input-group-addon">日期格式</span>
 							<select class="form-control" id="sdf"></select>
 						</div><br>
-						<label><input type="checkbox" id="c3"> '0' before non-two-digit date</label>
-						<p>Add '0' before month or day while it not exceed two digits</p>
+						<label><input type="checkbox" id="c3"> 非两位日期前补0#c3</label>
+						<p>当月和日不超过两位数时, 在其前面补0</p>
 					</li>
 					<li class="list-group-item">
-						<label>Week display method</label>
+						<label>设置星期显示方式</label>
 						<div class="input-group">
-							<span class="input-group-addon">Week format</span>
+							<span class="input-group-addon">星期格式</span>
 							<select class="form-control" id="swf"></select>
 						</div><br>
 						<div class="input-group">
-							<span class="input-group-addon">Week position</span>
+							<span class="input-group-addon">星期位置</span>
 							<select class="form-control" id="swl"></select>
 						</div><br>
 					</li>
@@ -193,20 +194,20 @@
 		<div class="col-xs-12 col-md-6">
 			<div class="panel panel-primary">
 				<div class="panel-heading">
-					<h3 class="panel-title">Temperature</h3>
+					<h3 class="panel-title">温度设置</h3>
 				</div>
 				<div class="panel-body">
-					<label>Mode & settings</label>
+					<label>设置温度模式, 显示方式</label>
 					<div class="input-group">
-						<span class="input-group-addon">Source</span>
+						<span class="input-group-addon">温度来源</span>
 						<select class="form-control" id="std"></select>
 					</div><br>
 					<div class="input-group">
-						<span class="input-group-addon">Unit</span>
+						<span class="input-group-addon">温度单位</span>
 						<select class="form-control" id="stu"></select>
 					</div><br>
 					<div class="input-group">
-						<span class="input-group-addon">Automatic schedule</span>
+						<span class="input-group-addon">温度自动显示</span>
 						<select class="form-control" id="stad"></select>
 					</div>
 				</div>
@@ -214,53 +215,56 @@
 			
 			<div class="panel panel-primary">
 				<div class="panel-heading">
-					<h3 class="panel-title">Other settings</h3>
+					<h3 class="panel-title">其他设置</h3>
 				</div>
 				<div class="panel-body">
-					<label>Hourly reminding, automatic brightness</label>
+					<label>设置整点提醒, 自动亮度</label>
 					<div class="input-group">
-						<span class="input-group-addon">Hourly reminding</span>
+						<span class="input-group-addon">整点提醒</span>
 						<select class="form-control" id="shr"></select>
 					</div>
 				</div>
 				<ul class="list-group">
 					<li class="list-group-item">
-						<label><input type="checkbox" id="csan"> Silent at night</label>
-						<p>Stop buzzer at night so as not to effect night sleep.</p>
+						<label><input type="checkbox" id="c4"> 夜间不发出声音#c4</label>
+						<p>在夜间停止蜂鸣器工作以便不影响夜间休息</p>
 					</li>
 					<li class="list-group-item">
-						<label><input type="checkbox" id="cab"> Automatic brightness</label>
-						<p>Use light sensor to adjust screen brightness automatically</p>
+						<label><input type="checkbox" id="c5"> 自动调整亮度#c5</label>
+						<p>使用光感元件来自动调整屏幕亮度</p>
 					</li>
 					<li class="list-group-item">
-						<label><input type="checkbox" id="caso"> Automatic screen orientation</label>
-						<p>Use gravity switch to adjust screen orientation automatically</p>
+						<label><input type="checkbox" id="c6"> 自动屏幕方向#c6</label>
+						<p>使用重力开关来自动调整屏幕方向</p>
 					</li>
 				</ul>
 			</div>
 			
 			<div class="panel panel-primary">
 				<div class="panel-heading">
-					<h3 class="panel-title">Network</h3>
+					<h3 class="panel-title">网络设置</h3>
 				</div>
 				<div class="panel-body">
-					<label>WiFi AP</label>
+					<label>设置WiFi连接点</label>
 					<p class="help-block">
-						This device contains an ESP8266 wireless transceiver, which can be connected to an external 2.4GHz AP to access the Internet. You can manually enter or select SSID below and corresponding password to get network permissions. Device will connect the saved AP after reboot automatically.
+						设备载有ESP8266无线收发器, 可以连接外部的2.4GHz无线发射点使设备接入无线网. 您可以手动输入网络接入点的信息或在下面的可用网络接入点中选择您的接入点输入密码并保存, 设备将在重新启动后尝试连接指定接入点
 					</p>
 					<div class="input-group">
 						<span class="input-group-addon">ESSID</span>
 						<input type="text" class="form-control" id="iessid" placeholder=""/>
+						<span class="input-group-btn">
+									<button class="btn btn-primary" type="button" id="bws">扫描可用网络</button>
+								</span>
 					</div><br>
 					<div class="input-group">
-						<span class="input-group-addon">Password</span>
-						<input type="password" class="form-control" id="iwp" placeholder="Password not changed" />
+						<span class="input-group-addon">密码</span>
+						<input type="password" class="form-control" id="iwp" placeholder="未更改密码" />
 					</div>
-					<p class="help-block">If password of AP not changed, please leave it blank to use default.</p>
+					<p class="help-block">若接入点未设置密码或未保存更改的密码, 请将此处留空</p>
 				</div>
 				<ul class="list-group">
 					<li class="list-group-item">
-						<label>Available AP</label>
+						<label>可用网络</label>
 						<div class="input-group">
 							<select class="form-control" id="swa">
 								<option value="1">One</option>
@@ -273,36 +277,33 @@
 								<option value="8">Eight</option>
 							</select>
 							<span class="input-group-btn">
-								<button class="btn btn-success" type="button" id="bwc">Select AP</button>
-							</span>
+										<button class="btn btn-success" type="button" id="bwc">选择此网络</button>
+									</span>
 						</div><br>
-						<div class="input-group">
-							<button class="btn btn-primary" type="button" id="bws">Scan available networks</button>
-						</div>
 					</li>
 					<li class="list-group-item">
-						<label>DNS resolution</label>
+						<label>DNS解析点</label>
 						<div class="input-group">
 							<span class="input-group-addon">DNS</span>
 							<input type="text" class="form-control" id="idns"/>
 						</div>
-						<p>It will using default DNS address if leave it blank.</p>
+						<p>DNS解析点留空则使用默认的DNS解析地址</p>
 					</li>
 				</ul>
 			</div>
 			
 			<div class="panel panel-danger">
 				<div class="panel-heading">
-					<h3 class="panel-title">Interactive button</h3>
+					<h3 class="panel-title">互动按键</h3>
 				</div>
 				<ul class="list-group">
 					<li class="list-group-item">
-						<label>Press once</label>
+						<label>点按一次</label>
 						<div class="input-group">
 							<select class="form-control" id="s1">
-								<option value="1">Sync time from network</option>
-								<option value="2">Sleep</option>
-								<option value="3">Weather forecast</option>
+								<option value="1">网络对时</option>
+								<option value="2">进入睡眠</option>
+								<option value="3">天气预报</option>
 								<option value="4">4</option>
 								<option value="5">5</option>
 								<option value="6">6</option>
@@ -310,16 +311,16 @@
 								<option value="8">8</option>
 							</select>
 							<span class="input-group-btn">
-								<button class="btn btn-success" type="button" id="p1">Button</button>
-							</span>
+										<button class="btn btn-success" type="button" id="p1">按钮</button>
+									</span>
 						</div><br>
 					</li>
 					<li class="list-group-item">
-						<label>Long press</label>
+						<label>长按</label>
 						<div class="input-group">
 							<select class="form-control" id="s2">
-								<option value="1">Shutdown system</option>
-								<option value="2">Close display</option>
+								<option value="1">关闭系统</option>
+								<option value="2">关闭屏幕</option>
 								<option value="3">3</option>
 								<option value="4">4</option>
 								<option value="5">5</option>
@@ -328,8 +329,8 @@
 								<option value="8">8</option>
 							</select>
 							<span class="input-group-btn">
-								<button class="btn btn-success" type="button" id="p2">Button</button>
-							</span>
+										<button class="btn btn-success" type="button" id="p2">按钮</button>
+									</span>
 						</div><br>
 					</li>
 				</ul>
@@ -341,7 +342,7 @@
 <nav class="navbar navbar-inverse mb0">
 	<div class="container-fluid">
 		<div class="navbar-collapse navbar-right">
-			<button type="button" class="btn btn-danger navbar-btn" id="bs">Save & apply</button>
+			<button type="button" class="btn btn-danger navbar-btn" id="bs">保存并应用#bs</button>
 		</div>
 		<div class="navbar-header">
 			<a href="javascript:void(0);" class="navbar-brand">Copyright 2010 - 2020 GT-Soft Studio</a>
