@@ -26,9 +26,9 @@ const unsigned char georgia_data [] = {
 	 0x9f,0xb9,0xb7,0xaf,0x9f,0xff,     /* 7 */
 	 0xa7,0x5b,0x5b,0x5b,0xa7,0xff,     /* 8 */
 	 0xcf,0xb5,0xb5,0xb5,0xc3,0xff,     /* 9 */
-}
+};
 
-void setupFontgeorgia(fontInfo *font){
+void setupFontgeorgia(FontInfo *font){
 	if(font != nullptr){
 		font->fontIndex = 30;
 		strncpy(font->fontName, "Georgia", 8);

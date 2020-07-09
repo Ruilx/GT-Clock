@@ -206,9 +206,9 @@ const unsigned char kana6_data [] = {
 	 0xef,0xef,0xef,0xef,0xef,0xff,     /* ー */
 	 0xbf,0xdf,0xe7,0xf9,0xff,0xff,     /* ヽ */
 	 0xbf,0xdf,0xe7,0x79,0xbf,0xff,     /* ヾ */
-}
+};
 
-void setupFontkana6(fontInfo *font){
+void setupFontkana6(FontInfo *font){
 	if(font != nullptr){
 		font->fontIndex = 64;
 		strncpy(font->fontName, "Kana6", 6);

@@ -26,9 +26,9 @@ const unsigned char devanagari_data [] = {
 	 0x01,0xfd,0x0d,0x6d,0x01,0xff,     /* 7 */
 	 0xf1,0xed,0xdd,0xbd,0x7d,0xff,     /* 8 */
 	 0x0f,0x67,0x6b,0x6d,0x0f,0xff,     /* 9 */
-}
+};
 
-void setupFontdevanagari(fontInfo *font){
+void setupFontdevanagari(FontInfo *font){
 	if(font != nullptr){
 		font->fontIndex = 35;
 		strncpy(font->fontName, "Devanagari", 11);

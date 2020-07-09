@@ -1,6 +1,15 @@
 #ifndef _FONT_H_
 #define _FONT_H_
 
+#include <stdint.h>
+
+#ifndef __cplusplus
+#define bool	char
+#define false	0
+#define true	1
+#define nullptr	((void *)0)
+#endif
+
 #ifndef _FONT_INFO_STRUCT_
 #define _FONT_INFO_STRUCT_
 typedef struct FontInfo_t {
@@ -8,7 +17,7 @@ typedef struct FontInfo_t {
 	char fontName[16];
 	uint16_t startUnicode;
 	uint16_t endUnicode;
-	uint_8 blockLength;
+	uint8_t blockLength;
 	bool logicality;
 	bool monospace;
 	uint8_t monoMask;

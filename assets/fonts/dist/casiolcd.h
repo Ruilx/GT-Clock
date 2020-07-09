@@ -26,9 +26,9 @@ const unsigned char casiolcd_data [] = {
 	 0x7f,0x7f,0x61,0x5f,0x3f,0xff,     /* 7 */
 	 0x93,0x6d,0x6d,0x6d,0x93,0xff,     /* 8 */
 	 0x9f,0x6d,0x6d,0x6b,0x87,0xff,     /* 9 */
-}
+};
 
-void setupFontcasiolcd(fontInfo *font){
+void setupFontcasiolcd(FontInfo *font){
 	if(font != nullptr){
 		font->fontIndex = 8;
 		strncpy(font->fontName, "Casio LCD", 10);
