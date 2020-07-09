@@ -2,6 +2,7 @@
 #define _FONT_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #ifndef __cplusplus
 #define bool	char

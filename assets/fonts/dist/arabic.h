@@ -15,8 +15,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _ARABIC_H_
 #define _ARABIC_H_
 
-#include <string.h>
-
 const unsigned char arabic_data [] = {
 	 0xff,0xff,0xc7,0xff,0xff,0xff,     /* 0 */
 	 0xff,0xff,0x01,0xff,0xff,0xff,     /* 1 */
