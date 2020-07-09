@@ -161,24 +161,6 @@ static inline void matrix_buf_init()
 	// Disable all line drivers
 	for (unsigned int gs = 0; gs < GSCALE - 1; gs++)
 		data.buf[data.rbuf][gs][PANELS] = 0xff;
-
-	// Test pattern
-	for (unsigned int line = 0; line < LINES; line++)
-		for (unsigned int pnl = 0; pnl < PANELS && pnl < 4; pnl++)
-			for (unsigned int i = 0; i < 8; i++)
-				data.fb[0][line][pnl * 8 + i] = line * 4 * 8 + pnl * 8 + i;
-	for (unsigned int line = 0; line < LINES; line++)
-		for (unsigned int pnl = 4; pnl < PANELS; pnl++)
-			for (unsigned int i = 0; i < 8; i++)
-				data.fb[0][line][pnl * 8 + i] = (line * 8 + i) * 4;
-	for (unsigned int line = 0; line < LINES; line++)
-		for (unsigned int pnl = 3; pnl < PANELS; pnl += 2)
-			for (unsigned int i = 0; i < 16; i++)
-				data.fb[0][line][pnl * 8 + i] = (line * 8 + i) * 2;
-	for (unsigned int line = 0; line < LINES; line++)
-		for (unsigned int pix = 0; pix < PANELS * 8; pix++)
-			if ((pix % 2 == 1) ^ (line % 2 == 0))
-				data.fb[0][line][pix] = 0;
 }
 
 static inline void matrix_line_calc()

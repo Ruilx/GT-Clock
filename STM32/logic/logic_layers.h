@@ -18,7 +18,7 @@ typedef const struct {
 void logic_layers_enable(unsigned int e);
 unsigned int logic_layers_refresh_cnt();
 
-void logic_layers_select(uint8_t *layers);
+void logic_layers_select(const uint8_t *layers);
 void logic_layers_set_param(unsigned int layer, const void *p, unsigned int size);
 unsigned int logic_layers_update();
 

@@ -28,7 +28,7 @@ static uint32_t i_stdout_read = 0;
 static volatile uint32_t i_stdout_write = 0;
 
 // Assembly helper
-extern int _main();
+extern int main();
 
 // Buffered STDIO
 int fio_write(int file, char *ptr, int len)
@@ -103,11 +103,8 @@ static inline int debug_uart_getchar(void)
 }
 
 // Reset entry point, initialise the system
-void Reset_Handler(void)
+void _reset(void)
 {
-	// Initialise stask pointer
-	asm("ldr sp, =__stack_end__");
-
 	// Configure the Vector Table location add offset address
 	SCB->VTOR = (uint32_t)g_pfnVectors;
 
@@ -127,7 +124,10 @@ void Reset_Handler(void)
 		*p++ = 0;
 
 	// Start program
-	asm("b _main" : : "r"(_main));
+	asm(	"ldr sp, =__stack_end__\n\t"	// Set stack pointer
+		"bl __libc_init_array\n\t"	// Call static constructors
+		"bl main\n\t"			// Call the application's entry point
+		: : "r"(main));
 }
 
 // Default handler for unexpected interrupts

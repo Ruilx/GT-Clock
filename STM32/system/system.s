@@ -4,18 +4,16 @@
 .thumb
 
 /* Helper function to enter main function */
-.global _main
-.section .text._main,"ax",%progbits
+.global Reset_Handler
+.section .text.Reset_Handler,"ax",%progbits
 
-_main:
+Reset_Handler:
 /* Set stack pointer */
 ldr sp, =__stack_end__
-/* Call static constructors */
-bl __libc_init_array
-/* Call the application's entry point */
-bl main
+/* Call system reset entry point */
+bl _reset
 bx lr
-.size _main, .-_main
+.size Reset_Handler, .-Reset_Handler
 
 /* Default handler for unexpected interrupts */
 .global Default_Handler

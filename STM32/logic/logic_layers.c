@@ -5,7 +5,7 @@
 #include "logic_layers.h"
 
 #define MAX_LAYERS	16
-#define PARAM_SIZE	8
+#define PARAM_SIZE	12
 #define HEAP_SIZE	(4 * 1024)
 
 typedef struct {
@@ -61,7 +61,7 @@ static void proc()
 
 IDLE_HANDLER() = &proc;
 
-void logic_layers_select(uint8_t *layers)
+void logic_layers_select(const uint8_t *layers)
 {
 	unsigned int i;
 	for (i = 0; i < MAX_LAYERS; i++) {
@@ -115,38 +115,49 @@ static void init()
 	unsigned int w, h;
 	matrix_fb(0, &w, &h);
 
-	uint8_t layers[MAX_LAYERS] = {
+	static const uint8_t layers[MAX_LAYERS] = {
+		LayerIdSine,
+		LayerIdSine,
 		LayerIdConst,
-		LayerIdSine,
-		LayerIdSine,
 		LayerIdGamma,
 		LayerIdNone
 	};
-	logic_layers_select(layers);
-
-	logic_layers_set_param(0, (const uint8_t [PARAM_SIZE]){
-			0x00,	// Override mode
-			0xff,	// Intensity value
-		}, PARAM_SIZE);
-	logic_layers_set_param(1, (const uint8_t [PARAM_SIZE]){
+	const uint8_t params[MAX_LAYERS][PARAM_SIZE] = {
+		{
 			0x80,	// Multiply, not half-aligned
 			w - 1,	// X offset
 			0,	// Y offset
-			1,	// Period, multiply
-			1,	// Period, divide
-		}, PARAM_SIZE);
-	logic_layers_set_param(2, (const uint8_t [PARAM_SIZE]){
+			0,	// Factor of original value
+			255,	// Factor of new value
+			0,	// Factor of mixer value
+			1,	// Spacial period, multiply
+			2,	// Spacial period, divide
+			1,	// Temporal period, multiply
+			4,	// Temporal period, divide
+		}, {
 			0x81,	// Multiply, half-aligned
 			24,	// X offset
 			4,	// Y offset
-			1,	// Period, multiply
-			1,	// Period, divide
-		}, PARAM_SIZE);
-	logic_layers_set_param(3, (const uint8_t [PARAM_SIZE]){
+			70,	// Factor of original value
+			20,	// Factor of new value
+			165,	// Factor of mixer value
+			5,	// Spacial period, multiply
+			2,	// Spacial period, divide
+			1,	// Temporal period, multiply
+			2,	// Temporal period, divide
+		}, {
 			0x00,	// Flags
-			0x20,	// Factor in hex
-		}, PARAM_SIZE);
+			210,	// Factor of original value
+			0,	// Factor of constant 1
+		}, {
+			0x00,	// Flags
+			0x22,	// Factor in hex
+		},
+	};
 
+	logic_layers_select(layers);
+	for (unsigned int layer = 0; layer < MAX_LAYERS; layer++)
+		logic_layers_set_param(layer, params[layer], PARAM_SIZE);
 	logic_layers_update();
 }
 
