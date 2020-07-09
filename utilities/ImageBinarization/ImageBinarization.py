@@ -294,10 +294,13 @@ if __name__ == "__main__":
 	parser.add_argument("--comment-alignment", type=int, default=1, choices={-1, 1}, dest="commentAlignment", help="C style output comment alignment(only after data location. -1: align left, 1: align right. Default: 1")
 	parser.add_argument("--c-style-array-type", type=str, default="const unsigned char", dest="cStyleArrayType", help="C style variable type. Default=\"const unsigned char\"")
 	parser.add_argument("--c-style-null", type=str, default="nullptr", dest="cStyleNull", help="C Style null pointer string. Default: nullptr")
+	parser.add_argument("--font-index-prefix", type=str, default="font_", dest="fontIndexPrefix", help="C style index variable name prefix. Default=\"font_\"")
 	parser.add_argument("--font-index-suffix", type=str, default="_index", dest="fontIndexSuffix", help="C style index variable name suffix. Default=\"_index\"")
+	parser.add_argument("--font-data-prefix", type=str, default="font_", dest="fontDataPrefix", help="C style data variable name prefix. Default=\"font_\"")
 	parser.add_argument("--font-data-suffix", type=str, default="_data", dest="fontDataSuffix", help="C style data variable name suffix. Default=\"_data\"")
 	parser.add_argument("--font-setup-prefix", type=str, default="font_", dest="fontSetupPrefix", help="C style font setup function name prefix. Default=\"font\"")
-	parser.add_argument("--font-info-mono-mask", type=str, default="0xFF", dest="fontInfoMonoMask", help="C style font info struct property 'monoMask'. Default: 0xFF, means 8 Column all selected.")
+	#parser.add_argument("--font-info-mono-mask", type=str, default="0xFF", dest="fontInfoMonoMask", help="C style font info struct property 'monoMask'. Default: 0xFF, means 8 Column all selected.")
+	parser.add_argument("--font-info-number-height", type=int, default="7", dest="fontInfoNumberHeight", help="C style font info tell the font height in the number area. Default: 7")
 	parser.add_argument("--force-write-index", action="store_true", dest="forceWriteIndex", help="Monospace font will omit index by default, use this flag can force to write index")
 	parser.add_argument("-m", "--mode", type=str, choices={"MSB_AT_TOP", "LSB_AT_TOP"}, default="MSB_AT_TOP", dest="mode", help="Binary bit order specified in image. Default: MSB_AT_TOP")
 	parser.add_argument("-l", "--logic", type=str, choices={"POSITIVE_LOGIC", "NEGATIVE_LOGIC"}, default="NEGATIVE_LOGIC", dest="logic", help="Binary bit logic for pixel 'ON'. Default: NEGATIVE_LOGIC")
@@ -320,11 +323,12 @@ if __name__ == "__main__":
 	ip['commentLocation'] = args.commentLocation
 	ip['commentAlignment'] = args.commentAlignment
 	ip['cStyleArrayType'] = args.cStyleArrayType
+	ip['fontIndexPrefix'] = args.fontIndexPrefix
 	ip['fontIndexSuffix'] = args.fontIndexSuffix
+	ip['fontDataPrefix'] = args.fontDataPrefix
 	ip['fontDataSuffix'] = args.fontDataSuffix
 	ip['fontSetupPrefix'] = args.fontSetupPrefix
-	#ip['fontInfo']['monoNumbers'] = args.fontInfoMonoNumbers
-	ip['fontInfo']['monoMask'] = args.fontInfoMonoMask
+	ip['fontInfo']['numberHeight'] = args.fontInfoNumberHeight
 	ip['cStyleNull'] = args.cStyleNull
 
 	mode = {'MSB_AT_TOP': MSB_AT_TOP, 'LSB_AT_TOP': LSB_AT_TOP}[args.mode]

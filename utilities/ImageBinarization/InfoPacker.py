@@ -66,10 +66,12 @@ class InfoPacker(object):
 			'cStyleArrayType': "const unsigned char",
 			'fontIndexSuffix': "_index",
 			'fontDataSuffix': "_data",
+			'fontIndexPrefix': "font_",
+			'fontDataPrefix': "font_",
 			'fontSetupPrefix': "font_",
 			'fontInfo': {
 				'logicality': "false",
-				'monoMask': "0xFF"
+				'numberHeight': 7,
 			},
 			'displayFontStatus': True,
 			'cStyleNull': "nullptr"
@@ -103,28 +105,28 @@ class InfoPacker(object):
 			" " if commentLocation == -1 else ""
 		)) if commentLocation == defineValue and self.conf['commentShown'] else " "
 
-	def __cStyleCodeGenerator(self, suffix, attributePrefix = "", attributeSuffix = ""):
-		return " ".join(filter(lambda x: x != "", (attributePrefix, self.conf['cStyleArrayType'], self.conf['name'] + suffix, attributeSuffix, "[]" ,"= {{"))) + \
+	def __cStyleCodeGenerator(self, prefix, suffix, attributePrefix = "", attributeSuffix = ""):
+		return " ".join(filter(lambda x: x != "", (attributePrefix, self.conf['cStyleArrayType'], prefix + self.conf['name'] + suffix, attributeSuffix, "[]" ,"= {{"))) + \
 			   "\n{}}};"
 
 	def cStyleIndexGenerator(self, attributePrefix = "", attributeSuffix = ""):
-		return self.__cStyleCodeGenerator(self.conf['fontIndexSuffix'], attributePrefix, attributeSuffix)
+		return self.__cStyleCodeGenerator(self.conf['fontIndexPrefix'], self.conf['fontIndexSuffix'], attributePrefix, attributeSuffix)
 
 	def cStyleDataGenerator(self, attributePrefix = "", attributeSuffix = ""):
-		return self.__cStyleCodeGenerator(self.conf['fontDataSuffix'], attributePrefix, attributeSuffix)
+		return self.__cStyleCodeGenerator(self.conf['fontDataPrefix'], self.conf['fontDataSuffix'], attributePrefix, attributeSuffix)
 
 	def cStyleFontInfoStruct(self):
 		return """#ifndef _FONT_INFO_STRUCT_
 #define _FONT_INFO_STRUCT_
 typedef struct FontInfo_t {
 	uint8_t fontIndex;
-	char fontName[16];
+	//char fontName[16];
 	uint16_t startUnicode;
 	uint16_t endUnicode;
 	uint_8 blockLength;
 	bool logicality;
 	bool monospace;
-	uint8_t monoMask;
+	uint8_t numberHeight,
 	const unsigned char *index;
 	const unsigned char *data;
 } FontInfo;
@@ -133,16 +135,16 @@ typedef struct FontInfo_t {
 
 	def cStyleSetupFuncGenerator(self, fontIndex, startUnicode, endUnicode, monospace, forceWriteIndex):
 		return """static const FontInfo {FontSetupPrefix}{FontName} = {{
-	{FontIndex},
-	"{FontDisplayName}",
-	{StartUnicode},
-	{EndUnicode},
-	{BlockLength},
-	{Logicality},
-	{Monospace},
-	{MonoMask},
-	{Index},
-	{Data},
+	.fontIndex = {FontIndex},
+	//.fontName = "{FontDisplayName}",
+	.startUnicode = {StartUnicode},
+	.endUnicode = {EndUnicode},
+	.blockLength = {BlockLength},
+	.logicality = {Logicality},
+	.monospace = {Monospace},
+	.numberHeight = {NumberHeight},
+	.index = {Index},
+	.data = {Data},
 }};
 """.format(FontSetupPrefix=self.conf['fontSetupPrefix'],
 		   FontName=self.conf['name'],
@@ -153,7 +155,7 @@ typedef struct FontInfo_t {
 		   BlockLength=self.conf['blockSize'],
 		   Logicality=self.conf['fontInfo']['logicality'],
 		   Monospace="true" if monospace else "false",
-		   MonoMask=self.conf['fontInfo']['monoMask'],
+		   NumberHeight=self.conf['fontInfo']['numberHeight'],
 		   Index=(self.conf['name'] + self.conf['fontIndexSuffix']) if not monospace or forceWriteIndex else self.conf['cStyleNull'],
 		   Data=self.conf['name'] + self.conf['fontDataSuffix'],)
 
