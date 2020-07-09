@@ -4,8 +4,9 @@
 .thumb
 
 /* Helper function to enter main function */
-.global Reset_Handler
 .section .text.Reset_Handler,"ax",%progbits
+.weak Reset_Handler
+.type Reset_Handler, %function
 
 Reset_Handler:
 /* Set stack pointer */

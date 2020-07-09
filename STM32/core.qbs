@@ -3,6 +3,7 @@ import qbs
 StaticLibrary {
     name: "core"
     Depends {name: "CMSIS"}
+    Depends {name: "fonts"}
 
     cpp.defines: {
         var flags = ["HWVER=" + project.hwver, "SWVER=" + project.swver];
@@ -71,13 +72,6 @@ StaticLibrary {
         ]
     }
 
-    Group {
-        name: "Fonts"
-        files: [
-            "../assets/fonts/dist/*.h"
-        ]
-    }
-
     files: [
         "common/common.c",
         "common/common.h",
@@ -93,6 +87,7 @@ StaticLibrary {
         "logic/logic_layer_const.c",
         "logic/logic_layer_gamma.c",
         "logic/logic_layer_sine.c",
+        "logic/logic_layer_string.c",
         "logic/logic_layers.c",
         "logic/logic_layers.h",
         "peripheral/i2c_slave.c",

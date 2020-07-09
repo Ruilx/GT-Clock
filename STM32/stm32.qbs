@@ -14,6 +14,7 @@ Project {
     references: [
         "cmsis",
         "core.qbs",
+        "../assets/fonts/fonts.qbs",
     ]
 
     CppApplication {
