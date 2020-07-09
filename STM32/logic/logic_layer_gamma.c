@@ -20,7 +20,7 @@ static void updateLut(float factor, uint8_t *ptr)
 		*(ptr + i) = round(255.0 * powf(i, factor) / max);
 }
 
-static void *config(void *param, unsigned int size, unsigned int *ok)
+static void *config(void *param, unsigned int *ok)
 {
 	param_t *pp = param;
 	uint8_t ifactor = pp->factor;

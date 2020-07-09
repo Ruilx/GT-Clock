@@ -15,7 +15,7 @@ static void proc(unsigned int tick, void *param, void *ptr)
 			*(p + line * w + pix) = v;
 }
 
-static void *config(void *param, unsigned int size, unsigned int *ok)
+static void *config(void *param, unsigned int *ok)
 {
 	return 0;
 }

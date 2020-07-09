@@ -1,15 +1,14 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+#include <stdio.h>
 #include <device.h>
+#include <escape.h>
+#include <macros.h>
 
 #define dbgexist()	(CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)
 
 #if DEBUG
-
-#include <stdio.h>
-#include <escape.h>
-#include <macros.h>
 
 #define VARIANT	"DEBUG-" STRING(DEBUG)
 

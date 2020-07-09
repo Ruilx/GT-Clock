@@ -87,7 +87,7 @@ unsigned int logic_layers_update()
 	data.heap.size = 0;
 	for (unsigned int i = 0; i < MAX_LAYERS; i++)
 		if (data.layer[i].phdr && data.layer[i].phdr->config)
-			data.layer[i].p = data.layer[i].phdr->config(data.layer[i].param, PARAM_SIZE, &ok);
+			data.layer[i].p = data.layer[i].phdr->config(data.layer[i].param, &ok);
 	return ok;
 }
 
@@ -119,6 +119,8 @@ static void init()
 		LayerIdSine,
 		LayerIdSine,
 		LayerIdConst,
+		LayerIdString,
+		LayerIdString,
 		LayerIdGamma,
 		LayerIdNone
 	};
@@ -149,6 +151,18 @@ static void init()
 			0x00,	// Flags
 			210,	// Factor of original value
 			0,	// Factor of constant 1
+		}, {
+			0x00,	// Flags
+			26,	// X offset
+			1,	// Y offset
+			2,	// String length
+			37,	// Font ID
+		}, {
+			0x00,	// Flags
+			8,	// X offset
+			1,	// Y offset
+			2,	// String length
+			6,	// Font ID
 		}, {
 			0x00,	// Flags
 			0x22,	// Factor in hex

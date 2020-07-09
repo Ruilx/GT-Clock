@@ -12,13 +12,6 @@ StaticLibrary {
         return flags;
     }
 
-    cpp.driverFlags: {
-        var flags = [];
-        //if (project.bootloader)
-            flags.push("--specs=nano.specs");
-        return flags;
-    }
-
     cpp.commonCompilerFlags: [
         "-Wno-unused-parameter",
         "-Wno-unused-function",
@@ -46,7 +39,6 @@ StaticLibrary {
 
     Export {
         Depends {name: "cpp"}
-        Depends {name: "CMSIS"}
         Parameters {cpp.linkWholeArchive: true}
         cpp.includePaths: product.cpp.includePaths
         cpp.defines: product.cpp.defines
@@ -58,7 +50,7 @@ StaticLibrary {
         name: "Memory test"
         condition: false
         cpp.optimization: "none"
-        cpp.commonCompilerFlags: ["-ffast-math", "-O3"]
+        cpp.commonCompilerFlags: ["-O3"]
         files: ["system/mem_test.c"]
     }
 

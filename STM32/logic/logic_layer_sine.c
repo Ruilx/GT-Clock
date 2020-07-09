@@ -57,7 +57,7 @@ static void updateLut(float ox, float oy, float period, uint8_t *ptr)
 	}
 }
 
-static void *config(void *param, unsigned int size, unsigned int *ok)
+static void *config(void *param, unsigned int *ok)
 {
 	param_t *pp = param;
 	float v = (pp->flags & 0x01) ? -0.5 : 0;

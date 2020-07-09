@@ -22,6 +22,7 @@ Project {
         type: ["application", "hex", "size", "map"]
         Depends {name: "core"}
         Depends {name: "gcc-none"}
+        Depends {name: "CMSIS"}
 
         files: [
             "main.c",

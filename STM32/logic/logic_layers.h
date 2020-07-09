@@ -10,7 +10,7 @@ typedef enum {LayerIdNone = 0, LayerIdConst, LayerIdGamma,
 
 typedef const struct {
 	layer_id_t id;
-	void *(* const config)(void *param, unsigned int size, unsigned int *ok);
+	void *(* const config)(void *param, unsigned int *ok);
 	void (* const proc)(unsigned int tick, void *param, void *ptr);
 } logic_layer_handler_t;
 

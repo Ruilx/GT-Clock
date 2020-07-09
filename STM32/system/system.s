@@ -8,6 +8,9 @@
 .weak Reset_Handler
 .type Reset_Handler, %function
 
+.section .text.Reset_Handler
+Reset_Handler:
+
 Reset_Handler:
 /* Set stack pointer */
 ldr sp, =__stack_end__
