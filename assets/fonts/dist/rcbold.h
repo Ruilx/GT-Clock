@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RCBOLD_H_
 #define _RCBOLD_H_
 
-static const unsigned char rcbold_index [] = {
+static const unsigned char font_rcbold_index [] = {
 	 0x00,0x06,  /* <sp> */
 	 0x02,0x06,     /* ! */
 	 0x04,0x06,     /* " */
@@ -114,7 +114,7 @@ static const unsigned char rcbold_index [] = {
 	 0xCD,0x06, /* <del> */
 };
 
-static const unsigned char rcbold_data [] = {
+static const unsigned char font_rcbold_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x05,0x05,0xff,0xff,     /* ! */
 	 0xff,0x3f,0xff,0x3f,0xff,0xff,     /* " */
@@ -214,16 +214,16 @@ static const unsigned char rcbold_data [] = {
 };
 
 static const FontInfo font_rcbold = {
-	4,
-	"RC Bold",
-	32,
-	128,
-	3,
-	false,
-	false,
-	0xFF,
-	rcbold_index,
-	rcbold_data,
+	.fontIndex = 4,
+	//.fontName = "RC Bold",
+	.startUnicode = 32,
+	.endUnicode = 128,
+	.blockLength = 3,
+	.logicality = false,
+	.monospace = false,
+	.numberHeight = 7,
+	.index = rcbold_index,
+	.data = rcbold_data,
 };
 
 /*

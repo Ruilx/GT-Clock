@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _GEORGIA_H_
 #define _GEORGIA_H_
 
-static const unsigned char georgia_data [] = {
+static const unsigned char font_georgia_data [] = {
 	 0xc7,0xbb,0xbb,0xbb,0xc7,0xff,     /* 0 */
 	 0xff,0xdb,0x83,0xfb,0xff,0xff,     /* 1 */
 	 0xdb,0xb3,0xab,0xab,0xdb,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char georgia_data [] = {
 };
 
 static const FontInfo font_georgia = {
-	30,
-	"Georgia",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	georgia_data,
+	.fontIndex = 30,
+	//.fontName = "Georgia",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = georgia_data,
 };
 
 /*

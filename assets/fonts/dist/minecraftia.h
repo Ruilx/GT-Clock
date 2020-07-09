@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _MINECRAFTIA_H_
 #define _MINECRAFTIA_H_
 
-static const unsigned char minecraftia_index [] = {
+static const unsigned char font_minecraftia_index [] = {
 	 0x00,0x06,  /* <sp> */
 	 0x02,0x03,     /* ! */
 	 0x03,0x05,     /* " */
@@ -114,7 +114,7 @@ static const unsigned char minecraftia_index [] = {
 	 0xB6,0x06, /* <del> */
 };
 
-static const unsigned char minecraftia_data [] = {
+static const unsigned char font_minecraftia_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0x05,0xff,     /* ! */
 	 0xdf,0x3f,0xdf,0x3f,0xff,0x00,     /* " */
@@ -214,16 +214,16 @@ static const unsigned char minecraftia_data [] = {
 };
 
 static const FontInfo font_minecraftia = {
-	9,
-	"Minecraftia",
-	32,
-	128,
-	3,
-	false,
-	false,
-	0xFF,
-	minecraftia_index,
-	minecraftia_data,
+	.fontIndex = 9,
+	//.fontName = "Minecraftia",
+	.startUnicode = 32,
+	.endUnicode = 128,
+	.blockLength = 3,
+	.logicality = false,
+	.monospace = false,
+	.numberHeight = 7,
+	.index = minecraftia_index,
+	.data = minecraftia_data,
 };
 
 /*

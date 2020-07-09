@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSMGBOLD_H_
 #define _RSMGBOLD_H_
 
-static const unsigned char rsmgbold_data [] = {
+static const unsigned char font_rsmgbold_data [] = {
 	 0x11,0x11,0x7d,0x11,0x11,0xff,     /* 0 */
 	 0xff,0xff,0xff,0x11,0x11,0xff,     /* 1 */
 	 0xf1,0x61,0x6d,0x0d,0x1f,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rsmgbold_data [] = {
 };
 
 static const FontInfo font_rsmgbold = {
-	17,
-	"R SMG bold",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rsmgbold_data,
+	.fontIndex = 17,
+	//.fontName = "R SMG bold",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rsmgbold_data,
 };
 
 /*

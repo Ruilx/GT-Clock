@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _SIMSUN_H_
 #define _SIMSUN_H_
 
-static const unsigned char simsun_data [] = {
+static const unsigned char font_simsun_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x82,0xff,0xff,0xff,     /* ! */
 	 0xff,0x1f,0xff,0x1f,0xff,0xff,     /* " */
@@ -115,16 +115,16 @@ static const unsigned char simsun_data [] = {
 };
 
 static const FontInfo font_simsun = {
-	32,
-	"Simsun",
-	32,
-	128,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	simsun_data,
+	.fontIndex = 32,
+	//.fontName = "Simsun",
+	.startUnicode = 32,
+	.endUnicode = 128,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 8,
+	.index = nullptr,
+	.data = simsun_data,
 };
 
 /*

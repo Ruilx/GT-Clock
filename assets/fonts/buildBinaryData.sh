@@ -35,11 +35,12 @@ python $image_binarization -i 28_RSqStd.png        -x 28 -b 6 -d "R Sq Std"     
 python $image_binarization -i 29_RSqSerif.png      -x 29 -b 6 -d "R Sq Serif"    -s 48 -e 57  -o dist/rsqserif.h --special gpl3 --special preprocessflag
 python $image_binarization -i 30_Georgia.png       -x 30 -b 6 -d "Georgia"       -s 48 -e 57  -o dist/georgia.h --special gpl3 --special preprocessflag
 python $image_binarization -i 31_R6H.png           -x 31 -b 6 -d "R 6H"          -s 48 -e 57  -o dist/r6h.h --special gpl3 --special preprocessflag
-python $image_binarization -i 32_Simsun.png        -x 32 -b 6 -d "Simsun"        -s 32 -e 127  -o dist/simsun.h --special gpl3 --special preprocessflag
+python $image_binarization -i 32_Simsun.png        -x 32 -b 6 -d "Simsun"        -s 32 -e 127 -o dist/simsun.h --special gpl3 --special preprocessflag --font-info-number-height 8
 python $image_binarization -i 33_Commodore64.png   -x 33 -b 8 -d "Commodore64"   -s 32 -e 127 -o dist/commodore64.h --special gpl3 --special preprocessflag
 python $image_binarization -i 34_NesPixel.png      -x 34 -b 8 -d "NesPixel"      -s 32 -e 127 -o dist/nespixel.h --special gpl3 --special preprocessflag
 python $image_binarization -i 35_Devanagari.png    -x 35 -b 6 -d "Devanagari"    -s 48 -e 57  -o dist/devanagari.h --special gpl3 --special preprocessflag
 python $image_binarization -i 36_Arabic.png        -x 36 -b 6 -d "Arabic"        -s 48 -e 57  -o dist/arabic.h --special gpl3 --special preprocessflag
 python $image_binarization -i 37_Minecraft.png     -x 37 -b 3 -d "Minecraft"     -s 32 -e 127 -o dist/minecraft.h --special gpl3 --special preprocessflag
 
+python $image_binarization -i 70_smallNumber.png   -x 70 -b 4 -d "SmallNumber"   -s 48 -e 57  -o dist/smallnumber.h --special gpl3 --special preprocessflag
 python $image_binarization -i 64_kana_U+3041~U+30FF.png -x 64 -b 6 -d "Kana6" -s 12353 -e 12543 -o dist/kana6.h --special gpl3 --special preprocessflag

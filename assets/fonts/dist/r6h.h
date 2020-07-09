@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _R6H_H_
 #define _R6H_H_
 
-static const unsigned char r6h_data [] = {
+static const unsigned char font_r6h_data [] = {
 	 0xc3,0xb5,0xad,0x9d,0xc3,0xff,     /* 0 */
 	 0xff,0xdd,0x81,0xfd,0xff,0xff,     /* 1 */
 	 0xdd,0xb9,0xb5,0xad,0xdd,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char r6h_data [] = {
 };
 
 static const FontInfo font_r6h = {
-	31,
-	"R 6H",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	r6h_data,
+	.fontIndex = 31,
+	//.fontName = "R 6H",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = r6h_data,
 };
 
 /*

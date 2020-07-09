@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RUILXFIXEDSYS_H_
 #define _RUILXFIXEDSYS_H_
 
-static const unsigned char ruilxfixedsys_data [] = {
+static const unsigned char font_ruilxfixedsys_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x05,0xff,0xff,0xff,     /* ! */
 	 0xff,0x3f,0xff,0x3f,0xff,0xff,     /* " */
@@ -115,16 +115,16 @@ static const unsigned char ruilxfixedsys_data [] = {
 };
 
 static const FontInfo font_ruilxfixedsys = {
-	6,
-	"RuilxFixedSys",
-	32,
-	128,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	ruilxfixedsys_data,
+	.fontIndex = 6,
+	//.fontName = "RuilxFixedSys",
+	.startUnicode = 32,
+	.endUnicode = 128,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = ruilxfixedsys_data,
 };
 
 /*

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSQ_H_
 #define _RSQ_H_
 
-static const unsigned char rsq_data [] = {
+static const unsigned char font_rsq_data [] = {
 	 0x83,0xbb,0xbb,0xbb,0x83,0xff,     /* 0 */
 	 0xff,0xff,0xff,0xff,0x83,0xff,     /* 1 */
 	 0xa3,0xab,0xab,0xab,0x8b,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rsq_data [] = {
 };
 
 static const FontInfo font_rsq = {
-	26,
-	"R Sq",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rsq_data,
+	.fontIndex = 26,
+	//.fontName = "R Sq",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rsq_data,
 };
 
 /*

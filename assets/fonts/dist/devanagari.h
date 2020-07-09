@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _DEVANAGARI_H_
 #define _DEVANAGARI_H_
 
-static const unsigned char devanagari_data [] = {
+static const unsigned char font_devanagari_data [] = {
 	 0x01,0x7d,0x7d,0x7d,0x01,0xff,     /* 0 */
 	 0x0f,0x6f,0x6f,0x03,0xfd,0xff,     /* 1 */
 	 0xef,0x67,0x6b,0x6d,0x0f,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char devanagari_data [] = {
 };
 
 static const FontInfo font_devanagari = {
-	35,
-	"Devanagari",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	devanagari_data,
+	.fontIndex = 35,
+	//.fontName = "Devanagari",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = devanagari_data,
 };
 
 /*

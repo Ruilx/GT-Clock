@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _COMMODORE64_H_
 #define _COMMODORE64_H_
 
-static const unsigned char commodore64_data [] = {
+static const unsigned char font_commodore64_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0xff,0x05,0x05,0xff,0xff,0xff,     /* ! */
 	 0xff,0x1f,0x1f,0xff,0xff,0x1f,0x1f,0xff,     /* " */
@@ -115,16 +115,16 @@ static const unsigned char commodore64_data [] = {
 };
 
 static const FontInfo font_commodore64 = {
-	33,
-	"Commodore64",
-	32,
-	128,
-	8,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	commodore64_data,
+	.fontIndex = 33,
+	//.fontName = "Commodore64",
+	.startUnicode = 32,
+	.endUnicode = 128,
+	.blockLength = 8,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = commodore64_data,
 };
 
 /*

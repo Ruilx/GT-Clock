@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSMG_H_
 #define _RSMG_H_
 
-static const unsigned char rsmg_data [] = {
+static const unsigned char font_rsmg_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x05,0xff,0xff,0xff,     /* ! */
 	 0xff,0x3f,0xff,0x3f,0xff,0xff,     /* " */
@@ -115,16 +115,16 @@ static const unsigned char rsmg_data [] = {
 };
 
 static const FontInfo font_rsmg = {
-	16,
-	"R SMG",
-	32,
-	128,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rsmg_data,
+	.fontIndex = 16,
+	//.fontName = "R SMG",
+	.startUnicode = 32,
+	.endUnicode = 128,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rsmg_data,
 };
 
 /*

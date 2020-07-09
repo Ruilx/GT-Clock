@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RHSANS_H_
 #define _RHSANS_H_
 
-static const unsigned char rhsans_data [] = {
+static const unsigned char font_rhsans_data [] = {
 	 0x83,0x7d,0x7d,0x7d,0x83,0xff,     /* 0 */
 	 0xff,0xbf,0x01,0xff,0xff,0xff,     /* 1 */
 	 0x7d,0x79,0x75,0x6d,0x9d,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rhsans_data [] = {
 };
 
 static const FontInfo font_rhsans = {
-	7,
-	"RH Sans",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rhsans_data,
+	.fontIndex = 7,
+	//.fontName = "RH Sans",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rhsans_data,
 };
 
 /*

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _OCRA_H_
 #define _OCRA_H_
 
-static const unsigned char ocra_data [] = {
+static const unsigned char font_ocra_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x05,0xff,0xff,0xff,     /* ! */
 	 0x7f,0x3f,0x7f,0x3f,0x7f,0xff,     /* " */
@@ -115,16 +115,16 @@ static const unsigned char ocra_data [] = {
 };
 
 static const FontInfo font_ocra = {
-	14,
-	"OCR A",
-	32,
-	128,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	ocra_data,
+	.fontIndex = 14,
+	//.fontName = "OCR A",
+	.startUnicode = 32,
+	.endUnicode = 128,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = ocra_data,
 };
 
 /*

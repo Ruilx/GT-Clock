@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _R4511_H_
 #define _R4511_H_
 
-static const unsigned char r4511_data [] = {
+static const unsigned char font_r4511_data [] = {
 	 0x01,0x7d,0x7d,0x7d,0x01,0xff,     /* 0 */
 	 0xff,0xff,0x01,0xff,0xff,0xff,     /* 1 */
 	 0x61,0x6d,0x6d,0x6d,0x0d,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char r4511_data [] = {
 };
 
 static const FontInfo font_r4511 = {
-	11,
-	"R4511",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	r4511_data,
+	.fontIndex = 11,
+	//.fontName = "R4511",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = r4511_data,
 };
 
 /*

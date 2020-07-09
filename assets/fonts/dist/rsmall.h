@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSMALL_H_
 #define _RSMALL_H_
 
-static const unsigned char rsmall_data [] = {
+static const unsigned char font_rsmall_data [] = {
 	 0xff,0x83,0xbb,0x83,0xff,0xff,     /* 0 */
 	 0xff,0xff,0x83,0xff,0xff,0xff,     /* 1 */
 	 0xff,0xa3,0xab,0x8b,0xff,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rsmall_data [] = {
 };
 
 static const FontInfo font_rsmall = {
-	23,
-	"R Small",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rsmall_data,
+	.fontIndex = 23,
+	//.fontName = "R Small",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rsmall_data,
 };
 
 /*

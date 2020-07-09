@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RBLOCK_H_
 #define _RBLOCK_H_
 
-static const unsigned char rblock_data [] = {
+static const unsigned char font_rblock_data [] = {
 	 0x11,0x7d,0xff,0x7d,0x11,0xff,     /* 0 */
 	 0xff,0xff,0x11,0xff,0xff,0xff,     /* 1 */
 	 0x71,0x7d,0xef,0x7d,0x1d,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rblock_data [] = {
 };
 
 static const FontInfo font_rblock = {
-	22,
-	"R Block",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rblock_data,
+	.fontIndex = 22,
+	//.fontName = "R Block",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rblock_data,
 };
 
 /*

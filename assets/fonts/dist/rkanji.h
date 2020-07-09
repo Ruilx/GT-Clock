@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RKANJI_H_
 #define _RKANJI_H_
 
-static const unsigned char rkanji_data [] = {
+static const unsigned char font_rkanji_data [] = {
 	 0xc7,0xbb,0xbb,0xbb,0xc7,0xff,     /* 0 */
 	 0xef,0xef,0xef,0xef,0xef,0xff,     /* 1 */
 	 0xfb,0xbb,0xbb,0xbb,0xfb,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rkanji_data [] = {
 };
 
 static const FontInfo font_rkanji = {
-	18,
-	"R Kanji",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rkanji_data,
+	.fontIndex = 18,
+	//.fontName = "R Kanji",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rkanji_data,
 };
 
 /*

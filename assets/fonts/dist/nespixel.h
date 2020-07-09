@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _NESPIXEL_H_
 #define _NESPIXEL_H_
 
-static const unsigned char nespixel_data [] = {
+static const unsigned char font_nespixel_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0x8f,0x04,0x04,0x8f,0xff,0xff,0xff,     /* ! */
 	 0xff,0xff,0x1f,0xff,0x1f,0xff,0xff,0xff,     /* " */
@@ -115,16 +115,16 @@ static const unsigned char nespixel_data [] = {
 };
 
 static const FontInfo font_nespixel = {
-	34,
-	"NesPixel",
-	32,
-	128,
-	8,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	nespixel_data,
+	.fontIndex = 34,
+	//.fontName = "NesPixel",
+	.startUnicode = 32,
+	.endUnicode = 128,
+	.blockLength = 8,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = nespixel_data,
 };
 
 /*

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RPROBOLD_H_
 #define _RPROBOLD_H_
 
-static const unsigned char rprobold_index [] = {
+static const unsigned char font_rprobold_index [] = {
 	 0x00,0x06,  /* <sp> */
 	 0x02,0x06,     /* ! */
 	 0x04,0x06,     /* " */
@@ -114,7 +114,7 @@ static const unsigned char rprobold_index [] = {
 	 0xCD,0x05, /* <del> */
 };
 
-static const unsigned char rprobold_data [] = {
+static const unsigned char font_rprobold_data [] = {
 	 0xff,0xff,0xff,0xff,0xff,0xff,  /* <sp> */
 	 0xff,0xff,0x05,0x05,0xff,0xff,     /* ! */
 	 0xff,0x3f,0xff,0x3f,0xff,0xff,     /* " */
@@ -214,16 +214,16 @@ static const unsigned char rprobold_data [] = {
 };
 
 static const FontInfo font_rprobold = {
-	1,
-	"R Pro Bold",
-	32,
-	128,
-	3,
-	false,
-	false,
-	0xFF,
-	rprobold_index,
-	rprobold_data,
+	.fontIndex = 1,
+	//.fontName = "R Pro Bold",
+	.startUnicode = 32,
+	.endUnicode = 128,
+	.blockLength = 3,
+	.logicality = false,
+	.monospace = false,
+	.numberHeight = 7,
+	.index = rprobold_index,
+	.data = rprobold_data,
 };
 
 /*

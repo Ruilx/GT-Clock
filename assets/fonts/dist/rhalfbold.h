@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RHALFBOLD_H_
 #define _RHALFBOLD_H_
 
-static const unsigned char rhalfbold_data [] = {
+static const unsigned char font_rhalfbold_data [] = {
 	 0x01,0x01,0x7d,0x7d,0x01,0xff,     /* 0 */
 	 0xff,0xbd,0x01,0x01,0xfd,0xff,     /* 1 */
 	 0x39,0x71,0x65,0x0d,0x1d,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rhalfbold_data [] = {
 };
 
 static const FontInfo font_rhalfbold = {
-	20,
-	"R Half Bold",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rhalfbold_data,
+	.fontIndex = 20,
+	//.fontName = "R Half Bold",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rhalfbold_data,
 };
 
 /*

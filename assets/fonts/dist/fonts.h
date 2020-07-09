@@ -15,13 +15,13 @@
 #define _FONT_INFO_STRUCT_
 typedef struct FontInfo_t {
 	uint8_t fontIndex;
-	char fontName[16];
+	//char fontName[16];
 	uint16_t startUnicode;
 	uint16_t endUnicode;
 	uint8_t blockLength;
 	bool logicality;
 	bool monospace;
-	uint8_t monoMask;
+	uint8_t numberHeight,
 	const unsigned char *index;
 	const unsigned char *data;
 } FontInfo;

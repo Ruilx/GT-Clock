@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSQSERIF_H_
 #define _RSQSERIF_H_
 
-static const unsigned char rsqserif_data [] = {
+static const unsigned char font_rsqserif_data [] = {
 	 0xc7,0xbb,0xbb,0xbb,0xc7,0xff,     /* 0 */
 	 0xff,0xdb,0x83,0xfb,0xff,0xff,     /* 1 */
 	 0xdb,0xb3,0xab,0xab,0xdb,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rsqserif_data [] = {
 };
 
 static const FontInfo font_rsqserif = {
-	29,
-	"R Sq Serif",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rsqserif_data,
+	.fontIndex = 29,
+	//.fontName = "R Sq Serif",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rsqserif_data,
 };
 
 /*

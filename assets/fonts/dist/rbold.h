@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RBOLD_H_
 #define _RBOLD_H_
 
-static const unsigned char rbold_data [] = {
+static const unsigned char font_rbold_data [] = {
 	 0x01,0x01,0x7d,0x01,0x01,0xff,     /* 0 */
 	 0xff,0xff,0xff,0x01,0x01,0xff,     /* 1 */
 	 0x61,0x61,0x6d,0x0d,0x0d,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rbold_data [] = {
 };
 
 static const FontInfo font_rbold = {
-	2,
-	"R Bold",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rbold_data,
+	.fontIndex = 2,
+	//.fontName = "R Bold",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rbold_data,
 };
 
 /*

@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSHIFTSYM_H_
 #define _RSHIFTSYM_H_
 
-static const unsigned char rshiftsym_data [] = {
+static const unsigned char font_rshiftsym_data [] = {
 	 0xff,0x7d,0x83,0xff,0xff,0xff,     /* 0 */
 	 0xff,0xff,0x05,0xff,0xff,0xff,     /* 1 */
 	 0xb3,0x6d,0x61,0x7d,0x83,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rshiftsym_data [] = {
 };
 
 static const FontInfo font_rshiftsym = {
-	25,
-	"R Shift Sym",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rshiftsym_data,
+	.fontIndex = 25,
+	//.fontName = "R Shift Sym",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rshiftsym_data,
 };
 
 /*

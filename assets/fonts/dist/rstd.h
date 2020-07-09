@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSTD_H_
 #define _RSTD_H_
 
-static const unsigned char rstd_data [] = {
+static const unsigned char font_rstd_data [] = {
 	 0x83,0x7d,0x7d,0x7d,0x83,0xff,     /* 0 */
 	 0xff,0xbd,0x01,0xfd,0xff,0xff,     /* 1 */
 	 0xbd,0x79,0x75,0x6d,0x9d,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rstd_data [] = {
 };
 
 static const FontInfo font_rstd = {
-	5,
-	"R Std",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rstd_data,
+	.fontIndex = 5,
+	//.fontName = "R Std",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rstd_data,
 };
 
 /*

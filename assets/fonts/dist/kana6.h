@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _KANA6_H_
 #define _KANA6_H_
 
-static const unsigned char kana6_data [] = {
+static const unsigned char font_kana6_data [] = {
 	 0xdb,0x85,0xd3,0xd7,0xd9,0xff,     /* ぁ */
 	 0xb3,0x05,0xab,0xa7,0xb1,0xff,     /* あ */
 	 0xe1,0xfd,0xfb,0xef,0xf3,0xff,     /* ぃ */
@@ -209,16 +209,16 @@ static const unsigned char kana6_data [] = {
 };
 
 static const FontInfo font_kana6 = {
-	64,
-	"Kana6",
-	12353,
-	12543,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	kana6_data,
+	.fontIndex = 64,
+	//.fontName = "Kana6",
+	.startUnicode = 12353,
+	.endUnicode = 12543,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = kana6_data,
 };
 
 /*

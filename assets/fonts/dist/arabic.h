@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _ARABIC_H_
 #define _ARABIC_H_
 
-static const unsigned char arabic_data [] = {
+static const unsigned char font_arabic_data [] = {
 	 0xff,0xff,0xc7,0xff,0xff,0xff,     /* 0 */
 	 0xff,0xff,0x01,0xff,0xff,0xff,     /* 1 */
 	 0x01,0x7f,0x7f,0x7f,0x7f,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char arabic_data [] = {
 };
 
 static const FontInfo font_arabic = {
-	36,
-	"Arabic",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	arabic_data,
+	.fontIndex = 36,
+	//.fontName = "Arabic",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = arabic_data,
 };
 
 /*

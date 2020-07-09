@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RSQSTD_H_
 #define _RSQSTD_H_
 
-static const unsigned char rsqstd_data [] = {
+static const unsigned char font_rsqstd_data [] = {
 	 0xc7,0xbb,0xbb,0xbb,0xc7,0xff,     /* 0 */
 	 0xff,0xff,0x83,0xff,0xff,0xff,     /* 1 */
 	 0xf3,0xab,0xab,0xab,0xdb,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rsqstd_data [] = {
 };
 
 static const FontInfo font_rsqstd = {
-	28,
-	"R Sq Std",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rsqstd_data,
+	.fontIndex = 28,
+	//.fontName = "R Sq Std",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rsqstd_data,
 };
 
 /*

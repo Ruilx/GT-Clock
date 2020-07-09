@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RBOLDSERIF_H_
 #define _RBOLDSERIF_H_
 
-static const unsigned char rboldserif_data [] = {
+static const unsigned char font_rboldserif_data [] = {
 	 0x01,0x01,0x7d,0x01,0x01,0xff,     /* 0 */
 	 0xff,0x7d,0x01,0x01,0xfd,0xff,     /* 1 */
 	 0x21,0x21,0x6d,0x09,0x09,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rboldserif_data [] = {
 };
 
 static const FontInfo font_rboldserif = {
-	3,
-	"R Bold Serif",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rboldserif_data,
+	.fontIndex = 3,
+	//.fontName = "R Bold Serif",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rboldserif_data,
 };
 
 /*

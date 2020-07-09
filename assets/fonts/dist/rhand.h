@@ -15,7 +15,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef _RHAND_H_
 #define _RHAND_H_
 
-static const unsigned char rhand_data [] = {
+static const unsigned char font_rhand_data [] = {
 	 0xc3,0xbd,0x7d,0x7b,0x87,0xff,     /* 0 */
 	 0xff,0xf9,0xc7,0x3f,0xff,0xff,     /* 1 */
 	 0xfb,0x7b,0x75,0x6d,0x9d,0xff,     /* 2 */
@@ -29,16 +29,16 @@ static const unsigned char rhand_data [] = {
 };
 
 static const FontInfo font_rhand = {
-	15,
-	"R Hand",
-	48,
-	58,
-	6,
-	false,
-	true,
-	0xFF,
-	nullptr,
-	rhand_data,
+	.fontIndex = 15,
+	//.fontName = "R Hand",
+	.startUnicode = 48,
+	.endUnicode = 58,
+	.blockLength = 6,
+	.logicality = false,
+	.monospace = true,
+	.numberHeight = 7,
+	.index = nullptr,
+	.data = rhand_data,
 };
 
 /*
