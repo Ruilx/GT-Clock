@@ -24,7 +24,7 @@ StaticLibrary {
         "-Wno-unused-variable",
     ]
     cpp.staticLibraries: ["m"]
-    cpp.includePaths: ["common", "."]
+    cpp.includePaths: ["common", ".", "../assets/fonts/dist"]
 
     Properties {
         condition: qbs.buildVariant == "debug"
@@ -74,7 +74,7 @@ StaticLibrary {
     Group {
         name: "Fonts"
         files: [
-            "fonts/*"
+            "../assets/fonts/dist/*.h"
         ]
     }
 

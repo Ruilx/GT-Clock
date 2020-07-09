@@ -5,6 +5,7 @@
 
 typedef enum {LayerIdNone = 0, LayerIdConst, LayerIdGamma,
 	      LayerIdBreath, LayerIdSine,
+	      LayerIdString,
 } layer_id_t;
 
 typedef const struct {
