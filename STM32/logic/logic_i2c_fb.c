@@ -63,6 +63,7 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 	func_t start = id - FUNC_BASE;
 	func_t end = segment == 1 ? start + size : FuncPtr;
 	if (start <= FuncSwap && end > FuncSwap) {
+		while (!matrix_fb_ready());
 		if (regs[FuncSwap] == 0xff)
 			matrix_fb_swap();
 		else if (regs[FuncSwap] == 0x80)

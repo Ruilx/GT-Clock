@@ -100,16 +100,13 @@ void *logic_layers_param(unsigned int layer)
 	return data.layer[layer].shadow.param;
 }
 
-void *logic_layers_data(unsigned int layer)
+void *logic_layers_data(unsigned int layer, unsigned int *size)
 {
-	return data.layer[layer].p;
-}
-
-unsigned int logic_layers_data_size(unsigned int layer)
-{
-	if (data.layer[layer].p == 0)
+	*size = 0;
+	if (data.layer[layer].phdr == 0 || data.layer[layer].phdr->data == 0 ||
+	    data.layer[layer].p == 0)
 		return 0;
-	return data.layer[layer].phdr->size(data.layer[layer].param, data.layer[layer].p);
+	return data.layer[layer].phdr->data(data.layer[layer].param, data.layer[layer].p, size);
 }
 
 unsigned int logic_layers_update()
@@ -202,7 +199,8 @@ static void init()
 	for (unsigned int layer = 0; layer < MAX_LAYERS; layer++) {
 		if (layers[layer] == LayerIdNone)
 			break;
-		void *p = logic_layers_data(layer);
+		unsigned int size;
+		void *p = logic_layers_data(layer, &size);
 		if (data[layer] && p)
 			strcpy(p, data[layer]);
 	}

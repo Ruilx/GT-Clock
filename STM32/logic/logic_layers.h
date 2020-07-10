@@ -11,7 +11,7 @@ typedef enum {LayerIdNone = 0, LayerIdConst, LayerIdGamma,
 typedef const struct {
 	layer_id_t id;
 	void *(* const config)(void *param, unsigned int *ok);
-	unsigned int (* const size)(void *param, void *ptr);
+	void *(* const data)(void *param, void *ptr, unsigned int *size);
 	void (* const proc)(unsigned int tick, void *param, void *ptr);
 } logic_layer_handler_t;
 
@@ -26,8 +26,7 @@ unsigned int logic_layers_param_size();
 void logic_layers_select(const uint8_t *layers, unsigned int num);
 void logic_layers_set_param(unsigned int layer, const void *p, unsigned int size);
 void *logic_layers_param(unsigned int layer);
-void *logic_layers_data(unsigned int layer);
-unsigned int logic_layers_data_size(unsigned int layer);
+void *logic_layers_data(unsigned int layer, unsigned int *size);
 unsigned int logic_layers_update();
 
 void *logic_layers_alloc(unsigned int size);

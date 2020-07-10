@@ -71,8 +71,7 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 	case FuncData:
 		// Layer private data
 		*segment = 0;
-		*size = logic_layers_data_size(data.regs[FuncParam]);
-		return logic_layers_data(data.regs[FuncParam]);
+		return logic_layers_data(data.regs[FuncParam], size);
 	default:
 		break;
 	}

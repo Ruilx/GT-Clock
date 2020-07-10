@@ -48,6 +48,13 @@ static void *config(void *param, unsigned int *ok)
 	return ptr;
 }
 
+static inline void *data(void *param, void *ptr, unsigned int *size)
+{
+	param_t *pp = param;
+	*size = pp->len;
+	return ptr;
+}
+
 static inline void draw_bitmap(int ox, int oy, unsigned int w, unsigned int h,
 			       const uint8_t *pbm, uint8_t bmw, uint8_t bmh,
 			       uint8_t *pfb)
@@ -103,5 +110,6 @@ static void proc(unsigned int tick, void *param, void *ptr)
 LOGIC_LAYER_HANDLER() = {
 	.id = LayerIdString,
 	.config = &config,
+	.data = &data,
 	.proc = &proc,
 };
