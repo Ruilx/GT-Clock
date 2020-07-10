@@ -97,7 +97,7 @@ void logic_layers_set_param(unsigned int layer, const void *p, unsigned int size
 
 void *logic_layers_param(unsigned int layer)
 {
-	return data.layer[layer].param;
+	return data.layer[layer].shadow.param;
 }
 
 void *logic_layers_data(unsigned int layer)
@@ -118,6 +118,8 @@ unsigned int logic_layers_update()
 	data.heap.size = 0;
 	for (unsigned int i = 0; i < MAX_LAYERS; i++) {
 		data.layer[i].phdr = data.layer[i].shadow.phdr;
+		if (data.layer[i].phdr == 0)
+			return ok;
 		memcpy(data.layer[i].param, data.layer[i].shadow.param, PARAM_SIZE);
 		if (data.layer[i].phdr && data.layer[i].phdr->config)
 			data.layer[i].p = data.layer[i].phdr->config(data.layer[i].param, &ok);
