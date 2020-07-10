@@ -22,8 +22,8 @@
 
 typedef struct PACKED {
 	uint8_t flags;
-	uint8_t x;
-	uint8_t y;
+	int8_t x;
+	int8_t y;
 	uint8_t m[3];
 	struct {
 		uint8_t mult;

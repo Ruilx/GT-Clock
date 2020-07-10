@@ -8,16 +8,18 @@
 #define PARAM_SIZE	12
 #define HEAP_SIZE	(4 * 1024)
 
-typedef struct {
-	const logic_layer_handler_t *phdr;
-	uint8_t param[PARAM_SIZE];
-	void *p;
-} layer_t;
-
 static struct {
 	unsigned int enable;
 	unsigned int refcnt;
-	layer_t layer[MAX_LAYERS];
+	struct {
+		const logic_layer_handler_t *phdr;
+		uint8_t param[PARAM_SIZE];
+		void *p;
+		struct {
+			const logic_layer_handler_t *phdr;
+			uint8_t param[PARAM_SIZE];
+		} shadow;
+	} layer[MAX_LAYERS];
 	struct {
 		unsigned int size;
 		uint8_t buf[HEAP_SIZE];
@@ -34,6 +36,16 @@ void logic_layers_enable(unsigned int e)
 unsigned int logic_layers_refresh_cnt()
 {
 	return data.refcnt;
+}
+
+unsigned int logic_layers_max()
+{
+	return MAX_LAYERS;
+}
+
+unsigned int logic_layers_param_size()
+{
+	return PARAM_SIZE;
 }
 
 static void proc()
@@ -61,24 +73,31 @@ static void proc()
 
 IDLE_HANDLER() = &proc;
 
-void logic_layers_select(const uint8_t *layers)
+void logic_layers_select(const uint8_t *layers, unsigned int num)
 {
 	unsigned int i;
 	for (i = 0; i < MAX_LAYERS; i++) {
-		data.layer[i].phdr = 0;
+		data.layer[i].shadow.phdr = 0;
+		if (layers[i] == LayerIdNone || i == num)
+			break;
 		LIST_ITERATE(logic_layer, logic_layer_handler_t, phdr)
 			if (phdr->id == layers[i])
-				data.layer[i].phdr = phdr;
+				data.layer[i].shadow.phdr = phdr;
 	}
 	if (i != MAX_LAYERS)
-		data.layer[i].phdr = 0;
+		data.layer[i].shadow.phdr = 0;
 }
 
 void logic_layers_set_param(unsigned int layer, const void *p, unsigned int size)
 {
 	if (size > PARAM_SIZE)
 		size = PARAM_SIZE;
-	memcpy(data.layer[layer].param, p, size);
+	memcpy(data.layer[layer].shadow.param, p, size);
+}
+
+void *logic_layers_param(unsigned int layer)
+{
+	return data.layer[layer].param;
 }
 
 void *logic_layers_data(unsigned int layer)
@@ -86,13 +105,23 @@ void *logic_layers_data(unsigned int layer)
 	return data.layer[layer].p;
 }
 
+unsigned int logic_layers_data_size(unsigned int layer)
+{
+	if (data.layer[layer].p == 0)
+		return 0;
+	return data.layer[layer].phdr->size(data.layer[layer].param, data.layer[layer].p);
+}
+
 unsigned int logic_layers_update()
 {
 	unsigned int ok = 1;
 	data.heap.size = 0;
-	for (unsigned int i = 0; i < MAX_LAYERS; i++)
+	for (unsigned int i = 0; i < MAX_LAYERS; i++) {
+		data.layer[i].phdr = data.layer[i].shadow.phdr;
+		memcpy(data.layer[i].param, data.layer[i].shadow.param, PARAM_SIZE);
 		if (data.layer[i].phdr && data.layer[i].phdr->config)
 			data.layer[i].p = data.layer[i].phdr->config(data.layer[i].param, &ok);
+	}
 	return ok;
 }
 
@@ -122,52 +151,33 @@ static void init()
 
 	static const uint8_t layers[MAX_LAYERS] = {
 		LayerIdSine,
-		LayerIdSine,
 		LayerIdConst,
-		LayerIdString,
 		LayerIdString,
 		LayerIdGamma,
 		LayerIdNone
 	};
 	const uint8_t params[MAX_LAYERS][PARAM_SIZE] = {
 		{
-			0x80,	// Multiply, not half-aligned
-			w - 1,	// X offset
+			0x81,	// Multiply, half-aligned
+			20,	// X offset
 			0,	// Y offset
 			0,	// Factor of original value
 			255,	// Factor of new value
 			0,	// Factor of mixer value
-			1,	// Spacial period, multiply
-			2,	// Spacial period, divide
-			1,	// Temporal period, multiply
-			4,	// Temporal period, divide
-		}, {
-			0x81,	// Multiply, half-aligned
-			24,	// X offset
-			4,	// Y offset
-			70,	// Factor of original value
-			20,	// Factor of new value
-			165,	// Factor of mixer value
 			5,	// Spacial period, multiply
 			2,	// Spacial period, divide
 			1,	// Temporal period, multiply
 			2,	// Temporal period, divide
 		}, {
 			0x00,	// Flags
-			210,	// Factor of original value
+			150,	// Factor of original value
 			0,	// Factor of constant 1
-		}, {
-			0x00,	// Flags
-			26,	// X offset
-			1,	// Y offset
-			3,	// String length
-			37,	// Font ID
 		}, {
 			0x00,	// Flags
 			8,	// X offset
 			1,	// Y offset
-			2,	// String length
-			6,	// Font ID
+			5,	// String length
+			37,	// Font ID
 		}, {
 			0x00,	// Flags
 			0x22,	// Factor in hex
@@ -176,13 +186,11 @@ static void init()
 	static const void *data[MAX_LAYERS] = {
 		0,
 		0,
-		0,
-		"ia!",
-		"ST",
+		"STM32",
 		0,
 	};
 
-	logic_layers_select(layers);
+	logic_layers_select(layers, MAX_LAYERS);
 	for (unsigned int layer = 0; layer < MAX_LAYERS; layer++) {
 		if (layers[layer] == LayerIdNone)
 			break;
