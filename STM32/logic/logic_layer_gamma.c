@@ -33,7 +33,8 @@ static void init(layer_obj_t *pparam, layer_obj_t *pdata)
 	}
 }
 
-static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok)
+static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok,
+		   unsigned int w, unsigned int h)
 {
 	if (pparam->size == 0 || pdata->size == 0) {
 		*ok = 0;
@@ -46,14 +47,16 @@ static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok)
 	updateLut(factor, pdata->p);
 }
 
-static void proc(unsigned int tick, void *param, void *ptr)
+static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,
+		 uint8_t *pfb, unsigned int w, unsigned int h)
 {
-	uint8_t *lut = ptr;
-	unsigned int w, h;
-	uint8_t *p = matrix_fb(0, &w, &h);
+	if (pdata->size == 0)
+		return;
+
+	uint8_t *lut = pdata->p;
 	for (unsigned int y = 0; y < h; y++) {
 		for (unsigned int x = 0; x < w; x++) {
-			uint8_t *pv = p + y * w + x;
+			uint8_t *pv = pfb + y * w + x;
 			*pv = lut[*pv];
 		}
 	}

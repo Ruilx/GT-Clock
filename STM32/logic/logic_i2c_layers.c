@@ -74,9 +74,18 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 		}
 		break;
 	case FuncMixer:
-		// Layer private data
-		*segment = 0;
-		return logic_layers_mixer(data.regs[FuncParam], size);
+		switch (*segment) {
+		case 0:
+			// Register access, starting layer
+			*segment = 1;
+			*size = 1;
+			return &data.regs[func];
+		case 1:
+			// Layer private data
+			*segment = 0;
+			return logic_layers_mixer(data.regs[FuncParam], data.regs[FuncMixer], size);
+		}
+		break;
 	case FuncData:
 		// Layer private data
 		*segment = 0;

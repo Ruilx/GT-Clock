@@ -32,9 +32,14 @@ static void init(layer_obj_t *pparam, layer_obj_t *pdata)
 	pdata->size = 0;
 }
 
-static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok)
+static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok,
+		   unsigned int w, unsigned int h)
 {
 	param_t *pp = pparam->p;
+	if (pp->len == 0) {
+		pdata->size = 0;
+		return;
+	}
 
 	// Now, allocate data buffer
 	pdata->size = pp->len;
@@ -79,10 +84,9 @@ static inline void draw_bitmap(int ox, int oy, unsigned int w, unsigned int h,
 	}
 }
 
-static inline void draw_string(param_t *pp, char *ptr)
+static inline void draw_string(param_t *pp, char *ptr,
+			       uint8_t *pfb, unsigned int w, unsigned int h)
 {
-	unsigned int w, h;
-	uint8_t *pfb = matrix_fb(0, &w, &h);
 	unsigned int len = pp->len;
 	int x = pp->x;
 	int y = pp->y;
@@ -106,12 +110,13 @@ static inline void draw_string(param_t *pp, char *ptr)
 	}
 }
 
-static void proc(unsigned int tick, void *param, void *ptr)
+static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,
+		 uint8_t *pfb, unsigned int w, unsigned int h)
 {
-	param_t *pp = param;
-	if (!ptr || !pp->info)
+	memset(pfb, 0, w * h);
+	if (pparam->size == 0 || pdata->size == 0)
 		return;
-	draw_string(pp, ptr);
+	draw_string(pparam->p, pdata->p, pfb, w, h);
 }
 
 LOGIC_LAYER_HANDLER() = {

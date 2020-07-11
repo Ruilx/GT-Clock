@@ -126,7 +126,10 @@ void CAN1_SCE_IRQHandler()
 		layer_t *pp = &data.layer[i][actparam];
 		if (pp->phdr == 0)
 			continue;
-		pp->phdr->proc(tick, pp->obj[LParam].p, pp->obj[LData].p);
+		unsigned int w, h;
+		void *pfb = logic_layer_mixer_fb(&pp->obj[LMixer], &w, &h);
+		pp->phdr->proc(&pp->obj[LParam], &pp->obj[LData], tick, pfb, w, h);
+		logic_layer_mixer_post(&pp->obj[LMixer]);
 	}
 
 	matrix_fb_swap();
@@ -197,12 +200,12 @@ void *logic_layers_param(unsigned int layer, unsigned int *size)
 	return logic_layers_obj(layer, LParam, size);
 }
 
-void *logic_layers_mixer(unsigned int layer, unsigned int *size)
+void *logic_layers_mixer(unsigned int layer, unsigned int nops, unsigned int *size)
 {
 	unsigned int actparam = data.actparam;
 	layer_t *pp = &data.layer[layer][!actparam];
 	if (pp->obj[LMixer].size == 0)
-		logic_layer_mixer_init(&pp->obj[LMixer]);
+		logic_layer_mixer_init(&pp->obj[LMixer], nops);
 	return logic_layers_obj(layer, LMixer, size);
 }
 
@@ -221,9 +224,11 @@ unsigned int logic_layers_commit(unsigned int layer)
 		pp->obj[LMixer].size = 0;
 		return 1;
 	}
+	unsigned int w, h;
+	logic_layer_mixer_fb(&pp->obj[LMixer], &w, &h);
 	unsigned int ok = 1;
 	if (pp->phdr->config)
-		pp->phdr->config(&pp->obj[LParam], &pp->obj[LData], &ok);
+		pp->phdr->config(&pp->obj[LParam], &pp->obj[LData], &ok, w, h);
 	gc(1);
 	return ok;
 }
@@ -261,36 +266,33 @@ static void init_test()
 	static const struct {
 		uint8_t id;
 		uint8_t param[16];
-		void *pdata;
+		uint8_t mix[16];
+		const void *pdata;
 	} data[MAX_LAYERS] = {
 		{LayerIdSine, {
 			0x81,	// Multiply, half-aligned
 			20,	// X offset
 			0,	// Y offset
-			0,	// Factor of original value
-			255,	// Factor of new value
-			0,	// Factor of mixer value
-			5,	// Spacial period, multiply
-			2,	// Spacial period, divide
+			1,	// Spacial period, multiply
+			3,	// Spacial period, divide
 			1,	// Temporal period, multiply
 			2,	// Temporal period, divide
-		}, 0},
+		}, {0xff}, 0},
 		{LayerIdConst, {
 			0x00,	// Flags
-			150,	// Factor of original value
-			0,	// Factor of constant 1
-		}, 0},
+			255,	// Value
+		}, {2, 25, 1, 14, 5,	6, 255, 0, 120}, 0},
 		{LayerIdString, {
 			0x00,	// Flags
-			8,	// X offset
-			1,	// Y offset
+			-3,	// X offset
+			0,	// Y offset
 			5,	// String length
 			37,	// Font ID
-		}, "STM32"},
+		}, {2, 17, 3, 20, 4,	2, 120, 4, 255}, "STM32"},
 		{LayerIdGamma, {
 			0x00,	// Flags
 			0x22,	// Factor in hex
-		}, 0},
+		}, {0xff}, 0},
 	};
 
 	uint8_t layers[MAX_LAYERS];
@@ -306,6 +308,13 @@ static void init_test()
 			memcpy(p, data[layer].param, size);
 		if (!logic_layers_commit(layer))
 			dbgbkpt();
+		if (data[layer].mix[0] != 0xff) {
+			p = logic_layers_mixer(layer, data[layer].mix[0], &size);
+			if (size != 0)
+				memcpy(p, &data[layer].mix[1], size);
+			if (!logic_layers_commit(layer))
+				dbgbkpt();
+		}
 		p = logic_layers_data(layer, &size);
 		if (size != 0 && data[layer].pdata != 0)
 			memcpy(p, data[layer].pdata, size);

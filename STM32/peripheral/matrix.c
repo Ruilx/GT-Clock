@@ -304,10 +304,8 @@ void TIM4_IRQHandler()
 
 void *matrix_fb(unsigned int active, unsigned int *w, unsigned int *h)
 {
-	if (w)
-		*w = PANELS * 8;
-	if (h)
-		*h = LINES;
+	*w = PANELS * 8;
+	*h = LINES;
 	return &data.fb[active ^ data.wfb][0][0];
 }
 
