@@ -46,6 +46,15 @@
 				width: 100%;
 			}
 		}
+		#tsp{
+			width: 120px;
+			height: 24px;
+			margin: auto;
+			background: url('assets/timestylenewpreview.png') no-repeat top left;
+			background-size: 120px;
+			image-rendering: pixelated;
+			transition: background-position ease-out 0.3s;
+		}
 	</style>
 </head>
 <body style="padding-top: 70px; background-color: #f1f2f6">
@@ -110,7 +119,7 @@
 						</div>
 					</li>
 					<li class="list-group-item">
-						<label>RTC设备</label>
+						<label>RTC Device</label>
 						<p class="help-block">Select an RTC device and let time storing in specified device.</p>
 						<p class="help-block">Ensure backup battery of RTC device working properly, otherwise may lost time after shutdown.</p>
 						<div class="input-group">
@@ -143,14 +152,22 @@
 						</select>
 					</div><br>
 					<div class="input-group">
-						<span class="input-group-addon">Time mode</span>
-						<select class="form-control" id="sdm"></select>
+						<span class="input-group-addon">Preview</span>
+						<div class="form-control" style="overflow: hidden">
+							<div id="tsp"></div>
+						</div>
+					</div><br>
+					<div class="input-group">
+						<span class="input-group-addon">Time style</span>
+						<select class="form-control" id="sts"></select>
 					</div><br>
 					<div class="input-group">
 						<span class="input-group-addon">Alignment</span>
 						<select class="form-control" id="sta"></select>
 					</div>
 					<p class="help-block">If choose a font with height of 7, it can configure alignment top or bottom to display, leaving a one pixel line blank in the relative position.</p>
+					<label><input type="checkbox" id="c3"> '0' before non-two-digit of hour</label>
+					<p>Add '0' before hour while it not exceed two digits</p>
 				</div>
 				<ul class="list-group">
 					<li class="list-group-item">
@@ -163,7 +180,9 @@
 						</div><br>
 						<div class="input-group">
 							<span class="input-group-addon">font</span>
-							<select class="form-control" id="sf"></select>
+							<select class="form-control" id="sf">
+								<option value="0">Please Wait...</option>
+							</select>
 						</div><br>
 					</li>
 					<li class="list-group-item">
@@ -172,7 +191,7 @@
 							<span class="input-group-addon">Date format</span>
 							<select class="form-control" id="sdf"></select>
 						</div><br>
-						<label><input type="checkbox" id="c3"> '0' before non-two-digit date</label>
+						<label><input type="checkbox" id="c3"> '0' before non-two-digit of date</label>
 						<p>Add '0' before month or day while it not exceed two digits</p>
 					</li>
 					<li class="list-group-item">
@@ -260,7 +279,7 @@
 				</div>
 				<ul class="list-group">
 					<li class="list-group-item">
-						<label>Available AP</label>
+						<label>Available APs</label>
 						<div class="input-group">
 							<select class="form-control" id="swa">
 								<option value="1">One</option>
@@ -352,7 +371,7 @@
 <script type="text/javascript" src="assets/jquery2.min.js"></script>
 <script type="text/javascript" src="assets/bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/moment.min.js"></script>
-<script type="text/javascript" src="assets/moment_zh-cn.js"></script>
+<!--<script type="text/javascript" src="assets/moment_zh-cn.js"></script>-->
 <script type="text/javascript" src="assets/datetimepicker.min.js"></script>
 <script type="text/javascript" src="assets/h.js"></script>
 <script type="text/javascript">
@@ -382,8 +401,13 @@
 						throw Error("Setup file item was corrupted");
 					}
 					for(let val in j[k]){
-						selInsOpt($(k), val, j[k][val]);
+						//selInsOpt($(k), val, j[k][val]);
 						//console.log("输入到:" + k + " 选项:" + j[k][val] + " 值:" + val);
+						if(typeof(j[k][val]) === "object"){
+							selInsOpt($(k), val, j[k][val]["value"], j[k][val]);
+						}else{
+							selInsOpt($(k), val, j[k][val]);
+						}
 					}
 				} catch(e){
 					console.error(e);
@@ -429,10 +453,23 @@
 			e.target.checked && $("#bsltz").click();
 		});
 		$("#tf").change(function(e){
-			timeFontTrigger("#tfp", $(this).find("option[value=" + e.target.value + "]").data("no"));
+			let selectedOption = $(this).find("option[value=" + e.target.value + "]");
+			timeFontTrigger("#tfp", selectedOption.data("no"));
+			$(this).data("w", selectedOption.data("w"));
+			$(this).data("h", selectedOption.data("h"));
 		});
 		$("#sf").change(function(e){
 			timeFontTrigger("#fp", $(this).find("option[value=" + e.target.value + "]").data("no"));
+		});
+		$("#sts").change(function(e){
+			timeFontTrigger("#tsp", e.target.value - 1);
+			let dataf = $(this).find("option[value=" + e.target.value + "]").data("f");
+			if(typeof(dataf) !== "undefined"){
+				$("#tf").val(dataf).change();
+				//fontname = $("#tf").find("option[value=" + dataf + "]").html();
+			}else{
+				$("#tf").val(1).change();
+			}
 		});
 		$("#bwc").click(function(e){
 			$("#iessid").val($("#swa").val());

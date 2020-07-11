@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0,minimum-scale=1.0, user-scalable=0" />
+	<meta http-equiv="Cache-Control" content="no-transform">
+	<meta http-equiv="Cache-Control" content="no-siteapp">
+	<title>GT-Clock8266</title>
+	<link rel="stylesheet" type="text/css" href="assets/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="assets/bootflat.min.css">
+	<link rel="stylesheet" type="text/css" href="assets/datetimepicker.min.css">
+	<style>
+		.pixel-box{
+			width: 30px;
+			height: 30px;
+			background-color: #FFF;
+			border: #888 1px solid;
+			margin: 2px;
+			display: block;
+			float: left;
+			border-radius: 4px;
+		}
+		.pixel-box.active{
+			background-color: #E35;
+		}
+	</style>
+</head>
+<body style="padding-top: 70px; background-color: #f1f2f6">
+<div class="container" id="main">
+	<div class="row clearfix">
+		<div class="col-xs-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title">Time font creator</h3>
+				</div>
+				
+				<ul class="list-group">
+					<li class="list-group-item">
+						<div class="col-xs-12">
+							<div class="row clearfix">
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+							</div>
+							<div class="row clearfix">
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+							</div>
+							<div class="row clearfix">
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+							</div>
+							<div class="row clearfix">
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+							</div>
+							<div class="row clearfix">
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+							</div>
+							<div class="row clearfix">
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+							</div>
+							<div class="row clearfix">
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+							</div>
+							<div class="row clearfix">
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+								<div class="pixel-box"></div>
+							</div>
+						</div>
+						<p class="help-block">Touch the pixel will turn it on or off, </p>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+<script type="text/javascript" src="assets/jquery2.min.js"></script>
+<script type="text/javascript" src="assets/bootstrap.min.js"></script>
+<script type="text/javascript" src="assets/moment.min.js"></script>
+<script>
+	$(".pixel-box").click(function(e){
+		$(this).toggleClass("active");
+	})
+</script>
+</html>

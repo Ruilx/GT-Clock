@@ -73,18 +73,33 @@
 	"4": "First day of year",
 	"5": "Sync manually"
   },
-  "#sdm": {
+  "#sts": {
 	"1": "Hours, Minutes and small Seconds(24H)",
-	"2": "Hours, Minutes and small Seconds(12H)",
-	"3": "Hours and Minutes(12H)",
+	"2": "Hours, Minutes and small Seconds(12H)(without AM/PM sign)",
+	"3": "Hours and Minutes(12H)(with AM/PM sign)",
 	"4": "Hours, Minutes and big Seconds(24H)",
 	"5": "Hours, Minutes and middle Seconds(24H)",
 	"6": "Hours and Minutes(24H)",
-	"7": "Hours and Minutes(NesPixel)(24H)",
-	"8": "Hours and Minutes(NesPixel)(12H)",
-	"9": "Hours and Minutes(Commodore64)(24H)",
-	"10": "Hours and Minutes(Commodore64)(12H)",
-	"11": "Hours, Minutes and small Seconds(Commodore64)(24H)"
+	"7": {
+	  "value": "Hours and Minutes(NesPixel)(24H)",
+	  "data-f": 34
+	},
+	"8": {
+	  "value": "Hours and Minutes(NesPixel)(12H)",
+	  "data-f": 34
+	},
+	"9": {
+	  "value": "Hours and Minutes(Commodore64)(24H)",
+	  "data-f": 33
+	},
+	"10": {
+	  "value": "Hours and Minutes(Commodore64)(12H)",
+	  "data-f": 33
+	},
+	"11": {
+	  "value": "Hours, Minutes and small Seconds(Commodore64)(24H)",
+	  "data-f": 33
+	}
   },
   "#sta": {
 	"1": "Align top",
