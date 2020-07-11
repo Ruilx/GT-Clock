@@ -15,6 +15,8 @@ typedef enum {
 	FuncLayers,
 	// Access layer parameters
 	FuncParam,
+	// Access layer mixer data
+	FuncMixer,
 	// Access layer private data
 	FuncData,
 	// Trigger layer updates
@@ -71,6 +73,10 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 			return logic_layers_data(data.regs[FuncParam], size);
 		}
 		break;
+	case FuncMixer:
+		// Layer private data
+		*segment = 0;
+		return logic_layers_mixer(data.regs[FuncParam], size);
 	case FuncData:
 		// Layer private data
 		*segment = 0;

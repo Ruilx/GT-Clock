@@ -78,6 +78,8 @@ StaticLibrary {
         "logic/logic_layer_breath.c",
         "logic/logic_layer_const.c",
         "logic/logic_layer_gamma.c",
+        "logic/logic_layer_mixer.c",
+        "logic/logic_layer_mixer.h",
         "logic/logic_layer_sine.c",
         "logic/logic_layer_string.c",
         "logic/logic_layers.c",

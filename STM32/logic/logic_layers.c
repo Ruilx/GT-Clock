@@ -4,23 +4,25 @@
 #include <system/systick.h>
 #include <peripheral/matrix.h>
 #include "logic_layers.h"
+#include "logic_layer_mixer.h"
 
 #define MAX_LAYERS	16
 #define HEAP_SIZE	(4 * 1024)
+#define LAYER_OBJS	3
+
+typedef enum {LParam = 0, LData, LMixer, LObjs} obj_t;
 
 typedef struct {
 	const logic_layer_handler_t *phdr;
-	layer_obj_t param, data;
-} param_t;
+	layer_obj_t obj[LObjs];
+} layer_t;
 
 static struct {
 	unsigned int enable;
 	unsigned int refcnt;
 	volatile unsigned int commit;
 	volatile unsigned int actparam;
-	struct {
-		param_t param[2];
-	} layer[MAX_LAYERS];
+	layer_t layer[MAX_LAYERS][2];
 	struct {
 		volatile unsigned int size;
 		uint8_t buf[HEAP_SIZE];
@@ -62,21 +64,20 @@ static inline void heap_gc()
 		void *pnext = data.heap.buf + data.heap.size;
 		unsigned int size = 0;
 		unsigned int layer = 0;
-		for (unsigned int i = 0; i < MAX_LAYERS; i++) {
-			// Find next object in heap space
-			layer_obj_t *pp[4] = {
-				&data.layer[i].param[0].param,
-				&data.layer[i].param[0].data,
-				&data.layer[i].param[1].param,
-				&data.layer[i].param[1].data,
-			};
-			for (unsigned int iobj = 0; iobj < 4; iobj++) {
-				if (pp[iobj]->size == 0)
-					continue;
-				if (pp[iobj]->p >= p && pp[iobj]->p < pnext) {
-					pnext = pp[iobj]->p;
-					size = pp[iobj]->size;
-					layer = i;
+		unsigned int obj = 0;
+		// Find next object in heap space
+		for (unsigned int ilayer = 0; ilayer < MAX_LAYERS; ilayer++) {
+			for (unsigned int iact = 0; iact < 2; iact++) {
+				for (unsigned int iobj = 0; iobj < LObjs; iobj++) {
+					layer_obj_t *pp = &data.layer[ilayer][iact].obj[iobj];
+					if (pp->size == 0)
+						continue;
+					if (pp->p >= p && pp->p < pnext) {
+						pnext = pp->p;
+						size = pp->size;
+						layer = ilayer;
+						obj = iobj;
+					}
 				}
 			}
 		}
@@ -92,15 +93,11 @@ static inline void heap_gc()
 #endif
 			memmove(p, pnext, size);
 			// Update pointers
-			layer_obj_t *pp[4] = {
-				&data.layer[layer].param[0].param,
-				&data.layer[layer].param[0].data,
-				&data.layer[layer].param[1].param,
-				&data.layer[layer].param[1].data,
-			};
-			for (unsigned int iobj = 0; iobj < 4; iobj++)
-				if (pp[iobj]->size != 0 && pp[iobj]->p == pnext)
-					pp[iobj]->p = p;
+			for (unsigned int iact = 0; iact < 2; iact++) {
+				layer_obj_t *pp = &data.layer[layer][iact].obj[obj];
+				if (pp->size != 0 && pp->p == pnext)
+					pp->p = p;
+			}
 		}
 		p += size;
 	}
@@ -126,10 +123,10 @@ void CAN1_SCE_IRQHandler()
 	uint32_t tick = systick_cnt();
 	unsigned int actparam = data.actparam;
 	for (unsigned int i = 0; i < MAX_LAYERS; i++) {
-		param_t *pp = &data.layer[i].param[actparam];
+		layer_t *pp = &data.layer[i][actparam];
 		if (pp->phdr == 0)
 			continue;
-		pp->phdr->proc(tick, pp->param.p, pp->data.p);
+		pp->phdr->proc(tick, pp->obj[LParam].p, pp->obj[LData].p);
 	}
 
 	matrix_fb_swap();
@@ -140,7 +137,7 @@ gc:
 		if (data.commit == 0xff) {
 			unsigned int actparam = data.actparam;
 			for (unsigned int i = 0; i < MAX_LAYERS; i++)
-				data.layer[i].param[actparam] = data.layer[i].param[!actparam];
+				data.layer[i][actparam] = data.layer[i][!actparam];
 		}
 		heap_gc();
 		data.commit = 0;
@@ -171,50 +168,62 @@ void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int
 	unsigned int actparam = data.actparam;
 	unsigned int i;
 	for (i = start; i < MAX_LAYERS && i < start + num; i++) {
-		param_t *pp = &data.layer[i].param[!actparam];
+		layer_t *pp = &data.layer[i][!actparam];
 		pp->phdr = 0;
-		pp->param.size = 0;
-		pp->data.size = 0;
+		pp->obj[LParam].size = 0;
+		pp->obj[LData].size = 0;
+		pp->obj[LMixer].size = 0;
 		if (layers[i - start] == LayerIdNone)
 			continue;
 		LIST_ITERATE(logic_layer, logic_layer_handler_t, phdr) {
 			if (phdr->id == layers[i - start]) {
 				pp->phdr = phdr;
-				phdr->init(&pp->param, &pp->data);
+				phdr->init(&pp->obj[LParam], &pp->obj[LData]);
 			}
 		}
 	}
 }
 
-void *logic_layers_param(unsigned int layer, unsigned int *size)
+static void *logic_layers_obj(unsigned int layer, obj_t obj, unsigned int *size)
 {
 	unsigned int actparam = data.actparam;
-	param_t *pp = &data.layer[layer].param[!actparam];
-	*size = pp->param.size;
-	return pp->param.p;
+	layer_t *pp = &data.layer[layer][!actparam];
+	*size = pp->obj[obj].size;
+	return *size == 0 ? 0 : pp->obj[obj].p;
+}
+
+void *logic_layers_param(unsigned int layer, unsigned int *size)
+{
+	return logic_layers_obj(layer, LParam, size);
+}
+
+void *logic_layers_mixer(unsigned int layer, unsigned int *size)
+{
+	unsigned int actparam = data.actparam;
+	layer_t *pp = &data.layer[layer][!actparam];
+	if (pp->obj[LMixer].size == 0)
+		logic_layer_mixer_init(&pp->obj[LMixer]);
+	return logic_layers_obj(layer, LMixer, size);
 }
 
 void *logic_layers_data(unsigned int layer, unsigned int *size)
 {
-	*size = 0;
-	unsigned int actparam = data.actparam;
-	param_t *pp = &data.layer[layer].param[!actparam];
-	*size = pp->data.size;
-	return pp->data.size == 0 ? 0 : pp->data.p;
+	return logic_layers_obj(layer, LData, size);
 }
 
 unsigned int logic_layers_commit(unsigned int layer)
 {
 	unsigned int actparam = data.actparam;
-	param_t *pp = &data.layer[layer].param[!actparam];
+	layer_t *pp = &data.layer[layer][!actparam];
 	if (pp->phdr == 0) {
-		pp->param.size = 0;
-		pp->data.size = 0;
+		pp->obj[LParam].size = 0;
+		pp->obj[LData].size = 0;
+		pp->obj[LMixer].size = 0;
 		return 1;
 	}
 	unsigned int ok = 1;
 	if (pp->phdr->config)
-		pp->phdr->config(&pp->param, &pp->data, &ok);
+		pp->phdr->config(&pp->obj[LParam], &pp->obj[LData], &ok);
 	gc(1);
 	return ok;
 }
