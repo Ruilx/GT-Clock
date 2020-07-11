@@ -166,19 +166,19 @@ static void trigger(uint32_t tick)
 
 SYSTICK_HANDLER() = &trigger;
 
-void logic_layers_select(const uint8_t *layers, unsigned int num)
+void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int num)
 {
 	unsigned int actparam = data.actparam;
 	unsigned int i;
-	for (i = 0; i < MAX_LAYERS && i < num; i++) {
+	for (i = start; i < MAX_LAYERS && i < start + num; i++) {
 		param_t *pp = &data.layer[i].param[!actparam];
 		pp->phdr = 0;
 		pp->param.size = 0;
 		pp->data.size = 0;
-		if (layers[i] == LayerIdNone)
+		if (layers[i - start] == LayerIdNone)
 			continue;
 		LIST_ITERATE(logic_layer, logic_layer_handler_t, phdr) {
-			if (phdr->id == layers[i]) {
+			if (phdr->id == layers[i - start]) {
 				pp->phdr = phdr;
 				phdr->init(&pp->param, &pp->data);
 			}
@@ -287,7 +287,7 @@ static void init_test()
 	uint8_t layers[MAX_LAYERS];
 	for (unsigned int layer = 0; layer < MAX_LAYERS; layer++)
 		layers[layer] = data[layer].id;
-	logic_layers_select(layers, MAX_LAYERS);
+	logic_layers_select(layers, 0, MAX_LAYERS);
 	for (unsigned int layer = 0; layer < MAX_LAYERS; layer++) {
 		if (data[layer].id == LayerIdNone)
 			continue;

@@ -40,10 +40,19 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 		*size = 1;
 		return &data.regs[func];
 	case FuncLayers:
-		// Layer buffer
-		*segment = 0;
-		*size = logic_layers_max();
-		return data.buf;
+		switch (*segment) {
+		case 0:
+			// Register access, starting layer
+			*segment = 1;
+			*size = 1;
+			return &data.regs[func];
+		case 1:
+			// Layer buffer
+			*segment = 0;
+			*size = logic_layers_max();
+			return data.buf;
+		}
+		break;
 	case FuncParam:
 		switch (*segment) {
 		case 0:
@@ -79,23 +88,24 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 {
 	if (id < FUNC_BASE || id >= (FUNC_BASE + FUNC_SIZE))
 		return;
-	if (size == 0)
-		return;
 
 	func_t func = id - FUNC_BASE;
 	switch (func) {
 	case FuncEnable:
-		logic_layers_enable(data.regs[FuncEnable]);
+		if (size > 0)
+			logic_layers_enable(data.regs[FuncEnable]);
 		break;
 	case FuncLayers:
-		logic_layers_select(data.buf, size);
+		if (size > 0 && segment == 0)
+			logic_layers_select(data.buf, data.regs[FuncLayers], size);
 		break;
 	case FuncParam:
 		if (segment == 2)
 			data.regs[FuncUpdate] = logic_layers_commit(data.regs[FuncParam]);
 		break;
 	case FuncUpdate:
-		data.regs[FuncUpdate] = logic_layers_update();
+		if (size > 0)
+			data.regs[FuncUpdate] = logic_layers_update();
 		break;
 	default:
 		break;
