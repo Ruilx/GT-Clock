@@ -13,18 +13,20 @@ typedef enum {
 	FuncEnable = 0,
 	// Configure layers
 	FuncLayers,
-	// Access layer parameters
-	FuncParam,
 	// Access layer mixer data
 	FuncMixer,
+	// Access layer parameters
+	FuncParam,
 	// Access layer private data
 	FuncData,
 	// Trigger layer updates
 	FuncUpdate,
+	// End
+	NumFunc,
 } func_t;
 
 static struct {
-	uint8_t regs[FUNC_SIZE];
+	uint8_t regs[NumFunc];
 	uint8_t buf[BUF_SIZE];
 } data;
 
@@ -55,35 +57,44 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 			return data.buf;
 		}
 		break;
-	case FuncParam:
+	case FuncMixer:
 		switch (*segment) {
 		case 0:
-			// Register access
+			// Register access, select layer
 			*segment = 1;
 			*size = 1;
-			return &data.regs[func];
+			return &data.regs[FuncParam];
 		case 1:
-			// Layer parameters
+			// Register access, number of mixer ops
 			*segment = 2;
-			return logic_layers_param(data.regs[FuncParam], size);
+			*size = 1;
+			return &data.regs[FuncMixer];
 		case 2:
+			// Layer mixer data
+			*segment = 3;
+			return logic_layers_mixer(data.regs[FuncParam], data.regs[FuncMixer], size);
+		case 3:
+			// Layer parameters
+			*segment = 4;
+			return logic_layers_param(data.regs[FuncParam], size);
+		case 4:
 			// Layer private data
 			*segment = 0;
 			data.regs[FuncUpdate] = logic_layers_commit(data.regs[FuncParam]);
 			return logic_layers_data(data.regs[FuncParam], size);
 		}
 		break;
-	case FuncMixer:
+	case FuncParam:
 		switch (*segment) {
 		case 0:
-			// Register access, starting layer
+			// Layer parameters
 			*segment = 1;
-			*size = 1;
-			return &data.regs[func];
+			return logic_layers_param(data.regs[FuncParam], size);
 		case 1:
 			// Layer private data
 			*segment = 0;
-			return logic_layers_mixer(data.regs[FuncParam], data.regs[FuncMixer], size);
+			data.regs[FuncUpdate] = logic_layers_commit(data.regs[FuncParam]);
+			return logic_layers_data(data.regs[FuncParam], size);
 		}
 		break;
 	case FuncData:
@@ -114,8 +125,12 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 		if (size > 0 && segment == 0)
 			logic_layers_select(data.buf, data.regs[FuncLayers], size);
 		break;
+	case FuncMixer:
+		if (segment == 4)
+			data.regs[FuncUpdate] = logic_layers_commit(data.regs[FuncParam]);
+		break;
 	case FuncParam:
-		if (segment == 2)
+		if (segment == 1)
 			data.regs[FuncUpdate] = logic_layers_commit(data.regs[FuncParam]);
 		break;
 	case FuncUpdate:

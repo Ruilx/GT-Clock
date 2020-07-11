@@ -181,7 +181,8 @@ void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int
 		LIST_ITERATE(logic_layer, logic_layer_handler_t, phdr) {
 			if (phdr->id == layers[i - start]) {
 				pp->phdr = phdr;
-				phdr->init(&pp->obj[LParam], &pp->obj[LData]);
+				if (phdr->init)
+					phdr->init(&pp->obj[LParam], &pp->obj[LData]);
 			}
 		}
 	}

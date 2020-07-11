@@ -19,7 +19,6 @@ static void init(layer_obj_t *pparam, layer_obj_t *pdata)
 	// Allocate param buffer
 	pparam->size = sizeof(param_t);
 	logic_layers_alloc(pparam);
-	pdata->size = 0;
 }
 
 static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,

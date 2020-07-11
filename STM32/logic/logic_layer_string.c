@@ -37,7 +37,7 @@ static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok,
 {
 	param_t *pp = pparam->p;
 	if (pp->len == 0) {
-		pdata->size = 0;
+		*ok = 0;
 		return;
 	}
 

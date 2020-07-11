@@ -8,8 +8,6 @@
 static void config(layer_obj_t *param, layer_obj_t *data, unsigned int *ok,
 		   unsigned int w, unsigned int h)
 {
-	param->size = 0;
-	data->size = 0;
 }
 
 static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,

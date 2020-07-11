@@ -56,7 +56,7 @@ static void updateLut(float ox, float oy, float period, data_t *pdata,
 
 static void init(layer_obj_t *pparam, layer_obj_t *pdata)
 {
-	// Allocate param and data buffers
+	// Allocate param buffer
 	pparam->size = sizeof(param_t);
 	logic_layers_alloc(pparam);
 }
@@ -64,7 +64,7 @@ static void init(layer_obj_t *pparam, layer_obj_t *pdata)
 static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok,
 		   unsigned int w, unsigned int h)
 {
-	// Allocate param and data buffers
+	// Allocate data buffer
 	pdata->size = SIN_LUT_SIZE + w * h;
 	logic_layers_alloc(pdata);
 	// Check buffer valid
