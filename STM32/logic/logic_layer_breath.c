@@ -15,9 +15,10 @@ static void proc(unsigned int tick, void *param, void *ptr)
 			*(p + line * w + pix) = v;
 }
 
-static void *config(void *param, unsigned int *ok)
+static void config(layer_obj_t *param, layer_obj_t *data, unsigned int *ok)
 {
-	return 0;
+	param->size = 0;
+	data->size = 0;
 }
 
 LOGIC_LAYER_HANDLER() = {

@@ -24,35 +24,42 @@ typedef struct PACKED {
 	const FontInfo *info;
 } param_t;
 
-static void *config(void *param, unsigned int *ok)
+static void init(layer_obj_t *pparam, layer_obj_t *pdata)
 {
-	param_t *pp = param;
-	pp->info = 0;
+	// Allocate param buffer, data buffer need to wait until commit
+	pparam->size = sizeof(param_t);
+	logic_layers_alloc(pparam);
+	pdata->size = 0;
+}
+
+static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok)
+{
+	param_t *pp = pparam->p;
+
+	// Now, allocate data buffer
+	pdata->size = pp->len;
+	logic_layers_alloc(pdata);
+	if (pdata->size == 0) {
+		*ok = 0;
+		return;
+	}
+
 	// Find font info structure
+	pp->info = 0;
 	LIST_ITERATE(logic_fonts, const FontInfo, pfnt) {
 		if (pfnt->fontIndex == pp->id) {
 			pp->info = pfnt;
 			break;
 		}
 	}
-	if (!pp->info)
-		return 0;
-	// Allocate string buffer
-	void *ptr = logic_layers_alloc(pp->len);
-	if (ptr == 0) {
+	if (!pp->info) {
 		*ok = 0;
-		return 0;
+		pdata->size = 0;
+		return;
 	}
-	char *pc = ptr;
-	*pc = 0;
-	return ptr;
-}
 
-static inline void *data(void *param, void *ptr, unsigned int *size)
-{
-	param_t *pp = param;
-	*size = pp->len;
-	return ptr;
+	// Clear string buffer
+	*(char *)pdata->p = 0;
 }
 
 static inline void draw_bitmap(int ox, int oy, unsigned int w, unsigned int h,
@@ -109,7 +116,7 @@ static void proc(unsigned int tick, void *param, void *ptr)
 
 LOGIC_LAYER_HANDLER() = {
 	.id = LayerIdString,
+	.init = &init,
 	.config = &config,
-	.data = &data,
 	.proc = &proc,
 };

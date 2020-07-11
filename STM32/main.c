@@ -34,8 +34,8 @@ INIT_HANDLER() = &usb_disabled;
 
 int main()
 {
-	init();
 	__enable_irq();
+	init();
 
 	for (;;) {
 		LIST_ITERATE(idle, basic_handler_t, p) (*p)();

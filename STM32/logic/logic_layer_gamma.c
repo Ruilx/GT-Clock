@@ -20,20 +20,30 @@ static void updateLut(float factor, uint8_t *ptr)
 		*(ptr + i) = round(255.0 * powf(i, factor) / max);
 }
 
-static void *config(void *param, unsigned int *ok)
+static void init(layer_obj_t *pparam, layer_obj_t *pdata)
 {
-	param_t *pp = param;
+	// Allocate param and data buffers
+	pparam->size = sizeof(param_t);
+	logic_layers_alloc(pparam);
+	pdata->size = 256;
+	logic_layers_alloc(pdata);
+	if (pparam->size == 0 || pdata->size == 0) {
+		pparam->size = 0;
+		pdata->size = 0;
+	}
+}
+
+static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok)
+{
+	if (pparam->size == 0 || pdata->size == 0) {
+		*ok = 0;
+		return;
+	}
+
+	param_t *pp = pparam->p;
 	uint8_t ifactor = pp->factor;
 	float factor = ((ifactor >> 4) & 0xf) + (ifactor & 0xf) / 10;
-
-	unsigned int w, h;
-	matrix_fb(0, &w, &h);
-	void *ptr = logic_layers_alloc(256);
-	if (ptr == 0)
-		*ok = 0;
-	else
-		updateLut(factor, ptr);
-	return ptr;
+	updateLut(factor, pdata->p);
 }
 
 static void proc(unsigned int tick, void *param, void *ptr)
@@ -51,6 +61,7 @@ static void proc(unsigned int tick, void *param, void *ptr)
 
 LOGIC_LAYER_HANDLER() = {
 	.id = LayerIdGamma,
+	.init = &init,
 	.config = &config,
 	.proc = &proc,
 };

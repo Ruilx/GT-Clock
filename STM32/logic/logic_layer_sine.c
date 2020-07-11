@@ -31,10 +31,13 @@ typedef struct PACKED {
 	} space, time;
 } param_t;
 
-static void updateLut(float ox, float oy, float period, uint8_t *ptr)
+typedef struct PACKED {
+	uint8_t lut_sin[256];
+	uint8_t lut_dis[];
+} data_t;
+
+static void updateLut(float ox, float oy, float period, data_t *pdata)
 {
-	uint8_t *psin = ptr;
-	uint8_t *plut = ptr + SIN_LUT_SIZE;
 	unsigned int w = 0, h = 0;
 	matrix_fb(0, &w, &h);
 
@@ -45,7 +48,7 @@ static void updateLut(float ox, float oy, float period, uint8_t *ptr)
 			float d = sqrt(x * x + y * y);
 			float t = d / 16.0;
 			t = t - floor(t);
-			plut[iy * w + ix] = round(t * 255.0);
+			pdata->lut_dis[iy * w + ix] = round(t * 255.0);
 		}
 	}
 
@@ -53,27 +56,43 @@ static void updateLut(float ox, float oy, float period, uint8_t *ptr)
 		float x = ix;
 		float t = x / 255.0 * 2.0 - 1.0;
 		float v = (sin(period * t) + 1.0) / 2.0;
-		psin[ix] = round(v * 255.0);
+		pdata->lut_sin[ix] = round(v * 255.0);
 	}
 }
 
-static void *config(void *param, unsigned int *ok)
+static void init(layer_obj_t *pparam, layer_obj_t *pdata)
 {
-	param_t *pp = param;
+	unsigned int w, h;
+	matrix_fb(0, &w, &h);
+
+	// Allocate param and data buffers
+	pparam->size = sizeof(param_t);
+	logic_layers_alloc(pparam);
+	pdata->size = SIN_LUT_SIZE + w * h;
+	logic_layers_alloc(pdata);
+	if (pparam->size == 0 || pdata->size == 0) {
+		pparam->size = 0;
+		pdata->size = 0;
+		return;
+	}
+}
+
+static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok)
+{
+	// Check buffer valid
+	if (pparam->size == 0 || pdata->size == 0) {
+		*ok = 0;
+		return;
+	}
+
+	// Generate LUTs
+	param_t *pp = pparam->p;
 	float v = (pp->flags & 0x01) ? -0.5 : 0;
 	float x = (float)pp->x + v;
 	float y = (float)pp->y + v;
 	float m = pp->space.mult;
 	float d = pp->space.div == 0 ? 1 : pp->space.div;
-
-	unsigned int w, h;
-	matrix_fb(0, &w, &h);
-	void *ptr = logic_layers_alloc(SIN_LUT_SIZE + w * h);
-	if (ptr == 0)
-		*ok = 0;
-	else
-		updateLut(x, y, M_TWOPI * m / d, ptr);
-	return ptr;
+	updateLut(x, y, M_TWOPI * m / d, pdata->p);
 }
 
 static void proc(unsigned int tick, void *param, void *ptr)
@@ -82,8 +101,7 @@ static void proc(unsigned int tick, void *param, void *ptr)
 		return;
 
 	param_t *pp = param;
-	uint8_t *psin = ptr;
-	uint8_t *plut = ptr + SIN_LUT_SIZE;
+	data_t *pdata = ptr;
 
 	unsigned int w = 0, h = 0;
 	uint8_t *p = matrix_fb(0, &w, &h);
@@ -95,8 +113,8 @@ static void proc(unsigned int tick, void *param, void *ptr)
 		for (unsigned int x = 0; x < w; x++) {
 			uint8_t *pv = p + y * w + x;
 			unsigned int a = *pv;
-			unsigned int b = plut[y * w + x];
-			b = psin[(b - t) % SIN_LUT_SIZE];
+			unsigned int b = pdata->lut_dis[y * w + x];
+			b = pdata->lut_sin[(b - t) % SIN_LUT_SIZE];
 			*pv = ((a * pp->m[0] * 255) + (b * pp->m[1] * 255) + (a * b * pp->m[2])) / (255 * 255);
 		}
 	}
@@ -104,6 +122,7 @@ static void proc(unsigned int tick, void *param, void *ptr)
 
 LOGIC_LAYER_HANDLER() = {
 	.id = LayerIdSine,
+	.init = &init,
 	.config = &config,
 	.proc = &proc,
 };

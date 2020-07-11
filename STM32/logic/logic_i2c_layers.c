@@ -26,16 +26,6 @@ static struct {
 	uint8_t buf[BUF_SIZE];
 } data;
 
-#if 1
-static void init()
-{
-	data.regs[FuncEnable] = 1;
-	logic_layers_enable(1);
-}
-
-INIT_HANDLER() = &init;
-#endif
-
 static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment, unsigned int *size)
 {
 	if (id < FUNC_BASE || id >= (FUNC_BASE + FUNC_SIZE))
@@ -63,9 +53,13 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 			return &data.regs[func];
 		case 1:
 			// Layer parameters
+			*segment = 2;
+			return logic_layers_param(data.regs[FuncParam], size);
+		case 2:
+			// Layer private data
 			*segment = 0;
-			*size = logic_layers_param_size();
-			return logic_layers_param(data.regs[FuncParam]);
+			data.regs[FuncUpdate] = logic_layers_commit(data.regs[FuncParam]);
+			return logic_layers_data(data.regs[FuncParam], size);
 		}
 		break;
 	case FuncData:
@@ -95,6 +89,10 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 		break;
 	case FuncLayers:
 		logic_layers_select(data.buf, size);
+		break;
+	case FuncParam:
+		if (segment == 2)
+			data.regs[FuncUpdate] = logic_layers_commit(data.regs[FuncParam]);
 		break;
 	case FuncUpdate:
 		data.regs[FuncUpdate] = logic_layers_update();

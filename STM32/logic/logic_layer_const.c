@@ -15,6 +15,14 @@ typedef struct PACKED {
 	uint8_t m[2];
 } param_t;
 
+static void init(layer_obj_t *pparam, layer_obj_t *pdata)
+{
+	// Allocate param buffer
+	pparam->size = sizeof(param_t);
+	logic_layers_alloc(pparam);
+	pdata->size = 0;
+}
+
 static void proc(unsigned int tick, void *param, void *ptr)
 {
 	param_t *pp = param;
@@ -32,6 +40,6 @@ static void proc(unsigned int tick, void *param, void *ptr)
 
 LOGIC_LAYER_HANDLER() = {
 	.id = LayerIdConst,
-	.config = 0,
+	.init = &init,
 	.proc = &proc,
 };
