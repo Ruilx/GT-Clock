@@ -71,7 +71,7 @@ static void i2c_slave_init()
 	// ACK enable
 	I2C2->CR1 = I2C_CR1_PE_Msk | I2C_CR1_ACK_Msk;
 
-	printf(ESC_INIT "%lu\ti2c: Initialisation done\n", systick_cnt());
+	printf(ESC_INIT "%lu\ti2c: Init done\n", systick_cnt());
 }
 
 INIT_HANDLER() = &i2c_slave_init;
@@ -318,7 +318,8 @@ static void *i2c_slave_reg_data(unsigned int write, unsigned int id, unsigned in
 static void i2c_slave_reg_write_complete(unsigned int id, unsigned int segment, unsigned int size, void *p)
 {
 	LIST_ITERATE(i2c_slave_reg, i2c_slave_reg_handler_t, phdr)
-		phdr->write_complete(id, segment, size, p);
+		if (phdr->write_complete)
+			phdr->write_complete(id, segment, size, p);
 }
 
 static inline void i2c_slave_reg_rx_buf()

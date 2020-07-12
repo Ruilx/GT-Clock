@@ -13,8 +13,10 @@ typedef struct PACKED {
 	uint8_t factor;
 } param_t;
 
-static void updateLut(float factor, uint8_t *ptr)
+static inline void updateLut(param_t *pp, uint8_t *ptr)
 {
+	uint8_t ifactor = pp->factor;
+	float factor = ((ifactor >> 4) & 0xf) + (ifactor & 0xf) / 10;
 	float max = powf(255, factor);
 	for (unsigned int i = 0; i < 256; i++)
 		*(ptr + i) = round(255.0 * powf(i, factor) / max);
@@ -40,11 +42,7 @@ static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok,
 		*ok = 0;
 		return;
 	}
-
-	param_t *pp = pparam->p;
-	uint8_t ifactor = pp->factor;
-	float factor = ((ifactor >> 4) & 0xf) + (ifactor & 0xf) / 10;
-	updateLut(factor, pdata->p);
+	updateLut(pparam->p, pdata->p);
 }
 
 static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,
@@ -56,7 +54,7 @@ static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,
 	uint8_t *lut = pdata->p;
 	for (unsigned int y = 0; y < h; y++) {
 		for (unsigned int x = 0; x < w; x++) {
-			uint8_t *pv = pfb + y * w + x;
+			uint8_t *pv = &pfb[y * w + x];
 			*pv = lut[*pv];
 		}
 	}

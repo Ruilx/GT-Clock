@@ -36,11 +36,9 @@ typedef struct PACKED {
 	uint8_t lut_dis[];
 } data_t;
 
-static void updateLut(param_t *pp, data_t *pdata, unsigned int w, unsigned int h)
+static inline void updateLut(param_t *pp, data_t *pdata, unsigned int w, unsigned int h)
 {
 	float v = pp->flags & FlagHalfAligned ? -0.5 : 0;
-	float ox = (float)pp->x + v;
-	float oy = (float)pp->y + v;
 	float m = pp->space.mult;
 	float d = pp->space.div == 0 ? 1 : pp->space.div;
 	float speriod = m / d;
@@ -49,8 +47,8 @@ static void updateLut(param_t *pp, data_t *pdata, unsigned int w, unsigned int h
 
 	for (unsigned int iy = 0; iy < h; iy++) {
 		for (unsigned int ix = 0; ix < w; ix++) {
-			float x = (float)ix - ox;
-			float y = (float)iy - oy;
+			float x = (float)(ix - pp->x) + v;
+			float y = (float)(iy - pp->y) + v;
 			float d = sqrt(x * x + y * y);
 			float t = d * speriod / 16.0;
 			t = t - floor(t);
@@ -59,8 +57,7 @@ static void updateLut(param_t *pp, data_t *pdata, unsigned int w, unsigned int h
 	}
 
 	for (unsigned int ix = 0; ix < SIN_LUT_SIZE; ix++) {
-		float x = ix;
-		float t = x / 255.0;
+		float t = (float)ix / 255.0;
 		float v = (loffset * cos(M_TWOPI * lperiod * t) + 1.0) / 2.0;
 		pdata->lut_sin[ix] = round(v * 255.0);
 	}

@@ -18,8 +18,8 @@
 // Last PANEL byte is line driver
 #define PPS	(LPS * (PANELS + 1) * 8)
 
-//#define CHECK_OVERRUN
-#if DEBUG > 4
+#if DEBUG > 5
+#define CHECK_OVERRUN
 #define PROFILING
 #endif
 
@@ -38,20 +38,20 @@ static struct {
 	// Line processing buffer
 	uint8_t buf[2][GSCALE - 1][BUF_SIZE];
 
-	unsigned int rbuf;	// Active read buffer
-	unsigned int ridx;	// Read index
-	unsigned int lsw;	// Line switching
-	unsigned int bsw;	// Buffer switching
+	uint8_t rbuf;		// Active read buffer
+	uint8_t ridx;		// Read index
+	uint8_t lsw;		// Line switching
+	uint8_t bsw;		// Buffer switching
 
-	unsigned int wbuf;	// Pending write buffer
-	unsigned int wline;	// Pending write line
+	uint8_t wbuf;		// Pending write buffer
+	uint8_t wline;		// Pending write line
 
 	// Frame buffer
 	uint8_t fb[2][LINES][PANELS * 8];
 
-	volatile unsigned int rfb;	// Active frame buffer
-	unsigned int wfb;		// Standby frame buffer
-	unsigned int refcnt;		// Frame refresh counter
+	volatile uint8_t rfb;	// Active frame buffer
+	uint8_t wfb;		// Standby frame buffer
+	unsigned int refcnt;	// Frame refresh counter
 } data = {0};
 
 static inline void matrix_buf_init();
@@ -147,7 +147,7 @@ static void matrix_init()
 	// Enable timer
 	TIM4->CR1 |= TIM_CR1_CEN_Msk;
 
-	printf(ESC_INIT "%lu\tmatrix: Initialisation done\n", systick_cnt());
+	printf(ESC_INIT "%lu\tmatrix: Init done\n", systick_cnt());
 }
 
 INIT_HANDLER() = &matrix_init;
@@ -321,7 +321,5 @@ void matrix_fb_swap()
 
 void matrix_fb_copy()
 {
-	for (unsigned int line = 0; line < LINES; line++)
-		for (unsigned int pix = 0; pix < PANELS * 8; pix++)
-			data.fb[data.wfb][line][pix] = data.fb[!data.wfb][line][pix];
+	memcpy(&data.fb[data.wfb][0][0], &data.fb[!data.wfb][0][0], LINES * PANELS * 8);
 }

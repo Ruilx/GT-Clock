@@ -66,7 +66,7 @@ caddr_t _sbrk(int incr)
 
 	prev_heap_end = heap_end;
 	if (heap_end + incr > &__heap_end__ /*stack_ptr*/) {
-		asm("bkpt 0");
+		__BKPT(0);
 		errno = ENOMEM;
 		return (caddr_t) -1;
 	}
@@ -94,7 +94,7 @@ static void heap_debug()
 	if (psize == hsize)
 		return;
 	psize = hsize;
-	dbgprintf(ESC_DEBUG "%lu\tcore: HEAP RAM allocated %u bytes\n", systick_cnt(), hsize);
+	dbgprintf(ESC_DEBUG "%lu\tcore: %u bytes allocated\n", systick_cnt(), hsize);
 }
 
 IDLE_HANDLER() = &heap_debug;

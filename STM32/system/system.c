@@ -33,7 +33,7 @@ extern int main();
 // Buffered STDIO
 int fio_write(int file, char *ptr, int len)
 {
-#if DEBUG >= 5
+#if DEBUG > 5
 	if (file != STDOUT_FILENO) {
 		errno = ENOSYS;
 		return -1;
@@ -109,8 +109,8 @@ void _reset(void)
 	SCB->VTOR = (uint32_t)g_pfnVectors;
 
 	// System initialisation
-	rcc_init();
 	NVIC_SetPriorityGrouping(NVIC_PRIORITY_GROUPING);
+	rcc_init();
 	systick_init(1000);
 	debug_uart_init();
 
@@ -118,10 +118,7 @@ void _reset(void)
 	memcpy(&__data_start__, &__data_load__, &__data_end__ - &__data_start__);
 
 	// Zero fill bss segment
-	// SRAM can be accessed as full words (32 bits)
-	uint32_t *p = (uint32_t *)&__bss_start__;
-	while (p != (uint32_t *)&__bss_end__)
-		*p++ = 0;
+	memset(&__bss_start__, 0, &__bss_end__ - &__bss_start__);
 
 	// Start program
 	asm(	"ldr sp, =__stack_end__\n\t"	// Set stack pointer
@@ -133,18 +130,15 @@ void _reset(void)
 // Default handler for unexpected interrupts
 void debug_handler()
 {
-#if DEBUG >= 5
+#if DEBUG > 5
 	SCB_Type scb = *SCB;
 	NVIC_Type nvic = *NVIC;
 #endif
 #if DEBUG
 	uint32_t ipsr = __get_IPSR();
 	printf(ESC_ERROR "\nUnexpected interrupt: %lu\n", ipsr);
-	flushCache();
 #endif
-#if DEBUG >= 5
 	dbgbkpt();
-#endif
 	NVIC_SystemReset();
 }
 
@@ -154,6 +148,8 @@ void HardFault_Handler()
 {
 	SCB_Type scb = *SCB;
 	printf(ESC_ERROR "\nHard fault: 0x%08lx\n", scb.HFSR);
+
+#if DEBUG > 5
 	printf("...\t%s%s%s\n",
 	       scb.HFSR & SCB_HFSR_DEBUGEVT_Msk ? "Debug " : "",
 	       scb.HFSR & SCB_HFSR_FORCED_Msk ? "Forced " : "",
@@ -191,6 +187,7 @@ void HardFault_Handler()
 		       ufsr & 0x0002 ? "INVSTATE " : "",
 		       ufsr & 0x0001 ? "UNDEFINSTR " : "");
 	}
+#endif
 
 	dbgbkpt();
 	NVIC_SystemReset();

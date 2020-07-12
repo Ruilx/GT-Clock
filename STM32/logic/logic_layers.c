@@ -18,8 +18,8 @@ typedef struct {
 } layer_t;
 
 static struct {
-	unsigned int enable;
 	unsigned int refcnt;
+	unsigned int enable;
 	volatile unsigned int commit;
 	volatile unsigned int actparam;
 	layer_t layer[MAX_LAYERS][2];
@@ -111,11 +111,12 @@ static inline void heap_gc()
 		}
 		p += size;
 	}
+
 	unsigned int size = data.heap.size;
 	unsigned int newsize = p - (void *)data.heap.buf;
 	if (size == newsize)
 		return;
-#if DEBUG > 4
+#if DEBUG > 5
 	printf(ESC_DEBUG "%lu\tlayers: GC complete: "
 			 "%u bytes total, %u bytes in use, %u bytes freed\n",
 	       systick_cnt(), HEAP_SIZE, newsize, size - newsize);
@@ -123,15 +124,29 @@ static inline void heap_gc()
 	data.heap.size = newsize;
 }
 
+#if DEBUG > 4
+static void heap_debug()
+{
+	static size_t psize = 0;
+	size_t hsize = data.heap.size;
+	if (psize == hsize)
+		return;
+	psize = hsize;
+	printf(ESC_DEBUG "%lu\tlayers: %u bytes allocated\n", systick_cnt(), hsize);
+}
+
+IDLE_HANDLER() = &heap_debug;
+#endif
+
 void CAN1_SCE_IRQHandler()
 {
 	// Software rendering thread
 	// Which also handles GC
+	unsigned int actparam = data.actparam;
 	if (!data.enable)
 		goto gc;
 
 	uint32_t tick = systick_cnt();
-	unsigned int actparam = data.actparam;
 	for (unsigned int i = 0; i < MAX_LAYERS; i++) {
 		layer_t *pp = &data.layer[i][actparam];
 		if (pp->phdr == 0)
@@ -148,7 +163,7 @@ void CAN1_SCE_IRQHandler()
 gc:
 	if (data.commit) {
 		if (data.commit == 0xff) {
-			data.actparam = !data.actparam;
+			data.actparam = !actparam;
 			for (unsigned int i = 0; i < MAX_LAYERS; i++)
 				layer_reset(i);
 		}
@@ -195,6 +210,7 @@ void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int
 				pp->phdr = phdr;
 				if (phdr->init)
 					phdr->init(&pp->obj[LParam], &pp->obj[LData]);
+				break;
 			}
 		}
 	}
@@ -232,9 +248,7 @@ unsigned int logic_layers_commit(unsigned int layer)
 	unsigned int actparam = data.actparam;
 	layer_t *pp = &data.layer[layer][!actparam];
 	if (pp->phdr == 0) {
-		pp->obj[LParam].size = 0;
-		pp->obj[LData].size = 0;
-		pp->obj[LMixer].size = 0;
+		layer_reset(layer);
 		return 1;
 	}
 	unsigned int w, h;
@@ -257,14 +271,15 @@ void logic_layers_alloc(layer_obj_t *obj)
 {
 	unsigned int size = obj->size;
 	if (data.heap.size + size > HEAP_SIZE) {
-		printf(ESC_ERROR "%lu\tlayers: No heap space left: "
-				 "%u bytes total, %u bytes in use, %u bytes requested\n",
-		       systick_cnt(), HEAP_SIZE, data.heap.size, size);
-		obj->p = 0;
+#if DEBUG
+		printf(ESC_ERROR "%lu\tlayers: No space left: "
+				 "%u bytes in use, %u bytes requested\n",
+		       systick_cnt(), data.heap.size, size);
+#endif
 		obj->size = 0;
 		return;
 	}
-#if DEBUG > 4
+#if DEBUG > 5
 	printf(ESC_DEBUG "%lu\tlayers: Allocate buffer: "
 			 "%u bytes total, %u bytes in use, %u bytes requested\n",
 	       systick_cnt(), HEAP_SIZE, data.heap.size, size);
@@ -273,7 +288,7 @@ void logic_layers_alloc(layer_obj_t *obj)
 	data.heap.size += size;
 }
 
-#if DEBUG > 4
+#if DEBUG > 5
 static void init_test()
 {
 	static const struct {

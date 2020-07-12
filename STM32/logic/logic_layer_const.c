@@ -4,6 +4,7 @@
 //   [1]	Value
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <debug.h>
 #include <peripheral/matrix.h>
@@ -26,16 +27,8 @@ static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,
 {
 	if (pparam->size == 0)
 		return;
-
 	param_t *pp = pparam->p;
-	for (unsigned int y = 0; y < h; y++) {
-		for (unsigned int x = 0; x < w; x++) {
-			uint8_t *pv = pfb + y * w + x;
-			unsigned int a = *pv;
-			const unsigned int b = 255;
-			*pv = pp->value;
-		}
-	}
+	memset(pfb, pp->value, w * h);
 }
 
 LOGIC_LAYER_HANDLER() = {

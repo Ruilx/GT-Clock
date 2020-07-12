@@ -82,6 +82,7 @@ StaticLibrary {
         "logic/logic_layer_mixer.h",
         "logic/logic_layer_sine.c",
         "logic/logic_layer_string.c",
+        "logic/logic_layer_string_fonts.h",
         "logic/logic_layers.c",
         "logic/logic_layers.h",
         "peripheral/i2c_slave.c",
