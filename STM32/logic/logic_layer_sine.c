@@ -40,7 +40,7 @@ static void updateLut(float ox, float oy, float period, data_t *pdata,
 			float x = (float)ix - ox;
 			float y = (float)iy - oy;
 			float d = sqrt(x * x + y * y);
-			float t = d / 16.0;
+			float t = d * period / 16.0;
 			t = t - floor(t);
 			pdata->lut_dis[iy * w + ix] = round(t * 255.0);
 		}
@@ -49,7 +49,7 @@ static void updateLut(float ox, float oy, float period, data_t *pdata,
 	for (unsigned int ix = 0; ix < SIN_LUT_SIZE; ix++) {
 		float x = ix;
 		float t = x / 255.0 * 2.0 - 1.0;
-		float v = (sin(period * t) + 1.0) / 2.0;
+		float v = (cos(M_PI * t) + 1.0) / 2.0;
 		pdata->lut_sin[ix] = round(v * 255.0);
 	}
 }
@@ -82,7 +82,7 @@ static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok,
 	float y = (float)pp->y + v;
 	float m = pp->space.mult;
 	float d = pp->space.div == 0 ? 1 : pp->space.div;
-	updateLut(x, y, M_TWOPI * m / d, pdata->p, w, h);
+	updateLut(x, y, m / d, pdata->p, w, h);
 }
 
 static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,

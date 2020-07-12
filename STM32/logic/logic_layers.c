@@ -56,6 +56,16 @@ unsigned int logic_layers_max()
 	return MAX_LAYERS;
 }
 
+static void layer_reset(unsigned int layer)
+{
+	unsigned int actparam = data.actparam;
+	layer_t *pp = &data.layer[layer][!actparam];
+	pp->phdr = 0;
+	pp->obj[LParam].size = 0;
+	pp->obj[LData].size = 0;
+	pp->obj[LMixer].size = 0;
+}
+
 static inline void heap_gc()
 {
 	// TODO GC here
@@ -138,9 +148,9 @@ void CAN1_SCE_IRQHandler()
 gc:
 	if (data.commit) {
 		if (data.commit == 0xff) {
-			unsigned int actparam = data.actparam;
+			data.actparam = !data.actparam;
 			for (unsigned int i = 0; i < MAX_LAYERS; i++)
-				data.layer[i][actparam] = data.layer[i][!actparam];
+				layer_reset(i);
 		}
 		heap_gc();
 		data.commit = 0;
@@ -168,16 +178,18 @@ SYSTICK_HANDLER() = &trigger;
 
 void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int num)
 {
-	unsigned int actparam = data.actparam;
 	unsigned int i;
+	if (start == 0xff) {
+		start = 0;
+		for (unsigned int i = 0; i < MAX_LAYERS; i++)
+			layer_reset(i);
+	}
 	for (i = start; i < MAX_LAYERS && i < start + num; i++) {
-		layer_t *pp = &data.layer[i][!actparam];
-		pp->phdr = 0;
-		pp->obj[LParam].size = 0;
-		pp->obj[LData].size = 0;
-		pp->obj[LMixer].size = 0;
+		layer_reset(i);
 		if (layers[i - start] == LayerIdNone)
 			continue;
+		unsigned int actparam = data.actparam;
+		layer_t *pp = &data.layer[i][!actparam];
 		LIST_ITERATE(logic_layer, logic_layer_handler_t, phdr) {
 			if (phdr->id == layers[i - start]) {
 				pp->phdr = phdr;
