@@ -1,6 +1,8 @@
 // Layer: Sine wave
 // Parameters:
 //   [0]	Flags
+//     0x04	Reversed half-period sine wave
+//     0x02	Half-period sine wave
 //     0x01	Half-aligned to left top corner of selected pixel
 //   [1]	X centre offset
 //   [2]	Y centre offset
@@ -17,6 +19,8 @@
 
 #define SIN_LUT_SIZE	256
 
+enum {FlagHalfAligned = 0x01, FlagHalfPeriod = 0x02, FlagReversedHalfPeriod = 0x04};
+
 typedef struct PACKED {
 	uint8_t flags;
 	int8_t x;
@@ -32,15 +36,23 @@ typedef struct PACKED {
 	uint8_t lut_dis[];
 } data_t;
 
-static void updateLut(float ox, float oy, float period, data_t *pdata,
-		      unsigned int w, unsigned int h)
+static void updateLut(param_t *pp, data_t *pdata, unsigned int w, unsigned int h)
 {
+	float v = pp->flags & FlagHalfAligned ? -0.5 : 0;
+	float ox = (float)pp->x + v;
+	float oy = (float)pp->y + v;
+	float m = pp->space.mult;
+	float d = pp->space.div == 0 ? 1 : pp->space.div;
+	float speriod = m / d;
+	float lperiod = pp->flags & FlagHalfPeriod ? 0.5 : 1.0;
+	float loffset = pp->flags & FlagReversedHalfPeriod ? -1.0 : 1.0;
+
 	for (unsigned int iy = 0; iy < h; iy++) {
 		for (unsigned int ix = 0; ix < w; ix++) {
 			float x = (float)ix - ox;
 			float y = (float)iy - oy;
 			float d = sqrt(x * x + y * y);
-			float t = d * period / 16.0;
+			float t = d * speriod / 16.0;
 			t = t - floor(t);
 			pdata->lut_dis[iy * w + ix] = round(t * 255.0);
 		}
@@ -48,8 +60,8 @@ static void updateLut(float ox, float oy, float period, data_t *pdata,
 
 	for (unsigned int ix = 0; ix < SIN_LUT_SIZE; ix++) {
 		float x = ix;
-		float t = x / 255.0 * 2.0 - 1.0;
-		float v = (cos(M_PI * t) + 1.0) / 2.0;
+		float t = x / 255.0;
+		float v = (loffset * cos(M_TWOPI * lperiod * t) + 1.0) / 2.0;
 		pdata->lut_sin[ix] = round(v * 255.0);
 	}
 }
@@ -74,15 +86,8 @@ static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok,
 		*ok = 0;
 		return;
 	}
-
 	// Generate LUTs
-	param_t *pp = pparam->p;
-	float v = (pp->flags & 0x01) ? -0.5 : 0;
-	float x = (float)pp->x + v;
-	float y = (float)pp->y + v;
-	float m = pp->space.mult;
-	float d = pp->space.div == 0 ? 1 : pp->space.div;
-	updateLut(x, y, m / d, pdata->p, w, h);
+	updateLut(pparam->p, pdata->p, w, h);
 }
 
 static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,
