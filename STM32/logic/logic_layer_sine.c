@@ -38,7 +38,7 @@ typedef struct PACKED {
 
 static inline void updateLut(param_t *pp, data_t *pdata, unsigned int w, unsigned int h)
 {
-	float v = pp->flags & FlagHalfAligned ? -0.5 : 0;
+	float v = pp->flags & FlagHalfAligned ? 0.5 : 0;
 	float m = pp->space.mult;
 	float d = pp->space.div == 0 ? 1 : pp->space.div;
 	float speriod = m / d;
@@ -47,8 +47,8 @@ static inline void updateLut(param_t *pp, data_t *pdata, unsigned int w, unsigne
 
 	for (unsigned int iy = 0; iy < h; iy++) {
 		for (unsigned int ix = 0; ix < w; ix++) {
-			float x = (float)(ix - pp->x) + v;
-			float y = (float)(iy - pp->y) + v;
+			float x = (float)((int)ix - pp->x) + v;
+			float y = (float)((int)iy - pp->y) + v;
 			float d = sqrt(x * x + y * y);
 			float t = d * speriod / 16.0;
 			t = t - floor(t);

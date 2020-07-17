@@ -14,6 +14,20 @@ static inline void init()
 	printf(ESC_INIT "%lu\tboot: Init done\n", systick_cnt());
 }
 
+#if DEBUG > 5
+#include <common/common.h>
+
+static void print_id()
+{
+	char uid[25];
+	uid_str(uid);
+	printf(ESC_INIT "%lu\tboot: Flash %u KiB, UID %s\n", systick_cnt(),
+	       *(uint16_t *)FLASHSIZE_BASE, uid);
+}
+
+INIT_HANDLER() = &print_id;
+#endif
+
 static void usb_disabled()
 {
 	// Configure GPIOs
