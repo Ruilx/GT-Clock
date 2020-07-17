@@ -17,9 +17,9 @@ static inline void updateLut(param_t *pp, uint8_t *ptr)
 {
 	uint8_t ifactor = pp->factor;
 	float factor = ((ifactor >> 4) & 0xf) + (ifactor & 0xf) / 10;
-	float max = powf(255, factor);
+	float max = powf(255.0, factor);
 	for (unsigned int i = 0; i < 256; i++)
-		*(ptr + i) = round(255.0 * powf(i, factor) / max);
+		*(ptr + i) = roundf(powf(i, factor) / max * 255.0);
 }
 
 static void init(layer_obj_t *pparam, layer_obj_t *pdata)

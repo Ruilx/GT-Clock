@@ -47,8 +47,10 @@ void logic_layer_mixer_init(layer_obj_t *pmixer, uint8_t nops)
 	pp->y = 0;
 	pp->w = w;
 	pp->h = h;
+#if DEBUG > 5
 	if (w * h > FB_SIZE)
 		panic();
+#endif
 }
 
 void *logic_layer_mixer_fb(layer_obj_t *pmixer, unsigned int *w, unsigned int *h)
