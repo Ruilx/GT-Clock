@@ -20,6 +20,7 @@
 			background: url('assets/timeFontPreview.png') no-repeat top left;
 			background-size: 288px;
 			image-rendering: pixelated;
+			image-rendering:-moz-crisp-edges;
 			transition: background-position ease-out 0.3s;
 		}
 		@media (max-width: 480px) {
@@ -39,6 +40,7 @@
 			background: url('assets/normalFontPreview.png') no-repeat top left;
 			background-size: 240px;
 			image-rendering: pixelated;
+			image-rendering:-moz-crisp-edges;
 			transition: background-position ease-out 0.3s;
 		}
 		@media (max-width: 480px) {
@@ -53,6 +55,7 @@
 			background: url('assets/timestylenewpreview.png') no-repeat top left;
 			background-size: 120px;
 			image-rendering: pixelated;
+			image-rendering:-moz-crisp-edges;
 			transition: background-position ease-out 0.3s;
 		}
 		.sortable-chosen{
@@ -352,14 +355,7 @@
 						<label>Available APs</label>
 						<div class="input-group">
 							<select class="form-control" id="swa">
-								<option value="1">One</option>
-								<option value="2">Two</option>
-								<option value="3">Three</option>
-								<option value="4">Four</option>
-								<option value="5">Five</option>
-								<option value="6">Six</option>
-								<option value="7">Seven</option>
-								<option value="8">Eight</option>
+								<option value="0">Please click Scan available networks button</option>
 							</select>
 							<span class="input-group-btn">
 								<button class="btn btn-success" type="button" id="bwc">Select AP</button>
@@ -467,11 +463,7 @@
 	"use strict";
 	$(function(){
 		let
-			setEnable = function(jds, e){
-				jds.forEach(function(v){
-					$(v).attr("disabled", e);
-				});
-			},
+			
 			mf = "YYYY-MM-DD HH:mm:ss",
 			i18n = function(){
 				let ls = window.location.search.replace('?', '');

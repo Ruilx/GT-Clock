@@ -174,6 +174,7 @@
 						sts.val(sts.find("option")[0].value).change();
 						prets = getPrets(e.target.value);
 					}
+					setEnable(["#sta"], gtfonts.prop(e.target.value) % 100 >= 80);
 				});
 				sts.change(function(e){
 					console.log(e.target.value);

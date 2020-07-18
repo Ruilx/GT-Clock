@@ -7,6 +7,11 @@ const
 		$("#main").html("<div class=\"jumbotron\"><div class=\"jumbotron-contents\"><h1 class=\"text-center\" style=\"margin-top: 10px\">System Error</h1><p>" + msg + "</p></div></div>");
 		$("#bs").parent().empty();
 	},
+	setEnable = function(ds, e){
+		ds.forEach(function(v){
+			$(v).attr("disabled", !!e);
+		});
+	},
 	optTmp = "<option {ATTRS}>{TEXT}</option>",
 	clr = function(jdl){
 		if(typeof jdl.html === "function") {

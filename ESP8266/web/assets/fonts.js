@@ -43,12 +43,14 @@
 			34:["NesPixel",     33, 8, 770],
 			35:["Devanagari",   34, n, 570],
 			36:["Arabic",       35, n, 570],
-			37:["Minecraft",    36, 9, 570],
+			37:["Minecraft",     n, 9, 570],
 		};
 
 	clr([tf, sf]);
 	for(let item in fonts){
-		selInsOpt(tf, item, fonts[item][0]);
+		if(fonts[item][1] != null){
+			selInsOpt(tf, item, fonts[item][0]);
+		}
 		if(fonts[item][2] != null){
 			selInsOpt(sf, item, fonts[item][0]);
 		}
