@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0,minimum-scale=1.0, user-scalable=0" />
+	<meta http-equiv="Cache-Control" content="no-transform">
+	<meta http-equiv="Cache-Control" content="no-siteapp">
+	<title>GT-Clock8266</title>
+	<link rel="stylesheet" type="text/css" href="assets/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="assets/bootflat.min.css">
+	<style>
+		.full{
+			width: 100%;
+			height: 100%;
+			z-index: 999999;
+			position: fixed;
+			top: 0;
+			left: 0;
+		}
+		textarea{
+			resize: vertical;
+			font-family: Consolas, monospace;
+			height: 100%;
+		}
+		.input-group{
+			margin-bottom: 10px;
+		}
+	</style>
+</head>
+<body style="padding-top: 70px; background-color: #f1f2f6">
+<nav class="navbar navbar-inverse navbar-fixed-top" id="nav">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nb">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a href="javascript:void(0);" class="navbar-brand">GT-Clock</a>
+		</div>
+		<div class="navbar-collapse collapse" id="nb">
+			<ul class="nav navbar-nav" id="lm">
+				<li><a href="index.html">Home</a></li>
+				<li><a href="plugins.html">Plugins</a></li>
+				<li class="active"><a href="about.html">About</a></li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li class="dropdown right">
+					<a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown"><span id="ll">Language</span> <b class="caret"></b></a>
+					<ul class="dropdown-menu" role="menu">
+						<li><a href="?zh_CN">简体中文/Simplified Chinese</a></li>
+						<li><a href=".">English</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>
+
+<div class="container" id="main">
+	<noscript>
+		<div class="alert alert-danger text-center" id="lns">This page contains instant messaging quests and requires Javascript allowed during setup, otherwise, some options may not working property.</div>
+	</noscript>
+	<div class="row clearfix">
+		<div class="col-xs-12">
+			<div class="panel panel-warning" id="">
+				<div class="panel-heading">
+					<h3 class="panel-title">About GT-Clock</h3>
+				</div>
+				<div class="panel-body">
+					<div class="page-header">
+						<h2>GT-Clock <small><a href="https://github.com/Ruilx/GT-Clock" target="_blank">Github</a></small></h2>
+					</div>
+					<p>GT-Clock 项目隶属于GT-Soft Studio, GT-Soft Studio保留产品形态的所有权利, 代码, 设计图和实用程序会遵照GNU Public License Ver3进行开源, 任何人可以参考代码对产品进行升级, 但请遵照许可证内容在允许的范围内进行使用.</p>
+					<samp>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br>
+						This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.<br>
+						You should have received a copy of the GNU General Public License along with this program.  If not, see <a href="https://www.gnu.org/licenses/" target="_blank">https://www.gnu.org/licenses/</a></samp>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<nav class="navbar navbar-inverse mb0">
+	<div class="container-fluid">
+		<div class="navbar-collapse navbar-right">
+			<button type="button" class="btn btn-danger navbar-btn" id="bs">Save & Apply</button>
+		</div>
+		<div class="navbar-header">
+			<a href="javascript:void(0);" class="navbar-brand" id="lcpr">Copyright 2010 - 2020 GT-Soft Studio</a>
+		</div>
+	</div>
+</nav>
+
+<script type="text/javascript" src="assets/jquery2.min.js"></script>
+<script type="text/javascript" src="assets/bootstrap.min.js"></script>
+<script type="text/javascript" src="assets/h.js"></script>
+
+</body>

@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="zh-CN">
 <head>
 	<meta charset="UTF-8">
@@ -55,43 +55,112 @@
 			image-rendering: pixelated;
 			transition: background-position ease-out 0.3s;
 		}
+		.sortable-chosen{
+			background-color: #EEE;
+		}
+		.sort{
+			min-height: 30px;
+		}
+		.sort li{
+			transition: background-color 0.3s ease-in-out;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		.sort li h6{
+			max-width: 85%;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		.handle{
+			display: inline-block;
+			position: absolute;
+			top: 0;
+			right: 0;
+			padding: inherit;
+			cursor: move;
+		}
+		.handle:before{
+			content: "≡";
+		}
+		.full{
+			width: 100%;
+			height: 100%;
+			z-index: 999999;
+			position: fixed;
+			top: 0;
+			left: 0;
+		}
 	</style>
 </head>
 <body style="padding-top: 70px; background-color: #f1f2f6">
-<nav class="navbar navbar-inverse navbar-fixed-top" id="nav"></nav>
+<!--[if lt IE 11]>
+<div class="alert alert-info text-center full">
+	<h1>This page contains latest functions and cannot support below IE11, please upgrade your browser and try again.</h1>
+</div>
+<![endif]-->
+<nav class="navbar navbar-inverse navbar-fixed-top" id="nav">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#nb">
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a href="javascript:void(0);" class="navbar-brand">GT-Clock</a>
+		</div>
+		<div class="navbar-collapse collapse" id="nb">
+			<ul class="nav navbar-nav" id="lm">
+				<li class="active"><a href="index.html">Home</a></li>
+				<li><a href="plugins.html">Plugins</a></li>
+				<li><a href="about.html">About</a></li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li class="dropdown right">
+					<a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown"><span id="ll">Language</span> <b class="caret"></b></a>
+					<ul class="dropdown-menu" role="menu">
+						<li><a href="?zh_CN">简体中文/Simplified Chinese</a></li>
+						<li><a href=".">English</a></li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>
 
 <div class="container" id="main">
 	<noscript>
-		<div class="alert alert-danger text-center">This page contains instant messaging quests and requires Javascript allowed during setup, otherwise, some options may not working property.</div>
+		<div class="alert alert-danger text-center" id="lns">This page contains instant messaging quests and requires Javascript allowed during setup, otherwise, some options may not working property.</div>
 	</noscript>
 	<div class="jumbotron">
 		<div class="jumbotron-photo center">
 		</div>
-		<div class="jumbotron-contents">
+		<div class="jumbotron-contents" id="lt">
 			<h1 class="text-center" style="margin-top: 10px">Welcome</h1>
-			<p>Thanks for using GT network clock, we need to apply some settings before start using it. To confirm all settings by click "Save & Apply" button.</p>
+			<p>Thanks for using GT network clock, we need to apply some settings before start using it. To confirm all settings by click "Save & Apply" button below.</p>
 			<p>You can just satisfied the clock time locally from your PC or phone for minimum working. For advanced functions, please check WiFi settings and ensure the internet accessible.</p>
 		</div>
 	</div>
 	<div class="row clearfix">
 		<div class="col-xs-12 col-md-6">
-			<div class="panel panel-primary">
+			<div class="panel panel-primary" id="lpts">
 				<div class="panel-heading">
 					<h3 class="panel-title">Time Settings</h3>
 				</div>
 				
 				<ul class="list-group">
-					<li class="list-group-item">
+					<li class="list-group-item" id="llt">
 						<label>Local time</label>
 						<div class="input-group">
 							<input type="text" class="form-control dtset" id="idt" placeholder="yyyy-MM-dd HH:mm:ss" readonly/>
-							<span class="input-group-btn"><button class="btn btn-primary" type="button" id="bsldt">Sync Localtime</button></span>
+							<span class="input-group-btn"><button class="btn btn-primary" type="button" id="bsldt">Sync localtime</button></span>
 						</div>
-						<p class="help-block">Touch the input box to select time, or click "Sync Localtime" to assign localtime to page. It will automatically update when set and send to device at the end.</p>
+						<p class="help-block">Touch the input box to select time, or click "Sync localtime" to assign localtime to page. It will automatically update when set and send to device at the end.</p>
 					</li>
-					<li class="list-group-item">
-						<label><input type="checkbox" id="cundt"> Time Synchronization via Internet</label>
-						<div class="alert alert-warning">Your device is not connected to the internet, time synchronization service may not work properly.</div>
+					<li class="list-group-item" id="lsi">
+						<label><input type="checkbox" id="cundt"> <span>Time Synchronization via Internet</span></label>
+						<div class="alert alert-warning" id="lnit">Your device is not connected to the internet, time synchronization service may not work properly.</div>
 						<p class="help-block">Obtain the latest network time through the network NTP server and synchronize it to the device.</p>
 						<div class="input-group">
 							<span class="input-group-addon">Preferred time server</span>
@@ -102,12 +171,11 @@
 							<select class="form-control" id="sts2" disabled></select>
 						</div><br>
 						<div class="input-group">
-							<span class="input-group-addon">Timezone</span>
-							<span class="input-group-addon">UTC</span>
+							<span class="input-group-addon">Timezone UTC</span>
 							<select class="form-control" id="stz" disabled></select>
 							<span class="input-group-btn">
-									<button class="btn btn-primary" type="button" id="bsltz" disabled>Sync local timezone</button>
-								</span>
+								<button class="btn btn-primary" type="button" id="bsltz" disabled>Using local</button>
+							</span>
 						</div><br>
 						<div class="input-group">
 							<span class="input-group-addon">Summer time</span>
@@ -118,7 +186,7 @@
 							<select class="form-control" id="ssf" disabled></select>
 						</div>
 					</li>
-					<li class="list-group-item">
+					<li class="list-group-item" id="lrd">
 						<label>RTC Device</label>
 						<p class="help-block">Select an RTC device and let time storing in specified device.</p>
 						<p class="help-block">Ensure backup battery of RTC device working properly, otherwise may lost time after shutdown.</p>
@@ -133,44 +201,44 @@
 				</ul>
 			</div>
 			
-			<div class="panel panel-primary">
+			<div class="panel panel-primary" id="lpds">
 				<div class="panel-heading">
 					<h3 class="panel-title">Display setting</h3>
 				</div>
-				<div class="panel-body">
-					<label>Display mode, font and dot matrix tuning</label>
-					<div class="input-group">
-						<span class="input-group-addon">Preview</span>
-						<div class="form-control" style="overflow: hidden">
-							<div id="tfp"></div>
-						</div>
-					</div><br>
-					<div class="input-group">
-						<span class="input-group-addon">Time font</span>
-						<select class="form-control" id="tf">
-							<option value="0">Please Wait...</option>
-						</select>
-					</div><br>
-					<div class="input-group">
-						<span class="input-group-addon">Preview</span>
-						<div class="form-control" style="overflow: hidden">
-							<div id="tsp"></div>
-						</div>
-					</div><br>
-					<div class="input-group">
-						<span class="input-group-addon">Time style</span>
-						<select class="form-control" id="sts"></select>
-					</div><br>
-					<div class="input-group">
-						<span class="input-group-addon">Alignment</span>
-						<select class="form-control" id="sta"></select>
-					</div>
-					<p class="help-block">If choose a font with height of 7, it can configure alignment top or bottom to display, leaving a one pixel line blank in the relative position.</p>
-					<label><input type="checkbox" id="c3"> '0' before non-two-digit of hour</label>
-					<p>Add '0' before hour while it not exceed two digits</p>
-				</div>
 				<ul class="list-group">
-					<li class="list-group-item">
+					<li class="list-group-item" id="ldm">
+						<label>Display mode, font and dot matrix tuning</label>
+						<div class="input-group">
+							<span class="input-group-addon">Preview</span>
+							<div class="form-control" style="overflow: hidden">
+								<div id="tfp"></div>
+							</div>
+						</div><br>
+						<div class="input-group">
+							<span class="input-group-addon">Time font</span>
+							<select class="form-control" id="tf">
+								<option value="0">Please Wait...</option>
+							</select>
+						</div><br>
+						<div class="input-group">
+							<span class="input-group-addon">Preview</span>
+							<div class="form-control" style="overflow: hidden">
+								<div id="tsp"></div>
+							</div>
+						</div><br>
+						<div class="input-group">
+							<span class="input-group-addon">Time style</span>
+							<select class="form-control" id="sts"></select>
+						</div><br>
+						<div class="input-group">
+							<span class="input-group-addon">Alignment</span>
+							<select class="form-control" id="sta"></select>
+						</div>
+						<p class="help-block">If choose a font with height of 7, it can configure alignment top or bottom to display, leaving a one pixel line blank in the relative position.</p>
+						<label><input type="checkbox" id="c0h"> <span>'0' before non-two-digit of hour</span></label>
+						<p>Add '0' before hour while it not exceed two digits</p>
+				</li>
+					<li class="list-group-item" id="lnf">
 						<label>Normal font</label>
 						<div class="input-group">
 							<span class="input-group-addon">preview</span>
@@ -185,17 +253,17 @@
 							</select>
 						</div><br>
 					</li>
-					<li class="list-group-item">
-						<label>Date display method</label>
+					<li class="list-group-item" id="ldf">
+						<label>Dates</label>
 						<div class="input-group">
 							<span class="input-group-addon">Date format</span>
 							<select class="form-control" id="sdf"></select>
 						</div><br>
-						<label><input type="checkbox" id="c3"> '0' before non-two-digit of date</label>
+						<label><input type="checkbox" id="c0d"> <span>'0' before non-two-digit of date</span></label>
 						<p>Add '0' before month or day while it not exceed two digits</p>
 					</li>
-					<li class="list-group-item">
-						<label>Week display method</label>
+					<li class="list-group-item" id="lwf">
+						<label>Weeks</label>
 						<div class="input-group">
 							<span class="input-group-addon">Week format</span>
 							<select class="form-control" id="swf"></select>
@@ -210,75 +278,77 @@
 		</div>
 		
 		<div class="col-xs-12 col-md-6">
-			<div class="panel panel-primary">
+			<div class="panel panel-primary" id="lpt">
 				<div class="panel-heading">
 					<h3 class="panel-title">Temperature</h3>
 				</div>
-				<div class="panel-body">
-					<label>Mode & settings</label>
-					<div class="input-group">
-						<span class="input-group-addon">Source</span>
-						<select class="form-control" id="std"></select>
-					</div><br>
-					<div class="input-group">
-						<span class="input-group-addon">Unit</span>
-						<select class="form-control" id="stu"></select>
-					</div><br>
-					<div class="input-group">
-						<span class="input-group-addon">Automatic schedule</span>
-						<select class="form-control" id="stad"></select>
-					</div>
-				</div>
+				<ul class="list-group">
+					<li class="list-group-item" id="ltm">
+						<label>Mode & settings</label>
+						<div class="input-group">
+							<span class="input-group-addon">Source</span>
+							<select class="form-control" id="std"></select>
+						</div><br>
+						<div class="input-group">
+							<span class="input-group-addon">Unit</span>
+							<select class="form-control" id="stu"></select>
+						</div><br>
+						<div class="input-group">
+							<span class="input-group-addon">Automatic schedule</span>
+							<select class="form-control" id="stad"></select>
+						</div>
+					</li>
+				</ul>
 			</div>
 			
-			<div class="panel panel-primary">
+			<div class="panel panel-primary" id="lpo">
 				<div class="panel-heading">
 					<h3 class="panel-title">Other settings</h3>
 				</div>
-				<div class="panel-body">
-					<label>Hourly reminding, automatic brightness</label>
-					<div class="input-group">
-						<span class="input-group-addon">Hourly reminding</span>
-						<select class="form-control" id="shr"></select>
-					</div>
-				</div>
 				<ul class="list-group">
-					<li class="list-group-item">
-						<label><input type="checkbox" id="csan"> Silent at night</label>
+					<li class="list-group-item" id="lhr">
+						<label>Hourly reminding</label>
+						<div class="input-group">
+							<span class="input-group-addon">Hourly reminding</span>
+							<select class="form-control" id="shr"></select>
+						</div>
+					</li>
+					<li class="list-group-item" id="lsn">
+						<label><input type="checkbox" id="csan"> <span>Silent at night</span></label>
 						<p>Stop buzzer at night so as not to effect night sleep.</p>
 					</li>
-					<li class="list-group-item">
-						<label><input type="checkbox" id="cab"> Automatic brightness</label>
+					<li class="list-group-item" id="lab">
+						<label><input type="checkbox" id="cab"> <span>Automatic brightness</span></label>
 						<p>Use light sensor to adjust screen brightness automatically</p>
 					</li>
-					<li class="list-group-item">
-						<label><input type="checkbox" id="caso"> Automatic screen orientation</label>
+					<li class="list-group-item" id="laso">
+						<label><input type="checkbox" id="caso"> <span>Automatic screen orientation</span></label>
 						<p>Use gravity switch to adjust screen orientation automatically</p>
 					</li>
 				</ul>
 			</div>
 			
-			<div class="panel panel-primary">
+			<div class="panel panel-primary" id="lpn">
 				<div class="panel-heading">
 					<h3 class="panel-title">Network</h3>
 				</div>
-				<div class="panel-body">
-					<label>WiFi AP</label>
-					<p class="help-block">
-						This device contains an ESP8266 wireless transceiver, which can be connected to an external 2.4GHz AP to access the Internet. You can manually enter or select SSID below and corresponding password to get network permissions. Device will connect the saved AP after reboot automatically.
-					</p>
-					<div class="input-group">
-						<span class="input-group-addon">ESSID</span>
-						<input type="text" class="form-control" id="iessid" placeholder=""/>
-					</div><br>
-					<div class="input-group">
-						<span class="input-group-addon">Password</span>
-						<input type="password" class="form-control" id="iwp" placeholder="Password not changed" />
-					</div>
-					<p class="help-block">If password of AP not changed, please leave it blank to use default.</p>
-				</div>
 				<ul class="list-group">
-					<li class="list-group-item">
+					<li class="list-group-item" id="lw">
+						<label>WiFi AP</label>
+						<p class="help-block">
+							This device contains an ESP8266 wireless transceiver, which can be connected to an external 2.4GHz AP to access the Internet. You can manually enter or select SSID below and corresponding password to get network permissions. Device will connect the saved AP after reboot automatically.
+						</p>
+						<div class="input-group">
+							<span class="input-group-addon">SSID</span>
+							<input type="text" class="form-control" id="issid" placeholder=""/>
+						</div><br>
+						<div class="input-group">
+							<span class="input-group-addon">Password</span>
+							<input type="password" class="form-control" id="iwp" placeholder="Password not changed" />
+						</div>
+						<p class="help-block">If password of AP not changed, please leave it blank to use default.</p>
+					</li>
+					<li class="list-group-item" id="laa">
 						<label>Available APs</label>
 						<div class="input-group">
 							<select class="form-control" id="swa">
@@ -296,60 +366,77 @@
 							</span>
 						</div><br>
 						<div class="input-group">
-							<button class="btn btn-primary" type="button" id="bws">Scan available networks</button>
+							<button class="btn btn-primary" type="button" id="bws">Scan available networks again</button>
 						</div>
 					</li>
-					<li class="list-group-item">
+					<li class="list-group-item" id="ldr">
 						<label>DNS resolution</label>
 						<div class="input-group">
 							<span class="input-group-addon">DNS</span>
 							<input type="text" class="form-control" id="idns"/>
 						</div>
-						<p>It will using default DNS address if leave it blank.</p>
+						<p class="help-block">It will using default DNS address if leave it blank.</p>
 					</li>
 				</ul>
 			</div>
 			
-			<div class="panel panel-danger">
+			<div class="panel panel-danger" id="lpib">
 				<div class="panel-heading">
 					<h3 class="panel-title">Interactive button</h3>
 				</div>
 				<ul class="list-group">
-					<li class="list-group-item">
-						<label>Press once</label>
-						<div class="input-group">
-							<select class="form-control" id="s1">
-								<option value="1">Sync time from network</option>
-								<option value="2">Sleep</option>
-								<option value="3">Weather forecast</option>
-								<option value="4">4</option>
-								<option value="5">5</option>
-								<option value="6">6</option>
-								<option value="7">7</option>
-								<option value="8">8</option>
-							</select>
-							<span class="input-group-btn">
-								<button class="btn btn-success" type="button" id="p1">Button</button>
-							</span>
-						</div><br>
-					</li>
-					<li class="list-group-item">
-						<label>Long press</label>
-						<div class="input-group">
-							<select class="form-control" id="s2">
-								<option value="1">Shutdown system</option>
-								<option value="2">Close display</option>
-								<option value="3">3</option>
-								<option value="4">4</option>
-								<option value="5">5</option>
-								<option value="6">6</option>
-								<option value="7">7</option>
-								<option value="8">8</option>
-							</select>
-							<span class="input-group-btn">
-								<button class="btn btn-success" type="button" id="p2">Button</button>
-							</span>
-						</div><br>
+					<li class="list-group-item" id="lib">
+						<p class="help-block">
+							The function running on the left list in a loop stepped with button triggering. It will switch once when short press and execute the function of the plugins(if supported) when long-press the button. You can drag plugins label from "Available plugins" list to "In use plugins" list to add plugins, disable with opposite steps. Dragging in the list also be sorted.
+						</p>
+						<style>
+							.ph{
+								position: absolute;
+								top: 30px;
+								left: 0;
+								width: 100%;
+								text-align: center;
+							}
+						</style>
+						<div class="row clearfix">
+							<div class="col-xs-6">
+								<label id="lup">In use plugins</label>
+								<div class="ph">Nothing</div>
+								<ul class="list-group sort" id="luf" data-g="g1">
+									<li class="list-group-item">
+										<h6 class="list-group-item-heading">时钟(disabled)</h6>
+										<small class="list-group-item-text">by Ruilx</small>
+									</li>
+									<li class="list-group-item">
+										<h6 class="list-group-item-heading">显示秒数</h6>
+										<small class="list-group-item-text">by Ruilx</small>
+									</li>
+									<li class="list-group-item">
+										<h6 class="list-group-item-heading">本地天气</h6>
+										<small class="list-group-item-text">by Ruilx</small>
+									</li>
+								</ul>
+							</div>
+							<div class="col-xs-6">
+								<label id="lap">Available plugins</label>
+								<div class="ph">Nothing</div>
+								<ul class="list-group sort" id="laf" data-g="g1">
+									<li class="list-group-item">
+										<h6 class="list-group-item-heading">一个可以移动且名字很长的项目</h6>
+										<small class="list-group-item-text">by Ruilx</small>
+									</li>
+									<li class="list-group-item">
+										<h6 class="list-group-item-heading">可以移动的项目</h6>
+										<small class="list-group-item-text">by Nacht</small>
+									</li>
+									<li class="list-group-item">
+										<h6 class="list-group-item-heading">可以移动的项目2</h6>
+										<small class="list-group-item-text">by ABCDEFGHIJKLMNOPQRSTUVWXYZYYYYYYYYY</small>
+									</li>
+								</ul>
+							</div>
+						</div>
+						<button class="btn btn-primary" type="button" id="bie">Edit plugins</button>
 					</li>
 				</ul>
 			</div>
@@ -360,90 +447,70 @@
 <nav class="navbar navbar-inverse mb0">
 	<div class="container-fluid">
 		<div class="navbar-collapse navbar-right">
-			<button type="button" class="btn btn-danger navbar-btn" id="bs">Save & apply</button>
+			<button type="button" class="btn btn-danger navbar-btn" id="bs">Save & Apply</button>
 		</div>
 		<div class="navbar-header">
-			<a href="javascript:void(0);" class="navbar-brand">Copyright 2010 - 2020 GT-Soft Studio</a>
+			<a href="javascript:void(0);" class="navbar-brand" id="lcpr">Copyright 2010 - 2020 GT-Soft Studio</a>
 		</div>
 	</div>
 </nav>
 
 <script type="text/javascript" src="assets/jquery2.min.js"></script>
 <script type="text/javascript" src="assets/bootstrap.min.js"></script>
+<script type="text/javascript" src="assets/sortable.min.js"></script>
 <script type="text/javascript" src="assets/moment.min.js"></script>
-<!--<script type="text/javascript" src="assets/moment_zh-cn.js"></script>-->
 <script type="text/javascript" src="assets/datetimepicker.min.js"></script>
 <script type="text/javascript" src="assets/h.js"></script>
+<script type="text/javascript" src="assets/setup.js"></script>
+<script type="text/javascript" src="assets/fonts.js"></script>
 <script type="text/javascript">
+	"use strict";
 	$(function(){
 		let
-			timeFontTrigger = function(t, targetValue){
-				$(t).css("background-position-y", -targetValue * 24);
-			},
 			setEnable = function(jds, e){
 				jds.forEach(function(v){
 					$(v).attr("disabled", e);
 				});
 			},
-			mf = "YYYY-MM-DD HH:mm:ss";
-		$.get("assets/nav.html", function(d){
-			$("#nav").html(d);
-		}).fail(function(){
-			showError("The specified URL returns an error");
-		});
-		$.getJSON("assets/setup.json", function(j){
-			if(typeof(j) != "object"){
-				throw Error("Setup file was corrupted.");
-			}
-			for(let k in j){
-				try {
-					if (typeof (j[k]) != "object") {
-						throw Error("Setup file item was corrupted");
-					}
-					for(let val in j[k]){
-						//selInsOpt($(k), val, j[k][val]);
-						//console.log("输入到:" + k + " 选项:" + j[k][val] + " 值:" + val);
-						if(typeof(j[k][val]) === "object"){
-							selInsOpt($(k), val, j[k][val]["value"], j[k][val]);
-						}else{
-							selInsOpt($(k), val, j[k][val]);
+			mf = "YYYY-MM-DD HH:mm:ss",
+			i18n = function(){
+				let ls = window.location.search.replace('?', '');
+				if(ls.length > 4 && typeof langList[ls] === "string"){
+					let s = document.createElement("script");
+					s.type = "text/javascript";
+					s.src = langList[ls];
+					document.getElementsByTagName("body")[0].appendChild(s);
+				}else{
+					gtsetup._updateUI();
+				}
+				return ls == ""? "en_US" : ls;
+			}(),
+			sortable = function(ids){
+				if(typeof(ids) !== "object"){
+					return;
+				}
+				for(let id in ids){
+					let d = $("#" + ids[id]),
+						g = d.data("g");
+					d.find("li").each(function(){
+						if(!$(this).hasClass("disabled")){
+							$(this).append("<span class=\"handle\"></span>");
 						}
-					}
-				} catch(e){
-					console.error(e);
-					continue;
+					});
+					d.css("user-select", "none");
+					ids[id] = new Sortable(document.getElementById(ids[id]), {
+						"group": g ? g : null,
+						animation: 150,
+						filter: ".disabled",
+						handle: ".handle",
+						delayOnTouchOnly: true,
+						delay: 500,
+					});
 				}
-			}
-		}).fail(function(){
-			showError("The specific URL returns an error.");
-		});
-		$.getJSON("assets/fonts.json", function(j){
-			if(typeof(j) != "object"){
-				throw Error("Font list json was corrupted.");
-			}
-			$("#tf").html("");
-			$("#sf").html("");
-			for(let k in j){
-				try{
-					if(typeof(j[k]) != "object"){
-						throw Error("Font list json was corrupted.");
-					}
-					for(let val in j[k]){
-						selInsOpt($(k), "", val, j[k][val]);
-						console.log("输入到:" + k + " 选项:" + j[k][val] + " 值:" + val);
-						
-					}
-					
-					
-				}catch(e){
-					console.error(e);
-					continue;
-				}
-			}
-		}).fail(function(){
-			showError("The specific URL returns an error.");
-		});
-		$(".dtset").datetimepicker({format: "YYYY-MM-DD HH:mm:ss",ignoreReadonly:true,widgetPositioning:{horizontal:"auto",vertical:"bottom"}});
+				return ids;
+			}(['luf', 'laf']);
+		
+		$(".dtset").datetimepicker({format: "YYYY-MM-DD HH:mm:ss",ignoreReadonly:true,widgetPositioning:{horizontal:"auto",vertical:"bottom"},locale: i18n});
 
 		$("#bsltz").click(function(){
 			$("#stz").val(moment().utcOffset() / 60);
@@ -451,25 +518,6 @@
 		$("#cundt").change(function(e){
 			setEnable(["#sts1", "#sts2", "#stz", "#ssf", "#sdst", "#bsltz"], !e.target.checked);
 			e.target.checked && $("#bsltz").click();
-		});
-		$("#tf").change(function(e){
-			let selectedOption = $(this).find("option[value=" + e.target.value + "]");
-			timeFontTrigger("#tfp", selectedOption.data("no"));
-			$(this).data("w", selectedOption.data("w"));
-			$(this).data("h", selectedOption.data("h"));
-		});
-		$("#sf").change(function(e){
-			timeFontTrigger("#fp", $(this).find("option[value=" + e.target.value + "]").data("no"));
-		});
-		$("#sts").change(function(e){
-			timeFontTrigger("#tsp", e.target.value - 1);
-			let dataf = $(this).find("option[value=" + e.target.value + "]").data("f");
-			if(typeof(dataf) !== "undefined"){
-				$("#tf").val(dataf).change();
-				//fontname = $("#tf").find("option[value=" + dataf + "]").html();
-			}else{
-				$("#tf").val(1).change();
-			}
 		});
 		$("#bwc").click(function(e){
 			$("#iessid").val($("#swa").val());
@@ -504,7 +552,6 @@
 				$("#idt").val(ct.format(mf)).blur();
 			});
 		});
-
 	})
 </script>
 </body>
