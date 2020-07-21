@@ -72,7 +72,7 @@ static void matrix_init()
 		     ((0b10 << GPIO_CRL_CNF3_Pos) | (0b11 << GPIO_CRL_MODE3_Pos)) |
 		     ((0b00 << GPIO_CRL_CNF4_Pos) | (0b11 << GPIO_CRL_MODE4_Pos)) |
 		     ((0b10 << GPIO_CRL_CNF5_Pos) | (0b11 << GPIO_CRL_MODE5_Pos));
-	GPIOA->CRH = (GPIOA->CRH & ~(GPIO_CRH_CNF15_Msk | GPIO_CRH_CNF15_Msk)) |
+	GPIOA->CRH = (GPIOA->CRH & ~(GPIO_CRH_CNF15_Msk | GPIO_CRH_MODE15_Msk)) |
 		     ((0b00 << GPIO_CRH_CNF15_Pos) | (0b11 << GPIO_CRH_MODE15_Pos));
 	// Also set JTAG to SWD only
 	AFIO->MAPR |= AFIO_MAPR_SPI1_REMAP_Msk | (0b010 << AFIO_MAPR_SWJ_CFG_Pos);
@@ -147,7 +147,9 @@ static void matrix_init()
 	// Enable timer
 	TIM4->CR1 |= TIM_CR1_CEN_Msk;
 
+#if DEBUG > 5
 	printf(ESC_INIT "%lu\tmatrix: Init done\n", systick_cnt());
+#endif
 }
 
 INIT_HANDLER() = &matrix_init;
@@ -162,7 +164,7 @@ static inline void matrix_buf_init()
 	for (unsigned int gs = 0; gs < GSCALE - 1; gs++)
 		data.buf[data.rbuf][gs][PANELS] = 0xff;
 
-#if 0
+#if 1
 	// Test pattern
 	for (unsigned int line = 0; line < LINES; line++)
 		for (unsigned int pnl = 0; pnl < PANELS && pnl < 4; pnl++)

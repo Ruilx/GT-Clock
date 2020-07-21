@@ -7,7 +7,7 @@
 #include "logic_layer_mixer.h"
 
 #define MAX_LAYERS	16
-#define HEAP_SIZE	(4 * 1024)
+#define HEAP_SIZE	(6 * 1024)
 #define LAYER_OBJS	3
 
 typedef enum {LParam = 0, LData, LMixer, LObjs} obj_t;
@@ -124,7 +124,7 @@ static inline void heap_gc()
 	data.heap.size = newsize;
 }
 
-#if DEBUG > 4
+#if DEBUG > 5
 static void heap_debug()
 {
 	static size_t psize = 0;
@@ -256,7 +256,7 @@ unsigned int logic_layers_commit(unsigned int layer)
 	unsigned int ok = 1;
 	if (pp->phdr->config)
 		pp->phdr->config(&pp->obj[LParam], &pp->obj[LData], &ok, w, h);
-	gc(1);
+	//gc(1);
 	return ok;
 }
 
