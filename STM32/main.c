@@ -45,6 +45,21 @@ static void usb_disabled()
 
 INIT_HANDLER() = &usb_disabled;
 
+static void debug_gpio_init()
+{
+	// Configure GPIOs
+	// PB12: Output push-pull, 50MHz
+	// PB14: Output push-pull, 50MHz
+	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN_Msk;
+	GPIOB->CRH = (GPIOB->CRH & ~(GPIO_CRH_CNF12_Msk | GPIO_CRH_CNF12_Msk |
+				     GPIO_CRH_CNF14_Msk | GPIO_CRH_MODE14_Msk)) |
+		     ((0b00 << GPIO_CRH_CNF12_Pos) | (0b11 << GPIO_CRH_MODE12_Pos)) |
+		     ((0b00 << GPIO_CRH_CNF14_Pos) | (0b11 << GPIO_CRH_MODE14_Pos));
+	GPIOB->BSRR = GPIO_BSRR_BR12_Msk | GPIO_BSRR_BR14_Msk;
+}
+
+INIT_HANDLER() = &debug_gpio_init;
+
 int main()
 {
 	__enable_irq();
@@ -52,6 +67,17 @@ int main()
 
 	for (;;) {
 		LIST_ITERATE(idle, basic_handler_t, p) (*p)();
-		__WFI();
+
+#if 0
+		// Performance monitor
+		static unsigned int pin = 0;
+		if (pin)
+			GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
+		else
+			GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
+		pin = !pin;
+#endif
+
+		//__WFI();
 	}
 }
