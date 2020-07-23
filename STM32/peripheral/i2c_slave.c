@@ -9,7 +9,11 @@
 
 #define I2C_ADDR	0x1c
 
+#if DEBUG > 4
 #define BUF_SIZE	4
+#else
+#define BUF_SIZE	16
+#endif
 
 LIST(i2c_slave_reg, i2c_slave_reg_handler_t);
 
@@ -24,15 +28,9 @@ typedef enum {RegBufInvalid = 0, RegBufSegment, RegBufComplete} reg_buf_t;
 static struct {
 	volatile state_t state;
 	struct {
-		volatile buf_t type;
-		unsigned int size;
-		unsigned int pos;
-		uint8_t *p;
-
 		volatile unsigned int dmaidx;
 		volatile unsigned int intwait;
 		unsigned int procidx;
-		unsigned int bufseg;
 		struct {
 			buf_t state;
 			unsigned int size;
@@ -175,7 +173,6 @@ static void i2c_slave_dma_rx()
 	// Set buffer states
 	data.buf.buf[data.buf.dmaidx].state = BufRx;
 	data.buf.buf[data.buf.dmaidx].size = 0;
-	data.buf.bufseg = 0;
 	// Start RX DMA
 	DMA1_Channel5->CCR |= DMA_CCR_EN_Msk;
 }
@@ -189,7 +186,6 @@ static inline void i2c_slave_dma_irq_rx_segment()
 	// Set buffer states
 	data.buf.buf[data.buf.dmaidx].size = BUF_SIZE - DMA1_Channel5->CNDTR;
 	data.buf.buf[data.buf.dmaidx].state = BufRxSegment;
-	data.buf.bufseg = 1;
 	// Update double buffering
 	data.buf.dmaidx = !data.buf.dmaidx;
 	// Disable RX DMA
@@ -316,8 +312,8 @@ static void i2c_slave_irq_tx_done()
 	case BufTx:
 		// Wait for buffer to be filled, then clean it
 		data.buf.intwait = 1;
-		// Disable error interrupt
-		I2C2->CR2 &= ~I2C_CR2_ITERREN_Msk;
+		// Disable interrupts
+		I2C2->CR2 &= ~(I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk);
 		return;
 	case BufTxComplete:
 	case BufTxSegment:
@@ -364,8 +360,6 @@ static void i2c_slave_dma_irq_tx_segment()
 	i2c_slave_irq_tx_wait();
 	// Clear TX DMA complete flag
 	DMA1->IFCR = DMA_IFCR_CTCIF4_Msk | DMA_IFCR_CGIF4_Msk;
-	// Set buffer states
-	data.buf.bufseg = 1;
 }
 
 static void i2c_slave_dma_tx()
@@ -391,8 +385,6 @@ static void i2c_slave_dma_tx()
 	DMA1_Channel4->CNDTR = data.buf.buf[data.buf.dmaidx].size;
 	// Memory address
 	DMA1_Channel4->CMAR = (uint32_t)data.buf.buf[data.buf.dmaidx].data;
-	// Set buffer states
-	data.buf.bufseg = 0;
 	// Start TX DMA
 	DMA1_Channel4->CCR |= DMA_CCR_EN_Msk;
 }
@@ -515,6 +507,9 @@ void I2C2_EV_IRQHandler()
 			// Disable buffer interrupt again
 			I2C2->CR2 &= ~I2C_CR2_ITBUFEN_Msk;
 			i2c_slave_irq_tx_start();
+		} else if (sr1 & I2C_SR1_AF_Msk) {
+			// No acknowledgement
+			i2c_slave_irq_tx_done();
 		}
 #if 0
 		if (sr1 & I2C_SR1_STOPF_Msk)
@@ -579,8 +574,11 @@ void I2C2_ER_IRQHandler()
 	} else if (sr1 & I2C_SR1_BERR_Msk) {
 		// Bus error
 		I2C2->SR1 = ~I2C_SR1_BERR_Msk;
-	} else {
+#if DEBUG > 4
+	} else if (sr1 & (I2C_SR1_ARLO_Msk | I2C_SR1_OVR_Msk | I2C_SR1_TIMEOUT_Msk |
+			  I2C_SR1_PECERR_Msk | I2C_SR1_SMBALERT_Msk)) {
 		dbgbkpt();
+#endif
 	}
 
 #if DEBUG > 4
