@@ -1,3 +1,6 @@
 [submodule "STM32/CMSIS"]
 	path = STM32/cmsis
 	url = https://github.com/zhiyb/CMSIS-ST.git
+[submodule "utilities/ClosureCompiler/src"]
+	path = utilities/ClosureCompiler/src
+	url = https://github.com/google/closure-compiler
