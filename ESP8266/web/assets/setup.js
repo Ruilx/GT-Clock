@@ -5,6 +5,10 @@
 	"use strict";
 	var defaults = {
 		_lang: "en_US",
+		_page: function(path, suffix=".html"){
+			let p = path.substring(path.lastIndexOf('/') +1).replace(suffix, "");
+			return p == "" ? "index" : p;
+		}(window.location.pathname),
 		ste: [
 			"time.windows.com",
 			"time.nist.gov",
@@ -140,71 +144,73 @@
 			"2": "Beep~"
 		},
 		_updateFunc: {
-			ste: function(){
-				let data = defaults.ste,
-					jdom = [$("#sts1"), $("#sts2")];
-				for(let i in jdom){
-					for(let j in data){
-						selInsOpt(jdom[i], data[j], data[j]);
+			"index": {
+				ste: function () {
+					let data = defaults.ste,
+						jdom = [$("#sts1"), $("#sts2")];
+					for (let i in jdom) {
+						for (let j in data) {
+							selInsOpt(jdom[i], data[j], data[j]);
+						}
 					}
-				}
-			},
-			stz: function(){
-				kvselIns($("#stz"), defaults.stz);
-			},
-			sdst: function(){
-				kvselIns($("#sdst"), defaults.sdst);
-			},
-			ssf: function(){
-				kvselIns($("#ssf"), defaults.ssf);
-			},
-			sts: function(){
-				let sts = $("#sts"),
-					tf = $("#tf"),
-					prets = 0,
-					getPrets = function(v){
-						return typeof defaults.sts[v] === "undefined" ? 0 : v;
-					};
-				kvselIns(sts, defaults.sts[0]);
-				tf.change(function(e){
-					timeFontTrigger($("#tfp"), gtfonts.tfDtno(e.target.value));
-					if (getPrets(e.target.value) !== prets) {
-						clr(sts);
-						kvselIns(sts, defaults.sts[getPrets(e.target.value)]);
-						sts.val(sts.find("option")[0].value).change();
-						prets = getPrets(e.target.value);
-					}
-					setEnable(["#sta"], gtfonts.prop(e.target.value) % 100 >= 80);
-				});
-				sts.change(function(e){
-					console.log(e.target.value);
-					timeFontTrigger($("#tsp"), e.target.value -1);
-				});
-			},
-			sta: function(){
-				kvselIns($("#sta"), defaults.sta);
-			},
-			sdf: function(){
-				kvselIns($("#sdf"), defaults.sdf);
-			},
-			swf: function(){
-				kvselIns($("#swf"), defaults.swf);
-			},
-			swl: function(){
-				kvselIns($("#swl"), defaults.swl);
-			},
-			std: function(){
-				kvselIns($("#std"), defaults.std);
-			},
-			stu: function(){
-				kvselIns($("#stu"), defaults.stu);
-			},
-			stad: function(){
-				kvselIns($("#stad"), defaults.stad);
-			},
-			shr: function(){
-				kvselIns($("#shr"), defaults.shr);
-			},
+				},
+				stz: function () {
+					kvselIns($("#stz"), defaults.stz);
+				},
+				sdst: function () {
+					kvselIns($("#sdst"), defaults.sdst);
+				},
+				ssf: function () {
+					kvselIns($("#ssf"), defaults.ssf);
+				},
+				sts: function () {
+					let sts = $("#sts"),
+						tf = $("#tf"),
+						prets = 0,
+						getPrets = function (v) {
+							return typeof defaults.sts[v] === "undefined" ? 0 : v;
+						};
+					kvselIns(sts, defaults.sts[0]);
+					tf.change(function (e) {
+						timeFontTrigger($("#tfp"), gtfonts.tfDtno(e.target.value));
+						if (getPrets(e.target.value) !== prets) {
+							clr(sts);
+							kvselIns(sts, defaults.sts[getPrets(e.target.value)]);
+							sts.val(sts.find("option")[0].value).change();
+							prets = getPrets(e.target.value);
+						}
+						setEnable(["#sta"], gtfonts.prop(e.target.value) % 100 >= 80);
+					});
+					sts.change(function (e) {
+						console.log(e.target.value);
+						timeFontTrigger($("#tsp"), e.target.value - 1);
+					});
+				},
+				sta: function () {
+					kvselIns($("#sta"), defaults.sta);
+				},
+				sdf: function () {
+					kvselIns($("#sdf"), defaults.sdf);
+				},
+				swf: function () {
+					kvselIns($("#swf"), defaults.swf);
+				},
+				swl: function () {
+					kvselIns($("#swl"), defaults.swl);
+				},
+				std: function () {
+					kvselIns($("#std"), defaults.std);
+				},
+				stu: function () {
+					kvselIns($("#stu"), defaults.stu);
+				},
+				stad: function () {
+					kvselIns($("#stad"), defaults.stad);
+				},
+				shr: function () {
+					kvselIns($("#shr"), defaults.shr);
+				},
+			}
 		},
 		_updateOptions: function(name, values){
 			if(values !== null){
@@ -216,17 +222,20 @@
 		},
 		_updateUI: function(){
 			console.log("Selected language: " + defaults._lang);
+			let page = defaults._page;
 			for(let i in defaults){
 				//if(i.startsWith("_")){
 				if(i[0] === "_"){
 					continue;
 				}
-				if(typeof defaults._updateFunc[i] !== "function"){
+				if(typeof defaults._updateFunc[page][i] !== "function"){
 					console.warn("Option: \"" + i + "\" have no handle function");
 					continue;
 				}
 				clr($("#" + i));
-				defaults._updateFunc[i]();
+				if(typeof defaults._updateFunc == "object" && typeof defaults._updateFunc[page] == "object" && typeof defaults._updateFunc[page][i] == "function") {
+					defaults._updateFunc[page][i]();
+				}
 			}
 			if(typeof defaults._updateI18n === "function"){
 				defaults._updateI18n();

@@ -20,10 +20,14 @@
 		textarea{
 			resize: vertical;
 			font-family: Consolas, monospace;
-			height: 100%;
+			font-size: 9px !important;
+			min-height: 150px;
 		}
 		.input-group{
 			margin-bottom: 10px;
+		}
+		.mt0{
+			margin-top: 0;
 		}
 	</style>
 </head>
@@ -69,88 +73,43 @@
 				</div>
 				<ul class="list-group">
 					<li class="list-group-item">
+						<button class="btn btn-primary btn-sm">Add plugin block</button>
+					</li>
+					<li class="list-group-item plugin">
 						<div class="row clearfix">
 							<div class="col-xs-12 col-md-6">
 								<label>Plugin code</label>
 								<div class="form-group">
-									<textarea class="form-control" rows="5"></textarea>
+									<textarea style="min-height: 150px;" class="form-control" placeholder="Paste code here..." rows="6"></textarea>
+								</div>
+								<div class="form-group">
+									<button class="btn btn-success btn-sm">Save</button>
+									<button class="btn btn-danger btn-sm">Remove</button>
 								</div>
 							</div>
 							<div class="col-xs-12 col-md-6">
-								<h5>Plugin title</h5>
+								<h5 class="mt0">Plugin title</h5>
 								<p>Plugin author</p>
 								<p class="help-block">Plugin description...It will shows some nescessary descriptions, links or website to tell user how to use or setup the plugin.</p>
-								<div class="input-group">
-									<span class="input-group-addon">Argument Name</span>
-									<input type="text" class="form-control" />
+								<div class="args">
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon">Argument Name</span>
+										<input type="text" class="form-control" />
+									</div>
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon">Argument Name</span>
+										<input type="text" class="form-control" />
+									</div>
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon">Argument Name</span>
+										<input type="text" class="form-control" />
+									</div>
 								</div>
-								<div class="input-group">
-									<span class="input-group-addon">Argument Name</span>
-									<input type="text" class="form-control" />
-								</div>
-								<div class="input-group">
-									<span class="input-group-addon">Argument Name</span>
-									<input type="text" class="form-control" />
-								</div>
+								
 							</div>
 						</div>
 					</li>
 					
-					<li class="list-group-item">
-						<div class="row clearfix">
-							<div class="col-xs-12 col-md-6">
-								<label>Plugin code</label>
-								<div class="form-group">
-									<textarea class="form-control" rows="5"></textarea>
-								</div>
-							</div>
-							<div class="col-xs-12 col-md-6">
-								<h5>Plugin title</h5>
-								<p>Plugin author</p>
-								<p class="help-block">Plugin description...It will shows some nescessary descriptions, links or website to tell user how to use or setup the plugin.</p>
-								<div class="input-group">
-									<span class="input-group-addon">Argument Name</span>
-									<input type="text" class="form-control" />
-								</div>
-								<div class="input-group">
-									<span class="input-group-addon">Argument Name</span>
-									<input type="text" class="form-control" />
-								</div>
-								<div class="input-group">
-									<span class="input-group-addon">Argument Name</span>
-									<input type="text" class="form-control" />
-								</div>
-							</div>
-						</div>
-					</li>
-					
-					<li class="list-group-item">
-						<div class="row clearfix">
-							<div class="col-xs-12 col-md-6">
-								<label>Plugin code</label>
-								<div class="form-group">
-									<textarea class="form-control" rows="5"></textarea>
-								</div>
-							</div>
-							<div class="col-xs-12 col-md-6">
-								<h5>Plugin title</h5>
-								<p>Plugin author</p>
-								<p class="help-block">Plugin description...It will shows some nescessary descriptions, links or website to tell user how to use or setup the plugin.</p>
-								<div class="input-group">
-									<span class="input-group-addon">Argument Name</span>
-									<input type="text" class="form-control" />
-								</div>
-								<div class="input-group">
-									<span class="input-group-addon">Argument Name</span>
-									<input type="text" class="form-control" />
-								</div>
-								<div class="input-group">
-									<span class="input-group-addon">Argument Name</span>
-									<input type="text" class="form-control" />
-								</div>
-							</div>
-						</div>
-					</li>
 				</ul>
 			</div>
 		</div>
@@ -159,9 +118,9 @@
 
 <nav class="navbar navbar-inverse mb0">
 	<div class="container-fluid">
-		<div class="navbar-collapse navbar-right">
-			<button type="button" class="btn btn-danger navbar-btn" id="bs">Save & Apply</button>
-		</div>
+		<!--<div class="navbar-collapse navbar-right">-->
+			<!--<button type="button" class="btn btn-danger navbar-btn" id="bs">Save & Apply</button>-->
+		<!--</div>-->
 		<div class="navbar-header">
 			<a href="javascript:void(0);" class="navbar-brand" id="lcpr">Copyright 2010 - 2020 GT-Soft Studio</a>
 		</div>
@@ -171,5 +130,6 @@
 <script type="text/javascript" src="assets/jquery2.min.js"></script>
 <script type="text/javascript" src="assets/bootstrap.min.js"></script>
 <script type="text/javascript" src="assets/h.js"></script>
+<script type="text/javascript" src="assets/setup.js"></script>
 
 </body>

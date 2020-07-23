@@ -21,6 +21,7 @@
 			background-size: 288px;
 			image-rendering: pixelated;
 			image-rendering:-moz-crisp-edges;
+			-ms-interpolation-mode: nearest-neighbor;
 			transition: background-position ease-out 0.3s;
 		}
 		@media (max-width: 480px) {
@@ -41,6 +42,7 @@
 			background-size: 240px;
 			image-rendering: pixelated;
 			image-rendering:-moz-crisp-edges;
+			-ms-interpolation-mode: nearest-neighbor;
 			transition: background-position ease-out 0.3s;
 		}
 		@media (max-width: 480px) {
@@ -56,6 +58,7 @@
 			background-size: 120px;
 			image-rendering: pixelated;
 			image-rendering:-moz-crisp-edges;
+			-ms-interpolation-mode: nearest-neighbor;
 			transition: background-position ease-out 0.3s;
 		}
 		.sortable-chosen{
@@ -462,9 +465,7 @@
 <script type="text/javascript">
 	"use strict";
 	$(function(){
-		let
-			
-			mf = "YYYY-MM-DD HH:mm:ss",
+		let mf = "YYYY-MM-DD HH:mm:ss",
 			i18n = function(){
 				let ls = window.location.search.replace('?', '');
 				if(ls.length > 4 && typeof langList[ls] === "string"){
@@ -515,8 +516,7 @@
 			$("#iessid").val($("#swa").val());
 		});
 		$(function(){
-			let
-				tid = -1,
+			let tid = -1,
 				ct = 0,
 				udt = function(jd){
 					ct.add(1, "second");
