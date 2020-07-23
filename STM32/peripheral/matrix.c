@@ -164,7 +164,7 @@ static inline void matrix_buf_init()
 	for (unsigned int gs = 0; gs < GSCALE - 1; gs++)
 		data.buf[data.rbuf][gs][PANELS] = 0xff;
 
-#if 1
+#if 0
 	// Test pattern
 	for (unsigned int line = 0; line < LINES; line++)
 		for (unsigned int pnl = 0; pnl < PANELS && pnl < 4; pnl++)

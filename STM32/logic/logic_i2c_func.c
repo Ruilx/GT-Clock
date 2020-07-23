@@ -12,13 +12,19 @@ typedef enum {
 	// Extra
 	// FuncTest
 	//   Test I2C communication
-	FuncTest = 0xe,
+	FuncTestNum = 0xc,
+	FuncTestRep = 0xd,
+	FuncTestVal = 0xe,
 	// FuncDebug
 	//   Show FPS prints if DEBUG is enabled
 	FuncDebug = 0xf,
 } func_t;
 
 static uint8_t regs[FUNC_SIZE];
+
+static struct {
+	uint8_t num, rep;
+} data;
 
 #if DEBUG > 5
 static void init()
@@ -65,8 +71,23 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 
 	func_t func = id - FUNC_BASE;
 	switch (func) {
-	case FuncTest:
-		if (*segment != 0 && regs[func] != *segment - 1)
+	case FuncTestNum:
+		*size = 1;
+		if (*segment == 0) {
+			*segment = 1;
+			if (write)
+				regs[FuncTestRep] = 1;
+			return &regs[func];
+		} else {
+			*segment = 0;
+			return &regs[FuncTestRep];
+		}
+	case FuncTestRep:
+		*segment = 0;
+		*size = 1;
+		return &regs[func];
+	case FuncTestVal:
+		if (write && *segment != 0 && regs[func] != *segment - 1)
 			dbgbkpt();
 		(*segment)++;
 		regs[func] = *segment;
@@ -97,9 +118,18 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 
 	func_t func = id - FUNC_BASE;
 	switch (func) {
-	case FuncTest:
+	case FuncTestNum:
+		if (regs[func] != 0xff && (data.num != regs[FuncTestNum] || data.rep != regs[FuncTestRep]))
+			dbgbkpt();
+		data.rep = 0;
+		break;
+	case FuncTestVal:
 		if (segment != 0 && regs[func] != segment - 1)
 			dbgbkpt();
+		if (data.rep != 0 && data.num != segment)
+			dbgbkpt();
+		data.num = segment;
+		data.rep++;
 		break;
 	default:
 		break;

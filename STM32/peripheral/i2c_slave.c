@@ -13,9 +13,11 @@
 
 typedef enum {Idle = 0, WaitTx, /*WaitRx,*/ ActiveTx, ActiveRx} state_t;
 typedef enum {BufInvalid = 0,
-	      BufTx = 2, BufTxSegment = 4, BufTxComplete = 6,
-	      BufRx = 3, BufRxSegment = 5, BufRxComplete = 7} buf_t;
-typedef enum {RegIdle = 0, RegAddr, RegActive} reg_t;
+	      BufTx = 4, BufTxSegment = 5, BufTxComplete = 6,
+	      BufRx = 8, BufRxSegment = 9, BufRxComplete = 10} buf_t;
+
+typedef enum {RegIdle = 0, RegAddr, RegWrite, RegRead} reg_t;
+typedef enum {RegBufInvalid = 0, RegBufSegment, RegBufComplete} reg_buf_t;
 
 static struct {
 	volatile state_t state;
@@ -39,7 +41,7 @@ static struct {
 
 	struct {
 		struct {
-			buf_t state;
+			reg_buf_t state;
 			unsigned int size;
 			unsigned int pos;
 			uint8_t *p;
@@ -138,7 +140,7 @@ static void i2c_slave_init()
 
 INIT_HANDLER() = &i2c_slave_init;
 
-static void i2c_slave_irq_rx_wait()
+static inline void i2c_slave_irq_rx_wait()
 {
 	// Wait for RX buffer
 	// Disable interrupts for now
@@ -154,22 +156,10 @@ static void i2c_slave_dma_rx()
 	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
 	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
 #endif
-	if (data.buf.buf[data.buf.dmaidx].state != BufInvalid) {
+#if DEBUG > 4
+	if (data.buf.buf[data.buf.dmaidx].state != BufInvalid)
 		dbgbkpt();
-#if 0
-		// Wait for RX buffer
-		// Disable interrupts for now
-		I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
-		data.buf.intwait = 1;
-#if 0
-		// Wait for RX buffer to become available
-		//data.buf.dmaact = 0;
-		data.buf.intact = 0;
 #endif
-#endif
-		return;
-	}
-
 	// Disable DMAs
 	DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
 	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
@@ -197,7 +187,7 @@ static void i2c_slave_dma_rx()
 #endif
 }
 
-static inline void i2c_slave_dma_rx_segment()
+static inline void i2c_slave_dma_irq_rx_segment()
 {
 #if 0
 	I2C_TypeDef *i2c = I2C2;
@@ -205,8 +195,10 @@ static inline void i2c_slave_dma_rx_segment()
 	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
 	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
 #endif
+#if DEBUG > 4
 	if (data.buf.buf[data.buf.dmaidx].state != BufRx)
 		dbgbkpt();
+#endif
 
 	// Set buffer states
 	data.buf.buf[data.buf.dmaidx].size = BUF_SIZE - DMA1_Channel5->CNDTR;
@@ -214,46 +206,16 @@ static inline void i2c_slave_dma_rx_segment()
 	data.buf.bufseg = 1;
 	// Update double buffering
 	data.buf.dmaidx = !data.buf.dmaidx;
-	// Disable DMAs
+	// Disable RX DMA
 	//DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
-	//DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
-	// Clear DMA complete flag
+	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
+	// Clear RX DMA complete flag
 	DMA1->IFCR = DMA_IFCR_CTCIF5_Msk | DMA_IFCR_CGIF5_Msk;
-
 	// Don't restart DMA, wait for BTF interrupt to avoid I2C bug
-	return;
-
-	// Restart RX DMA if alternative buffer is empty
-#if 0
-	i2c_slave_dma_rx();
-#else
-	switch (data.buf.buf[data.buf.dmaidx].state) {
-	case BufInvalid:
-		i2c_slave_dma_rx();
-		break;
-	default:
-		i2c_slave_irq_rx_wait();
-	}
-#endif
-#if 0
-	if (!i2c_slave_dma_rx()) {
-		// Wait for RX buffer
-		// Disable interrupts for now
-		I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
-		data.buf.intwait = 1;
-	}
-#endif
 }
 
-static void i2c_slave_dma_rx_done()
+static void i2c_slave_irq_rx_dma_done()
 {
-#if 0
-	I2C_TypeDef *i2c = I2C2;
-	DMA_TypeDef *dma = DMA1;
-	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
-	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
-#endif
-
 #if 0
 	if (data.buf.buf[data.buf.dmaidx].state != BufRx)
 		dbgbkpt();
@@ -273,18 +235,32 @@ static void i2c_slave_dma_rx_done()
 		data.buf.buf[data.buf.dmaidx].size = BUF_SIZE - DMA1_Channel5->CNDTR;
 		break;
 	default:
+#if DEBUG > 4
 		dbgbkpt();
+#endif
+		break;
 	}
 	data.buf.buf[data.buf.dmaidx].state = BufRxComplete;
 	// Update double buffering
 	data.buf.dmaidx = !data.buf.dmaidx;
-	// Disable DMAs
-	DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
+	// Disable RX DMA
+	//DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
 	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
 #if 0
 	// Restart RX DMA if alternative buffer is empty
 	i2c_slave_dma_rx();
 #endif
+}
+
+static void i2c_slave_irq_tx_dma_done()
+{
+	// Set buffer states
+	data.buf.buf[data.buf.dmaidx].state = BufInvalid;
+	// Update double buffering
+	data.buf.dmaidx = !data.buf.dmaidx;
+	// Disable TX DMA
+	DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
+	//DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
 }
 
 #define EVLOG_SIZE	16
@@ -312,7 +288,7 @@ struct {
 	} log[EVLOG_SIZE];
 } evlog = {0};
 
-static void i2c_slave_rx_next()
+static void i2c_slave_irq_rx_next()
 {
 	switch (data.buf.buf[data.buf.dmaidx].state) {
 	case BufInvalid:
@@ -323,148 +299,261 @@ static void i2c_slave_rx_next()
 	}
 }
 
-static void i2c_slave_rx()
-{
-#if 1
-	switch (data.buf.buf[data.buf.dmaidx].state) {
-	case BufInvalid:
-		data.state = ActiveRx;
-		i2c_slave_dma_rx();
-		break;
-#if 0
-		if (!i2c_slave_dma_rx()) {
-			// Wait for RX buffer
-			// Disable interrupts for now
-			I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
-			data.buf.dmawait = 1;
-			//data.state = WaitRx;
-			data.state = ActiveRx;
-			break;
-		}
-		// fall through
-#endif
-#if 0
-	case BufRx:
-		// RX buffer active, DMA active
-		data.state = ActiveRx;
-		break;
-#endif
-	default:
-		// Wait for RX buffer
-		// Disable interrupts for now
-		I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
-		data.buf.intwait = 1;
-		//data.state = WaitRx;
-		data.state = ActiveRx;
-		break;
-	}
-
-#else
-	switch (data.buf.type) {
-	case BufTx:
-	case BufTxSegment:
-		data.buf.type = BufTxComplete;
-		// fall through
-	case BufRxComplete:
-	case BufTxComplete:
-	case BufInvalid:
-		// Wait for RX buffer
-#if DEBUG > 5
-		printf(ESC_READ "%lu\ti2c irq: RX wait\n", systick_cnt());
-#endif
-		// Disable interrupts for now
-		I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
-		data.state = WaitRx;
-		break;
-	case BufRxSegment:
-		if (data.buf.pos == data.buf.size) {
-			// Wait for RX buffer
-#if DEBUG > 5
-			printf(ESC_READ "%lu\ti2c irq: RX wait\n", systick_cnt());
-#endif
-			// Disable interrupts for now
-			I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
-			data.state = WaitRx;
-			break;
-		}
-		// fall through
-	case BufRx:
-		// RX buffer valid or empty
-		if (I2C2->SR1 & I2C_SR1_RXNE_Msk) {
-			// NAK if no more buffer space available
-			// No, slave does not NAK
-			//if (data.buf.size <= 1)
-			//	I2C2->CR1 &= ~I2C_CR1_ACK_Msk;
-			// Read RX buffer
-			uint8_t v = I2C2->DR;
-			evlog.log[evlog.idx].dr = v;
-#if DEBUG > 5
-			printf(ESC_READ "%lu\ti2c irq: RX %s" ESC_DATA "0x%02x\n", systick_cnt(),
-			       data.buf.size != data.buf.pos ? "" : ESC_ERROR "dropped ", v);
-#endif
-			if (data.buf.size != data.buf.pos) {
-				*(data.buf.p + data.buf.pos) = v;
-				data.buf.pos++;
-			}
-		}
-		if (data.buf.type == BufRxSegment && data.buf.size == data.buf.pos) {
-			// Wait for RX buffer
-			// Disable interrupts for now
-			I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
-			data.state = WaitRx;
-		} else {
-			// Enable interrupts
-			I2C2->CR2 |= I2C_CR2_ITEVTEN_Msk;
-			data.state = ActiveRx;
-		}
-	}
-#endif
-}
-
-static void i2c_slave_done()
+static void i2c_slave_irq_done()
 {
 #if DEBUG > 5
 	printf(ESC_DISABLE "%lu\ti2c irq: stop\n", systick_cnt());
 #endif
+	// We may have 1 byte left in I2C receive buffer
+	if (I2C2->SR1 & I2C_SR1_RXNE_Msk) {
+		switch (data.buf.buf[data.buf.dmaidx].state) {
+		case BufInvalid:
+			// Read that last 1 byte
+			// Set buffer states
+			data.buf.buf[data.buf.dmaidx].data[0] = I2C2->DR;
+			data.buf.buf[data.buf.dmaidx].size = 1;
+			data.buf.buf[data.buf.dmaidx].state = BufRxComplete;
+			// Update double buffering
+			data.buf.dmaidx = !data.buf.dmaidx;
+			// Re-enable ACK and clear stop flag
+			I2C2->CR1 |= I2C_CR1_ACK_Msk;
+			data.state = Idle;
+			break;
+#if DEBUG > 4
+		case BufRx:
+			// DMA should be finished and disabled
+			dbgbkpt();
+#endif
+			// fall through
+		default:
+			// Or, wait for buffer
+			i2c_slave_irq_rx_wait();
+		}
+		return;
+	}
 
-#if 1
 	switch (data.buf.buf[data.buf.dmaidx].state) {
 	case BufInvalid:
 	case BufRx:
-		i2c_slave_dma_rx_done();
-		data.state = Idle;
+		i2c_slave_irq_rx_dma_done();
 		// Re-enable ACK and clear stop flag
 		I2C2->CR1 |= I2C_CR1_ACK_Msk;
-		// Enable interrupts
-		I2C2->CR2 |= I2C_CR2_ITEVTEN_Msk;
+		data.state = Idle;
 		break;
+#if DEBUG > 4
+	case BufTxComplete:
+	case BufTxSegment:
+	case BufTx:
+		dbgbkpt();
+		break;
+#endif
 	default:
-		// Need to wait for RX buffer for end indication
-		// Disable interrupts for now
-		I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
-		data.buf.intwait = 1;
-		//data.state = WaitRx;
-		//data.state = ActiveRx;
+		// Wait for RX buffer for end indication
+		i2c_slave_irq_rx_wait();
 		break;
 	}
-#else
-	switch (data.buf.type) {
+}
+
+
+static void i2c_slave_irq_tx_done()
+{
+#if DEBUG > 5
+	printf(ESC_DISABLE "%lu\ti2c irq: stop\n", systick_cnt());
+#endif
+#if DEBUG > 4
+	// We may have 1 byte left in I2C receive buffer
+	if (I2C2->SR1 & I2C_SR1_RXNE_Msk)
+		dbgbkpt();
+#endif
+#if 0
+	// I2C may be requesting for 1 more dummy byte
+	if (I2C2->SR1 & I2C_SR1_TXE_Msk)
+		I2C2->DR = 0;
+#endif
+
+	switch (data.buf.buf[data.buf.dmaidx].state) {
 	case BufTx:
+		// Wait for buffer to be filled, then clean it
+		data.buf.intwait = 1;
+		// Disable error interrupt
+		I2C2->CR2 &= ~I2C_CR2_ITERREN_Msk;
+		return;
+	case BufTxComplete:
 	case BufTxSegment:
-		data.buf.type = BufTxComplete;
-		break;
-	case BufRx:
-	case BufRxSegment:
-		data.buf.type = BufRxComplete;
+		i2c_slave_irq_tx_dma_done();
+		// fall through
+	case BufInvalid:
+		// Clear NAK flag
+		I2C2->SR1 = ~I2C_SR1_AF_Msk;
+		data.state = Idle;
 		break;
 	default:
+#if DEBUG > 4
+		dbgbkpt();
+#endif
+		break;
+	}
+	// Reenable interrupts
+	I2C2->CR2 |= I2C_CR2_ITEVTEN_Msk;
+}
+
+#if 0
+static void i2c_slave_irq_tx_wait()
+{
+	// Wait for TX buffer
+	data.buf.buf[data.buf.dmaidx].state = BufTx;
+	// Disable interrupts for now
+	I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
+	data.buf.intwait = 1;
+	// Disable TX DMA
+	//DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
+}
+#endif
+
+static void i2c_slave_irq_tx_wait()
+{
+#if 1
+	// Wait for TX buffer
+	if (data.buf.buf[data.buf.dmaidx].state == BufInvalid)
+		data.buf.buf[data.buf.dmaidx].state = BufTx;
+	data.buf.intwait = 1;
+	// Disable interrupts for now
+	I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
+#else
+#if DEBUG > 4
+	if (data.buf.buf[data.buf.dmaidx].state != BufRx)
+		dbgbkpt();
+#endif
+	// Disable RX DMA
+	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
+#if DEBUG > 4
+	I2C_TypeDef *i2c = I2C2;
+	DMA_TypeDef *dma = DMA1;
+	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
+	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+
+#if 1
+	// Should have no data received
+	if (DMA1_Channel5->CNDTR != BUF_SIZE)
+		dbgbkpt();
+#endif
+#endif
+	// Reset buffer state
+	data.buf.buf[data.buf.dmaidx].state = BufInvalid;
+	i2c_slave_irq_tx_wait();
+#endif
+}
+
+static void i2c_slave_dma_irq_tx_segment()
+{
+#if DEBUG > 4
+	switch (data.buf.buf[data.buf.dmaidx].state) {
+	case BufTxSegment:
+	case BufTxComplete:
+		break;
+	default:
+		dbgbkpt();
+	}
+#endif
+
+	i2c_slave_irq_tx_dma_done();
+	i2c_slave_irq_tx_wait();
+	// Disable TX DMA
+	//DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
+	// Clear TX DMA complete flag
+	DMA1->IFCR = DMA_IFCR_CTCIF4_Msk | DMA_IFCR_CGIF4_Msk;
+	// Disable interrupts for now
+	//I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
+	// Set buffer states
+	data.buf.bufseg = 1;
+#if 0
+#if 0
+	I2C_TypeDef *i2c = I2C2;
+	DMA_TypeDef *dma = DMA1;
+	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
+	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+#endif
+#if DEBUG > 4
+	if (data.buf.buf[data.buf.dmaidx].state != BufRx)
+		dbgbkpt();
+#endif
+
+	// Set buffer states
+	data.buf.buf[data.buf.dmaidx].size = BUF_SIZE - DMA1_Channel5->CNDTR;
+	data.buf.buf[data.buf.dmaidx].state = BufRxSegment;
+	data.buf.bufseg = 1;
+	// Update double buffering
+	data.buf.dmaidx = !data.buf.dmaidx;
+	// Disable DMA
+	//DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
+	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
+	// Clear DMA complete flag
+	DMA1->IFCR = DMA_IFCR_CTCIF5_Msk | DMA_IFCR_CGIF5_Msk;
+	// Don't restart DMA, wait for BTF interrupt to avoid I2C bug
+
+	switch (data.buf.buf[data.buf.dmaidx].state) {
+	case BufTxComplete:
+		break;
+	case BufTxSegment:
+		break;
+	default:
+#if DEBUG > 4
+		dbgbkpt();
+#endif
 		break;
 	}
 #endif
 }
 
-static void i2c_slave_addr()
+static void i2c_slave_dma_tx()
 {
+#if DEBUG > 4
+	switch (data.buf.buf[data.buf.dmaidx].state) {
+	case BufTxSegment:
+	case BufTxComplete:
+		break;
+	default:
+		dbgbkpt();
+	}
+#endif
+
+	// Disable DMAs
+	DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
+	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
+	// Set circular mode and disable interrupt if TX complete
+	uint32_t ccr = data.buf.buf[data.buf.dmaidx].state == BufTxComplete ?
+			       DMA_CCR_CIRC_Msk : DMA_CCR_TCIE_Msk;
+	DMA1_Channel4->CCR = (DMA1_Channel4->CCR & ~(DMA_CCR_CIRC_Msk | DMA_CCR_TCIE_Msk)) | ccr;
+	// Transfer size
+	DMA1_Channel4->CNDTR = data.buf.buf[data.buf.dmaidx].size;
+	// Memory address
+	DMA1_Channel4->CMAR = (uint32_t)data.buf.buf[data.buf.dmaidx].data;
+	// Set buffer states
+	data.buf.bufseg = 0;
+	//data.buf.dmaact = 1;
+	// Start TX DMA
+	DMA1_Channel4->CCR |= DMA_CCR_EN_Msk;
+}
+
+static void i2c_slave_irq_tx_start()
+{
+	switch (data.buf.buf[data.buf.dmaidx].state) {
+	case BufTxSegment:
+	case BufTxComplete:
+		break;
+	default:
+		i2c_slave_irq_tx_wait();
+		return;
+	}
+
+	data.state = ActiveTx;
+	// TX DMA start
+	i2c_slave_dma_tx();
+}
+
+static void i2c_slave_irq_addr()
+{
+#if 0
 	// Set up RX DMA buffer before acknowledging ADDR
 	// ...to avoid I2C bug with RX DR overrun
 	switch (data.buf.buf[data.buf.dmaidx].state) {
@@ -475,37 +564,56 @@ static void i2c_slave_addr()
 		i2c_slave_irq_rx_wait();
 		return;
 	}
+#endif
 	// Addressed, switch to transmitter or receiver mode
 	uint16_t sr2 = I2C2->SR2;
 #if DEBUG > 5
 	printf(ESC_ENABLE "%lu\ti2c irq: addr 0x%04x\n", systick_cnt(), sr2);
 #endif
+#if 1
+	// Wait until BTF interrupt for data transfer to avoid I2C bug
+	if (sr2 & I2C_SR2_TRA_Msk) {
+		i2c_slave_irq_tx_wait();
+		data.state = WaitTx;
+	} else {
+		data.state = ActiveRx;
+	}
+#else
 	// Already in receiver mode, switch to transmitter if necessary
 	if (sr2 & I2C_SR2_TRA_Msk)
-		dbgbkpt();
+		i2c_slave_irq_tx_start();
 	else
 		data.state = ActiveRx;
-#if 0
-	else
-		i2c_slave_rx();
-#endif
-#if 0
-	if (sr2 & I2C_SR2_TRA_Msk)
-		i2c_slave_tx();
-	else
-		i2c_slave_rx();
 #endif
 }
 
 void DMA1_Channel4_IRQHandler()
 {
-	dbgbkpt();
+#if 1
+	I2C_TypeDef *i2c = I2C2;
+	DMA_TypeDef *dma = DMA1;
+	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
+	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+#endif
+	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
+	GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
+	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
+	i2c_slave_dma_irq_tx_segment();
+	GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
+	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
+	GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
 }
 
 void DMA1_Channel5_IRQHandler()
 {
+#if 1
+	I2C_TypeDef *i2c = I2C2;
+	DMA_TypeDef *dma = DMA1;
+	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
+	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+#endif
 	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
-	i2c_slave_dma_rx_segment();
+	i2c_slave_dma_irq_rx_segment();
 	GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
 }
 
@@ -518,9 +626,11 @@ void I2C2_EV_IRQHandler()
 		return;
 	}
 
-#if DEBUG > 5
-	printf(ESC_DEBUG "%lu\ti2c irq: SR1 0x%04x\n", systick_cnt(), sr1);
-	//flushCache();
+#if 1
+	I2C_TypeDef *i2c = I2C2;
+	DMA_TypeDef *dma = DMA1;
+	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
+	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
 #endif
 #if DEBUG > 4
 	evlog.log[evlog.idx].sr1 = sr1;
@@ -531,11 +641,15 @@ void I2C2_EV_IRQHandler()
 	evlog.log[evlog.idx].regstate = data.reg.state;
 	//evlog.log[evlog.idx].dr = 0xaa;
 #endif
-
+#if DEBUG > 5
 	I2C_TypeDef *i2c = I2C2;
 	DMA_TypeDef *dma = DMA1;
 	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
 	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+
+	printf(ESC_DEBUG "%lu\ti2c irq: SR1 0x%04x\n", systick_cnt(), sr1);
+	//flushCache();
+#endif
 
 	// For slave mode, possible event interrupts are:
 	// ADDR		Address matched
@@ -547,9 +661,9 @@ void I2C2_EV_IRQHandler()
 	switch (data.state) {
 	case Idle:
 		if (sr1 & I2C_SR1_ADDR_Msk)
-			i2c_slave_addr();
+			i2c_slave_irq_addr();
 		else if (sr1 & I2C_SR1_STOPF_Msk)
-			i2c_slave_done();
+			i2c_slave_irq_done();
 #if 0
 		if (sr1 & I2C_SR1_RXNE_Msk)
 			i2c_slave_rx();
@@ -562,8 +676,14 @@ void I2C2_EV_IRQHandler()
 			dbgbkpt();
 		break;
 	case WaitTx:
+		i2c_slave_irq_tx_start();
 		break;
 	case ActiveTx:
+		if (sr1 & I2C_SR1_BTF_Msk) {
+			// Disable buffer interrupt again
+			I2C2->CR2 &= ~I2C_CR2_ITBUFEN_Msk;
+			i2c_slave_irq_tx_start();
+		}
 #if 0
 		if (sr1 & I2C_SR1_STOPF_Msk)
 			i2c_slave_done();
@@ -571,17 +691,33 @@ void I2C2_EV_IRQHandler()
 			i2c_slave_addr();
 		else if (sr1 & I2C_SR1_TXE_Msk)
 			i2c_slave_tx();
-		else
 #endif
+		else
 			dbgbkpt();
 		break;
-	//case WaitRx:
-	//	break;
+#if 0
+	case WaitRx:
+		break;
+#endif
 	case ActiveRx:
-		if (sr1 & I2C_SR1_STOPF_Msk)
-			i2c_slave_done();
-		else if(sr1 & I2C_SR1_BTF_Msk)
-			i2c_slave_rx_next();
+		if (sr1 & I2C_SR1_STOPF_Msk) {
+#if DEBUG > 4
+			// Stop is only generated after the last data byte is transferred
+			if(sr1 & I2C_SR1_BTF_Msk)
+				dbgbkpt();
+#endif
+			i2c_slave_irq_done();
+		} else if(sr1 & I2C_SR1_BTF_Msk) {
+			i2c_slave_irq_rx_next();
+		} else if (sr1 & I2C_SR1_ADDR_Msk) {
+#if DEBUG > 4
+			// Stop is only generated after the last data byte is transferred
+			if(sr1 & I2C_SR1_BTF_Msk)
+				dbgbkpt();
+#endif
+			i2c_slave_irq_done();
+			i2c_slave_irq_addr();
+		}
 #if 0
 		if (sr1 & I2C_SR1_RXNE_Msk)
 			i2c_slave_rx();
@@ -606,6 +742,7 @@ void I2C2_EV_IRQHandler()
 	GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
 }
 
+#if 0
 static void i2c_slave_tx()
 {
 	switch (data.buf.type) {
@@ -665,10 +802,14 @@ static void i2c_slave_tx()
 		}
 	}
 }
+#endif
 
 void I2C2_ER_IRQHandler()
 {
 	uint16_t sr1 = I2C2->SR1;
+	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
+	GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
+	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
 
 #if DEBUG > 5
 	printf(ESC_DEBUG "%lu\ti2c err irq: SR1 0x%04x\n", systick_cnt(), sr1);
@@ -680,8 +821,7 @@ void I2C2_ER_IRQHandler()
 #if DEBUG > 5
 		printf(ESC_ERROR "%lu\ti2c err irq: nak\n", systick_cnt());
 #endif
-		i2c_slave_done();
-		I2C2->SR1 = ~I2C_SR1_AF_Msk;
+		i2c_slave_irq_tx_done();
 	} else if (sr1 & I2C_SR1_BERR_Msk) {
 		// Bus error
 #if DEBUG > 5
@@ -691,6 +831,10 @@ void I2C2_ER_IRQHandler()
 	} else {
 		dbgbkpt();
 	}
+
+	GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
+	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
+	GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
 }
 
 static void *i2c_slave_reg_data(unsigned int write, unsigned int id, unsigned int *segment, unsigned int *size)
@@ -718,39 +862,50 @@ static void i2c_slave_reg_rx_complete(unsigned int id, unsigned int segment, uns
 #endif
 }
 
-static inline void i2c_slave_reg_rx_buf()
+static void i2c_slave_reg_rx_buf()
 {
 	switch (data.reg.state) {
 	case RegIdle:
+	case RegRead:
 		// Register idle, wait for ID
-		if (data.reg.buf.state != BufInvalid)
+#if DEBUG > 4
+		if (data.reg.buf.state != RegBufInvalid)
 			dbgbkpt();
+#endif
+		data.reg.segment = 0;
+		data.reg.state = RegAddr;
 		data.reg.buf.p = &data.reg.id;
 		data.reg.buf.size = 1;
 		data.reg.buf.pos = 0;
-		data.reg.buf.state = BufRxSegment;
-		data.reg.state = RegAddr;
+		data.reg.buf.state = RegBufSegment;
 		break;
 	case RegAddr:
 		// Register ID received
-		if (data.reg.buf.state != BufRxSegment || data.reg.buf.pos != 1)
+#if DEBUG > 4
+		if (data.reg.buf.state != RegBufSegment || data.reg.buf.pos != 1)
 			dbgbkpt();
+#endif
 		data.reg.segment = 0;
+		data.reg.state = RegWrite;
 		data.reg.buf.p = i2c_slave_reg_data(1, data.reg.id, &data.reg.segment, &data.reg.buf.size);
 		data.reg.buf.pos = 0;
-		data.reg.buf.state = data.reg.segment ? BufRxSegment : BufRx;
-		data.reg.state = RegActive;
+		data.reg.buf.state = data.reg.segment ? RegBufSegment : RegBufComplete;
 		break;
-	case RegActive:
+	case RegWrite:
 		// Register write segment complete
-		if (data.reg.buf.state != BufRxSegment || data.reg.buf.pos != data.reg.buf.size)
+#if DEBUG > 4
+		if (data.reg.buf.state != RegBufSegment || data.reg.buf.pos != data.reg.buf.size)
 			dbgbkpt();
+#endif
 		data.reg.buf.p = i2c_slave_reg_data(1, data.reg.id, &data.reg.segment, &data.reg.buf.size);
 		data.reg.buf.pos = 0;
-		data.reg.buf.state = data.reg.segment ? BufRxSegment : BufRx;
+		data.reg.buf.state = data.reg.segment ? RegBufSegment : RegBufComplete;
 		break;
 	default:
+#if DEBUG > 4
 		dbgbkpt();
+#endif
+		break;
 	}
 
 #if DEBUG > 5
@@ -761,17 +916,21 @@ static inline void i2c_slave_reg_rx_buf()
 
 static inline void i2c_slave_reg_rx_segment(unsigned int complete, unsigned int size, const uint8_t *p)
 {
+	// Reset buffer state when switching TX - RX
+	if (data.reg.state == RegRead)
+		data.reg.buf.state = RegBufInvalid;
+
 	while (size) {
 		unsigned int s;
 		switch (data.reg.buf.state) {
-		case BufInvalid:
+		case RegBufInvalid:
 			i2c_slave_reg_rx_buf();
 			break;
-		case BufRx:
+		case RegBufComplete:
 			if (data.reg.buf.size == data.reg.buf.pos)
 				goto done;
 			// fall through
-		case BufRxSegment:
+		case RegBufSegment:
 			if (data.reg.buf.size == data.reg.buf.pos)
 				i2c_slave_reg_rx_buf();
 			s = data.reg.buf.size - data.reg.buf.pos;
@@ -782,45 +941,142 @@ static inline void i2c_slave_reg_rx_segment(unsigned int complete, unsigned int 
 #endif
 			memcpy(&data.reg.buf.p[data.reg.buf.pos], p, s);
 			p += s;
-			size -= s;
 			data.reg.buf.pos += s;
+			size -= s;
 			break;
+#if DEBUG > 4
 		default:
 			dbgbkpt();
 			break;
+#endif
 		}
 	}
 
 done:
+	if (complete) {
+		if (data.reg.state == RegWrite)
+			i2c_slave_reg_rx_complete(data.reg.id, data.reg.segment, data.reg.buf.pos, data.reg.buf.p);
+		data.reg.buf.state = BufInvalid;
+		data.reg.state = RegIdle;
+	}
+}
+
+static void i2c_slave_reg_tx_buf()
+{
+	switch (data.reg.state) {
+	case RegIdle:
+		// Register idle, start read segment
+#if DEBUG > 4
+		if (data.reg.buf.state != RegBufInvalid)
+			dbgbkpt();
+#endif
+		data.reg.segment = 0;
+		data.reg.buf.p = i2c_slave_reg_data(0, data.reg.id, &data.reg.segment, &data.reg.buf.size);
+		data.reg.buf.pos = 0;
+		data.reg.buf.state = data.reg.segment ? RegBufSegment : RegBufComplete;
+		data.reg.state = RegRead;
+		break;
+	case RegRead:
+		// Register read segment complete
+#if DEBUG > 4
+		if (data.reg.buf.state != RegBufSegment || data.reg.buf.pos != data.reg.buf.size)
+			dbgbkpt();
+#endif
+		data.reg.buf.p = i2c_slave_reg_data(0, data.reg.id, &data.reg.segment, &data.reg.buf.size);
+		data.reg.buf.pos = 0;
+		data.reg.buf.state = data.reg.segment ? RegBufSegment : RegBufComplete;
+		break;
+	default:
+#if DEBUG > 4
+		dbgbkpt();
+#endif
+		break;
+	}
+
+#if DEBUG > 5
+	printf(ESC_WRITE "%lu\ti2c reg: Write buffer segment %u: %u bytes\n",
+	       systick_cnt(), data.reg.segment, data.reg.buf.size);
+#endif
+}
+
+static unsigned int i2c_slave_reg_tx_segment(unsigned int *psize, uint8_t *p)
+{
+	switch (data.reg.state) {
+	case RegIdle:
+		data.reg.buf.state = RegBufInvalid;
+		//data.reg.state = RegRead;
+	case RegRead:
+		break;
+	default:
+		dbgbkpt();
+		break;
+	}
+
+#if DEBUG > 5
+	if (data.reg.state != RegIdle && data.reg.state != RegRead)
+		dbgbkpt();
+#endif
+	unsigned int size = BUF_SIZE;
+	do {
+		unsigned int s;
+		switch (data.reg.buf.state) {
+		case RegBufInvalid:
+			i2c_slave_reg_tx_buf();
+			break;
+		case RegBufComplete:
+			if (data.reg.buf.size == data.reg.buf.pos)
+				goto done;
+			// fall through
+		case RegBufSegment:
+			if (data.reg.buf.size == data.reg.buf.pos)
+				i2c_slave_reg_tx_buf();
+			s = data.reg.buf.size - data.reg.buf.pos;
+			s = MIN(size, s);
+#if DEBUG > 5
+			printf(ESC_WRITE "%lu\ti2c reg: Write data segment %u: %u bytes\n",
+			       systick_cnt(), data.reg.segment, s);
+#endif
+			memcpy(p, &data.reg.buf.p[data.reg.buf.pos], s);
+			p += s;
+			data.reg.buf.pos += s;
+			size -= s;
+			break;
+#if DEBUG > 4
+		default:
+			dbgbkpt();
+			break;
+#endif
+		}
+	} while (size);
+
+done:
+	*psize = BUF_SIZE - size;
+	return data.reg.buf.state == RegBufComplete && data.reg.buf.size == data.reg.buf.pos;
+#if 0
 	if (complete) {
 		if (data.reg.state == RegActive)
 			i2c_slave_reg_rx_complete(data.reg.id, data.reg.segment, data.reg.buf.size, data.reg.buf.p);
 		data.reg.buf.state = BufInvalid;
 		data.reg.state = RegIdle;
 	}
-}
-
-static inline void i2c_slave_reg_tx_buf()
-{
-	if (data.buf.type == BufInvalid)
-		data.reg.segment = 0;
-	else if (data.buf.type != BufTxSegment || data.buf.pos != data.buf.size)
-		dbgbkpt();
-	data.buf.type = BufInvalid;
-	data.buf.p = i2c_slave_reg_data(0, data.reg.id, &data.reg.segment, &data.buf.size);
-	data.buf.pos = 0;
-	data.buf.type = data.reg.segment ? BufTxSegment : BufTx;
+#endif
 }
 
 static void i2c_slave_process()
 {
+#if 1
+	I2C_TypeDef *i2c = I2C2;
+	DMA_TypeDef *dma = DMA1;
+	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
+	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+#endif
 start:	;
 	unsigned int bwait = data.buf.intwait;
 	//state_t bstate = data.state;
 	unsigned int bufidx = data.buf.procidx;
 	switch (data.buf.buf[bufidx].state) {
-	case BufTxComplete:
-		dbgbkpt();
+	case BufTx:
+		//dbgbkpt();
 #if DEBUG > 5
 		printf(ESC_WRITE "%lu\ti2c: TX complete %u bytes" ESC_DATA,
 		       systick_cnt(), data.buf.pos);
@@ -828,7 +1084,11 @@ start:	;
 			printf(" 0x%02x", data.buf.p[i]);
 		printf("\n");
 #endif
-		data.buf.type = BufInvalid;
+		//data.buf.type = BufInvalid;
+		if (i2c_slave_reg_tx_segment(&data.buf.buf[bufidx].size, data.buf.buf[bufidx].data))
+			data.buf.buf[bufidx].state = BufTxComplete;
+		else
+			data.buf.buf[bufidx].state = BufTxSegment;
 		data.buf.procidx = !bufidx;
 		goto start;
 	case BufRxSegment:
@@ -883,13 +1143,24 @@ start:	;
 		i2c_slave_reg_rx_buf();
 #endif
 #endif
-		if (data.buf.buf[data.buf.dmaidx].state != BufInvalid)
+#if DEBUG > 4
+		switch (data.buf.buf[data.buf.dmaidx].state) {
+		case BufInvalid:
+		case BufTxSegment:
+		case BufTxComplete:
+			break;
+		default:
 			dbgbkpt();
+		}
+#endif
 		//data.state = ActiveRx;
 		data.buf.intwait = 0;
 		//i2c_slave_rx();
+		// WaitTx state need manual pending interrupt
+		if (data.state == WaitTx)
+			NVIC_SetPendingIRQ(I2C2_EV_IRQn);
 		// Enable interrupts
-		I2C2->CR2 |= I2C_CR2_ITEVTEN_Msk;
+		I2C2->CR2 |= I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk;
 #if 0
 		break;
 	default:
