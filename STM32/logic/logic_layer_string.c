@@ -1,10 +1,13 @@
 // Layer: String
 // Parameters:
-//   [0]	Flags (unused)
+//   [0]	Flags
+//     0x02	Scroll to off-screen
+//     0x01	Start scrolling
 //   [1]	X top left offset
 //   [2]	Y top left offset
 //   [3]	String length
 //   [4]	Font ID
+//   [5]	Scrolling speed
 
 #include <stdlib.h>
 #include <math.h>
@@ -14,15 +17,31 @@
 #include <fonts.h>
 #include "logic_layer_string_fonts.h"
 
-typedef struct PACKED {
-	uint8_t flags;
-	int8_t x;
-	int8_t y;
-	uint8_t len;
-	uint8_t id;
-	uint8_t _reserved[3];
+#define SCROLL_SCALE	(4 * 1000)
+
+enum {FlagScrollStart = 0x01, FlagScrollOffScreen = 0x02};
+
+#pragma pack(push,1)
+
+typedef struct {
+	union {
+		uint32_t raw[4];	// Aligned
+		struct {
+			uint8_t flags;
+			int8_t x;
+			int8_t y;
+			uint8_t len;
+			uint8_t id;
+			uint8_t scrollspd;
+			int16_t scrollx;
+			uint8_t scrollstart;
+			unsigned int scrolltick;
+		};
+	};
 	const FontInfo *info;
 } param_t;
+
+#pragma pack(pop)
 
 static void init(layer_obj_t *pparam, layer_obj_t *pdata)
 {
@@ -42,11 +61,15 @@ static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok,
 	}
 
 	// Now, allocate data buffer
-	pdata->size = pp->len;
-	logic_layers_alloc(pdata);
-	if (pdata->size == 0) {
-		*ok = 0;
-		return;
+	if (pdata->size != pp->len) {
+		pdata->size = pp->len;
+		logic_layers_alloc(pdata);
+		if (pdata->size == 0) {
+			*ok = 0;
+			return;
+		}
+		// Clear string buffer
+		*(char *)pdata->p = 0;
 	}
 
 	// Find font info structure
@@ -63,8 +86,9 @@ static void config(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int *ok,
 		return;
 	}
 
-	// Clear string buffer
-	*(char *)pdata->p = 0;
+	// Reset scrolling
+	pp->scrollstart = 0;
+	pp->scrollx = pp->x;
 }
 
 static inline void draw_bitmap(int ox, int oy, unsigned int w, unsigned int h,
@@ -84,17 +108,36 @@ static inline void draw_bitmap(int ox, int oy, unsigned int w, unsigned int h,
 	}
 }
 
-static inline void draw_string(param_t *pp, char *ptr,
+static inline void draw_string(param_t *pp, char *ptr, unsigned int tick,
 			       uint8_t *pfb, unsigned int w, unsigned int h)
 {
-	unsigned int len = pp->len;
-	int x = pp->x;
+	// Skip if scrolling from off-screen not started
+	if ((pp->flags & FlagScrollStart) && !pp->scrollstart) {
+		pp->scrollx = pp->x;
+		pp->scrolltick = tick;
+	}
+
+	int x = pp->scrollspd ? pp->scrollx : pp->x;
+
+	if (pp->flags & FlagScrollStart) {
+		if (!pp->scrollstart) {
+			pp->scrollstart = 1;
+			//pp->flags &= ~FlagScrollStart;
+		} else {
+			unsigned int t = (tick - pp->scrolltick) * pp->scrollspd;
+			x -= t / SCROLL_SCALE;
+		}
+	}
+
+	int scrollx = x;
 	int y = pp->y;
 	const FontInfo *pinfo = pp->info;
 	static const uint8_t bmh = 8;
-	const uint8_t bmbs = pinfo->blockLength;
-	if (y >= (int)h || y + bmh < 0)
+	if (x >= (int)w || y >= (int)h || y + bmh < 0)
 		return;
+
+	const uint8_t bmbs = pinfo->blockLength;
+	unsigned int len = pp->len;
 	while (len-- && *ptr) {
 		char c = *ptr++;
 		if (c < pinfo->startUnicode || c >= pinfo->endUnicode)
@@ -108,6 +151,11 @@ static inline void draw_string(param_t *pp, char *ptr,
 		}
 		x += bmw;
 	}
+
+	if ((pp->flags & FlagScrollStart) && x == (int)((pp->flags & FlagScrollOffScreen) ? 0 : w)) {
+		pp->flags &= ~FlagScrollStart;
+		pp->scrollx = scrollx;
+	}
 }
 
 static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,
@@ -116,7 +164,7 @@ static void proc(layer_obj_t *pparam, layer_obj_t *pdata, unsigned int tick,
 	memset(pfb, 0, w * h);
 	if (pparam->size == 0 || pdata->size == 0)
 		return;
-	draw_string(pparam->p, pdata->p, pfb, w, h);
+	draw_string(pparam->p, pdata->p, tick, pfb, w, h);
 }
 
 LOGIC_LAYER_HANDLER() = {

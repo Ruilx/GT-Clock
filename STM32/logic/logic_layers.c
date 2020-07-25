@@ -165,7 +165,8 @@ gc:
 		if (data.commit == 0xff) {
 			data.actparam = !actparam;
 			for (unsigned int i = 0; i < MAX_LAYERS; i++)
-				layer_reset(i);
+				data.layer[i][actparam] = data.layer[i][!actparam];
+				//layer_reset(i);
 		}
 		heap_gc();
 		data.commit = 0;
