@@ -21,6 +21,8 @@ typedef enum {
 	FuncData,
 	// Trigger layer updates
 	FuncUpdate,
+	// Trigger garbage collection
+	FuncGC,
 	// End
 	NumFunc,
 } func_t;
@@ -39,6 +41,7 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 	switch (func) {
 	case FuncEnable:
 	case FuncUpdate:
+	case FuncGC:
 		// Register access
 		*segment = 0;
 		*size = 1;
@@ -137,6 +140,9 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 		if (size > 0)
 			data.regs[FuncUpdate] = logic_layers_update();
 		break;
+	case FuncGC:
+		if (size > 0)
+			logic_layers_gc(data.regs[FuncGC]);
 	default:
 		break;
 	}

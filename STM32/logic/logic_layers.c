@@ -11,6 +11,7 @@
 #define LAYER_OBJS	3
 
 typedef enum {LParam = 0, LData, LMixer, LObjs} obj_t;
+typedef enum {Active = 0, Inactive} act_t;
 
 typedef struct {
 	const logic_layer_handler_t *phdr;
@@ -21,7 +22,6 @@ static struct {
 	unsigned int refcnt;
 	unsigned int enable;
 	volatile unsigned int commit;
-	volatile unsigned int actparam;
 	layer_t layer[MAX_LAYERS][2];
 	struct {
 		volatile unsigned int size;
@@ -58,8 +58,7 @@ unsigned int logic_layers_max()
 
 static void layer_reset(unsigned int layer)
 {
-	unsigned int actparam = data.actparam;
-	layer_t *pp = &data.layer[layer][!actparam];
+	layer_t *pp = &data.layer[layer][Inactive];
 	pp->phdr = 0;
 	pp->obj[LParam].size = 0;
 	pp->obj[LData].size = 0;
@@ -142,13 +141,12 @@ void CAN1_SCE_IRQHandler()
 {
 	// Software rendering thread
 	// Which also handles GC
-	unsigned int actparam = data.actparam;
 	if (!data.enable)
 		goto gc;
 
 	uint32_t tick = systick_cnt();
 	for (unsigned int i = 0; i < MAX_LAYERS; i++) {
-		layer_t *pp = &data.layer[i][actparam];
+		layer_t *pp = &data.layer[i][Active];
 		if (pp->phdr == 0)
 			continue;
 		unsigned int w, h;
@@ -162,25 +160,13 @@ void CAN1_SCE_IRQHandler()
 
 gc:
 	if (data.commit) {
-		if (data.commit == 0xff) {
-			data.actparam = !actparam;
+		if (data.commit == 0xff)
 			for (unsigned int i = 0; i < MAX_LAYERS; i++)
-				data.layer[i][actparam] = data.layer[i][!actparam];
-				//layer_reset(i);
-		}
+				data.layer[i][Active] = data.layer[i][Inactive];
 		heap_gc();
 		data.commit = 0;
 	}
 	NVIC_ClearPendingIRQ(CAN1_SCE_IRQn);
-}
-
-static void gc(unsigned int commit)
-{
-	data.commit = commit;
-	// Trigger GC immediately if rendering is disabled
-	if (!data.enable)
-		NVIC_SetPendingIRQ(CAN1_SCE_IRQn);
-	while (data.commit);
 }
 
 static void trigger(uint32_t tick)
@@ -204,8 +190,7 @@ void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int
 		layer_reset(i);
 		if (layers[i - start] == LayerIdNone)
 			continue;
-		unsigned int actparam = data.actparam;
-		layer_t *pp = &data.layer[i][!actparam];
+		layer_t *pp = &data.layer[i][Inactive];
 		LIST_ITERATE(logic_layer, logic_layer_handler_t, phdr) {
 			if (phdr->id == layers[i - start]) {
 				pp->phdr = phdr;
@@ -219,8 +204,7 @@ void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int
 
 static void *logic_layers_obj(unsigned int layer, obj_t obj, unsigned int *size)
 {
-	unsigned int actparam = data.actparam;
-	layer_t *pp = &data.layer[layer][!actparam];
+	layer_t *pp = &data.layer[layer][Inactive];
 	*size = pp->obj[obj].size;
 	return *size == 0 ? 0 : pp->obj[obj].p;
 }
@@ -232,8 +216,7 @@ void *logic_layers_param(unsigned int layer, unsigned int *size)
 
 void *logic_layers_mixer(unsigned int layer, unsigned int nops, unsigned int *size)
 {
-	unsigned int actparam = data.actparam;
-	layer_t *pp = &data.layer[layer][!actparam];
+	layer_t *pp = &data.layer[layer][Inactive];
 	if (pp->obj[LMixer].size == 0)
 		logic_layer_mixer_init(&pp->obj[LMixer], nops);
 	return logic_layers_obj(layer, LMixer, size);
@@ -246,8 +229,7 @@ void *logic_layers_data(unsigned int layer, unsigned int *size)
 
 unsigned int logic_layers_commit(unsigned int layer)
 {
-	unsigned int actparam = data.actparam;
-	layer_t *pp = &data.layer[layer][!actparam];
+	layer_t *pp = &data.layer[layer][Inactive];
 	if (pp->phdr == 0) {
 		layer_reset(layer);
 		return 1;
@@ -261,11 +243,13 @@ unsigned int logic_layers_commit(unsigned int layer)
 	return ok;
 }
 
-unsigned int logic_layers_update()
+void logic_layers_gc(unsigned int commit)
 {
-	// Commit all changes and GC
-	gc(0xff);
-	return 1;
+	data.commit = commit;
+	// Trigger GC immediately if rendering is disabled
+	if (!data.enable)
+		NVIC_SetPendingIRQ(CAN1_SCE_IRQn);
+	while (data.commit);
 }
 
 void logic_layers_alloc(layer_obj_t *obj)

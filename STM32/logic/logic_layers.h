@@ -35,7 +35,14 @@ void *logic_layers_param(unsigned int layer, unsigned int *size);
 void *logic_layers_mixer(unsigned int layer, unsigned int nops, unsigned int *size);
 void *logic_layers_data(unsigned int layer, unsigned int *size);
 unsigned int logic_layers_commit(unsigned int layer);
-unsigned int logic_layers_update();
+void logic_layers_gc(unsigned int commit);
+
+static inline unsigned int logic_layers_update()
+{
+	// Commit all changes and GC
+	logic_layers_gc(0xff);
+	return 1;
+}
 
 void logic_layers_alloc(layer_obj_t *obj);
 

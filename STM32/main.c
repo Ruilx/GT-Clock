@@ -70,13 +70,13 @@ int main()
 	for (;;) {
 		LIST_ITERATE(idle, basic_handler_t, p) (*p)();
 
-#if DEBUG > 5
+#if DEBUG > 4
 		// Performance monitor
 		static unsigned int pin = 0;
 		if (pin)
-			GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
+			GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
 		else
-			GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
+			GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
 		pin = !pin;
 #endif
 
