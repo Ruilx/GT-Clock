@@ -9,7 +9,12 @@
 
 #define I2C_ADDR	0x1c
 
-#if DEBUG > 4
+#define DEBUG_PRINT	6
+#define DEBUG_EVLOG	6
+#define DEBUG_CHECK	5
+#define DEBUG_IRQ	6
+
+#if DEBUG >= DEBUG_CHECK
 #define BUF_SIZE	4
 #else
 #define BUF_SIZE	16
@@ -52,7 +57,7 @@ static struct {
 	} reg;
 } data = {0};
 
-#if DEBUG > 4
+#if DEBUG >= DEBUG_EVLOG
 #define EVLOG_SIZE	16
 struct {
 	unsigned int idx;
@@ -142,7 +147,7 @@ static void i2c_slave_init()
 	// ACK enable
 	I2C2->CR1 = I2C_CR1_PE_Msk | I2C_CR1_ACK_Msk;
 
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 	printf(ESC_INIT "%lu\ti2c: Init done\n", systick_cnt());
 #endif
 }
@@ -159,7 +164,7 @@ static inline void i2c_slave_irq_rx_wait()
 
 static void i2c_slave_dma_rx()
 {
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	if (data.buf.buf[data.buf.dmaidx].state != BufInvalid)
 		dbgbkpt();
 #endif
@@ -179,7 +184,7 @@ static void i2c_slave_dma_rx()
 
 static inline void i2c_slave_dma_irq_rx_segment()
 {
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	if (data.buf.buf[data.buf.dmaidx].state != BufRx)
 		dbgbkpt();
 #endif
@@ -207,7 +212,7 @@ static void i2c_slave_irq_rx_dma_done()
 		data.buf.buf[data.buf.dmaidx].size = BUF_SIZE - DMA1_Channel5->CNDTR;
 		break;
 	default:
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		dbgbkpt();
 #endif
 		break;
@@ -243,7 +248,7 @@ static void i2c_slave_irq_rx_next()
 
 static void i2c_slave_irq_done()
 {
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 	printf(ESC_DISABLE "%lu\ti2c irq: stop\n", systick_cnt());
 #endif
 	// We may have 1 byte left in I2C receive buffer
@@ -261,7 +266,7 @@ static void i2c_slave_irq_done()
 			I2C2->CR1 |= I2C_CR1_ACK_Msk;
 			data.state = Idle;
 			break;
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		case BufRx:
 			// DMA should be finished and disabled
 			dbgbkpt();
@@ -282,7 +287,7 @@ static void i2c_slave_irq_done()
 		I2C2->CR1 |= I2C_CR1_ACK_Msk;
 		data.state = Idle;
 		break;
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	case BufTxComplete:
 	case BufTxSegment:
 	case BufTx:
@@ -299,10 +304,10 @@ static void i2c_slave_irq_done()
 
 static void i2c_slave_irq_tx_done()
 {
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 	printf(ESC_DISABLE "%lu\ti2c irq: stop\n", systick_cnt());
 #endif
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	// We may have 1 byte left in I2C receive buffer
 	if (I2C2->SR1 & I2C_SR1_RXNE_Msk)
 		dbgbkpt();
@@ -325,7 +330,7 @@ static void i2c_slave_irq_tx_done()
 		data.state = Idle;
 		break;
 	default:
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		dbgbkpt();
 #endif
 		break;
@@ -346,7 +351,7 @@ static void i2c_slave_irq_tx_wait()
 
 static void i2c_slave_dma_irq_tx_segment()
 {
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	switch (data.buf.buf[data.buf.dmaidx].state) {
 	case BufTxSegment:
 	case BufTxComplete:
@@ -364,7 +369,7 @@ static void i2c_slave_dma_irq_tx_segment()
 
 static void i2c_slave_dma_tx()
 {
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	switch (data.buf.buf[data.buf.dmaidx].state) {
 	case BufTxSegment:
 	case BufTxComplete:
@@ -409,7 +414,7 @@ static void i2c_slave_irq_addr()
 {
 	// Addressed, switch to transmitter or receiver mode
 	uint16_t sr2 = I2C2->SR2;
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 	printf(ESC_ENABLE "%lu\ti2c irq: addr 0x%04x\n", systick_cnt(), sr2);
 #endif
 	if (sr2 & I2C_SR2_TRA_Msk) {
@@ -423,52 +428,62 @@ static void i2c_slave_irq_addr()
 
 void DMA1_Channel4_IRQHandler()
 {
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	I2C_TypeDef *i2c = I2C2;
 	DMA_TypeDef *dma = DMA1;
 	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
 	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
 #endif
+#if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
 	GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
 	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
+#endif
 	i2c_slave_dma_irq_tx_segment();
+#if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
 	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
 	GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
+#endif
 }
 
 void DMA1_Channel5_IRQHandler()
 {
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	I2C_TypeDef *i2c = I2C2;
 	DMA_TypeDef *dma = DMA1;
 	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
 	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
 #endif
+#if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
+#endif
 	i2c_slave_dma_irq_rx_segment();
+#if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
+#endif
 }
 
 void I2C2_EV_IRQHandler()
 {
 	uint16_t sr1 = I2C2->SR1;
-#if DEBUG > 4
+#if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
 #endif
 	if (!sr1) {
+#if DEBUG >= DEBUG_IRQ
 		GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
+#endif
 		return;
 	}
 
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	I2C_TypeDef *i2c = I2C2;
 	DMA_TypeDef *dma = DMA1;
 	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
 	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
 #endif
-#if DEBUG > 4
+#if DEBUG >= DEBUG_EVLOG
 	evlog.log[evlog.idx].sr1 = sr1;
 	evlog.log[evlog.idx].state = data.state;
 	evlog.log[evlog.idx].dmaidx = data.buf.dmaidx;
@@ -476,7 +491,7 @@ void I2C2_EV_IRQHandler()
 	evlog.log[evlog.idx].dmastate[1] = data.buf.buf[1].state;
 	evlog.log[evlog.idx].regstate = data.reg.state;
 #endif
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 	printf(ESC_DEBUG "%lu\ti2c irq: SR1 0x%04x\n", systick_cnt(), sr1);
 	//flushCache();
 #endif
@@ -494,7 +509,7 @@ void I2C2_EV_IRQHandler()
 			i2c_slave_irq_addr();
 		else if (sr1 & I2C_SR1_STOPF_Msk)
 			i2c_slave_irq_done();
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		else
 			dbgbkpt();
 #endif
@@ -517,14 +532,14 @@ void I2C2_EV_IRQHandler()
 		else if (sr1 & I2C_SR1_ADDR_Msk)
 			i2c_slave_addr();
 #endif
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		else
 			dbgbkpt();
 #endif
 		break;
 	case ActiveRx:
 		if (sr1 & I2C_SR1_STOPF_Msk) {
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 			// Stop is only generated after the last data byte is transferred
 			if(sr1 & I2C_SR1_BTF_Msk)
 				dbgbkpt();
@@ -533,7 +548,7 @@ void I2C2_EV_IRQHandler()
 		} else if(sr1 & I2C_SR1_BTF_Msk) {
 			i2c_slave_irq_rx_next();
 		} else if (sr1 & I2C_SR1_ADDR_Msk) {
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 			// Stop is only generated after the last data byte is transferred
 			if(sr1 & I2C_SR1_BTF_Msk)
 				dbgbkpt();
@@ -541,15 +556,17 @@ void I2C2_EV_IRQHandler()
 			i2c_slave_irq_done();
 			i2c_slave_irq_addr();
 		}
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		else
 			dbgbkpt();
 #endif
 		break;
 	}
 
-#if DEBUG > 4
+#if DEBUG >= DEBUG_EVLOG
 	evlog.idx = evlog.idx == EVLOG_SIZE - 1 ? 0 : evlog.idx + 1;
+#endif
+#if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
 #endif
 }
@@ -557,13 +574,13 @@ void I2C2_EV_IRQHandler()
 void I2C2_ER_IRQHandler()
 {
 	uint16_t sr1 = I2C2->SR1;
-#if DEBUG > 4
+#if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
 	GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
 	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
 #endif
 
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 	printf(ESC_DEBUG "%lu\ti2c err irq: SR1 0x%04x\n", systick_cnt(), sr1);
 	//flushCache();
 #endif
@@ -574,14 +591,14 @@ void I2C2_ER_IRQHandler()
 	} else if (sr1 & I2C_SR1_BERR_Msk) {
 		// Bus error
 		I2C2->SR1 = ~I2C_SR1_BERR_Msk;
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	} else if (sr1 & (I2C_SR1_ARLO_Msk | I2C_SR1_OVR_Msk | I2C_SR1_TIMEOUT_Msk |
 			  I2C_SR1_PECERR_Msk | I2C_SR1_SMBALERT_Msk)) {
 		dbgbkpt();
 #endif
 	}
 
-#if DEBUG > 4
+#if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
 	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
 	GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
@@ -607,7 +624,7 @@ static void i2c_slave_reg_rx_complete(unsigned int id, unsigned int segment, uns
 		if (phdr->write_complete)
 			phdr->write_complete(id, segment, size, p);
 
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 	printf(ESC_WRITE "%lu\ti2c reg: Write complete 0x%02x, segment %u: %u bytes\n",
 	       systick_cnt(), data.reg.id, data.reg.segment, data.reg.buf.size);
 #endif
@@ -619,7 +636,7 @@ static void i2c_slave_reg_rx_buf()
 	case RegIdle:
 	case RegRead:
 		// Register idle, wait for ID
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		if (data.reg.buf.state != RegBufInvalid)
 			dbgbkpt();
 #endif
@@ -632,7 +649,7 @@ static void i2c_slave_reg_rx_buf()
 		break;
 	case RegAddr:
 		// Register ID received
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		if (data.reg.buf.state != RegBufSegment || data.reg.buf.pos != 1)
 			dbgbkpt();
 #endif
@@ -644,7 +661,7 @@ static void i2c_slave_reg_rx_buf()
 		break;
 	case RegWrite:
 		// Register write segment complete
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		if (data.reg.buf.state != RegBufSegment || data.reg.buf.pos != data.reg.buf.size)
 			dbgbkpt();
 #endif
@@ -653,13 +670,13 @@ static void i2c_slave_reg_rx_buf()
 		data.reg.buf.state = data.reg.segment ? RegBufSegment : RegBufComplete;
 		break;
 	default:
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		dbgbkpt();
 #endif
 		break;
 	}
 
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 	printf(ESC_WRITE "%lu\ti2c reg: Write buffer segment %u: %u bytes\n",
 	       systick_cnt(), data.reg.segment, data.reg.buf.size);
 #endif
@@ -686,7 +703,7 @@ static inline void i2c_slave_reg_rx_segment(unsigned int complete, unsigned int 
 				i2c_slave_reg_rx_buf();
 			s = data.reg.buf.size - data.reg.buf.pos;
 			s = MIN(size, s);
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 			printf(ESC_WRITE "%lu\ti2c reg: Write data segment %u: %u bytes\n",
 			       systick_cnt(), data.reg.segment, s);
 #endif
@@ -695,7 +712,7 @@ static inline void i2c_slave_reg_rx_segment(unsigned int complete, unsigned int 
 			data.reg.buf.pos += s;
 			size -= s;
 			break;
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		default:
 			dbgbkpt();
 			break;
@@ -717,7 +734,7 @@ static void i2c_slave_reg_tx_buf()
 	switch (data.reg.state) {
 	case RegIdle:
 		// Register idle, start read segment
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		if (data.reg.buf.state != RegBufInvalid)
 			dbgbkpt();
 #endif
@@ -729,7 +746,7 @@ static void i2c_slave_reg_tx_buf()
 		break;
 	case RegRead:
 		// Register read segment complete
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		if (data.reg.buf.state != RegBufSegment || data.reg.buf.pos != data.reg.buf.size)
 			dbgbkpt();
 #endif
@@ -738,13 +755,13 @@ static void i2c_slave_reg_tx_buf()
 		data.reg.buf.state = data.reg.segment ? RegBufSegment : RegBufComplete;
 		break;
 	default:
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		dbgbkpt();
 #endif
 		break;
 	}
 
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 	printf(ESC_WRITE "%lu\ti2c reg: Write buffer segment %u: %u bytes\n",
 	       systick_cnt(), data.reg.segment, data.reg.buf.size);
 #endif
@@ -759,16 +776,12 @@ static unsigned int i2c_slave_reg_tx_segment(unsigned int *psize, uint8_t *p)
 	case RegRead:
 		break;
 	default:
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		dbgbkpt();
 #endif
 		break;
 	}
 
-#if DEBUG > 5
-	if (data.reg.state != RegIdle && data.reg.state != RegRead)
-		dbgbkpt();
-#endif
 	unsigned int size = BUF_SIZE;
 	do {
 		unsigned int s;
@@ -785,7 +798,7 @@ static unsigned int i2c_slave_reg_tx_segment(unsigned int *psize, uint8_t *p)
 				i2c_slave_reg_tx_buf();
 			s = data.reg.buf.size - data.reg.buf.pos;
 			s = MIN(size, s);
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 			printf(ESC_WRITE "%lu\ti2c reg: Write data segment %u: %u bytes\n",
 			       systick_cnt(), data.reg.segment, s);
 #endif
@@ -794,7 +807,7 @@ static unsigned int i2c_slave_reg_tx_segment(unsigned int *psize, uint8_t *p)
 			data.reg.buf.pos += s;
 			size -= s;
 			break;
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 		default:
 			dbgbkpt();
 			break;
@@ -809,7 +822,7 @@ done:
 
 static void i2c_slave_process()
 {
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	I2C_TypeDef *i2c = I2C2;
 	DMA_TypeDef *dma = DMA1;
 	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
@@ -820,13 +833,6 @@ start:	;
 	unsigned int bufidx = data.buf.procidx;
 	switch (data.buf.buf[bufidx].state) {
 	case BufTx:
-#if DEBUG > 5
-		printf(ESC_WRITE "%lu\ti2c: TX complete %u bytes" ESC_DATA,
-		       systick_cnt(), data.buf.pos);
-		for (unsigned int i = 0; i < data.buf.pos; i++)
-			printf(" 0x%02x", data.buf.p[i]);
-		printf("\n");
-#endif
 		if (i2c_slave_reg_tx_segment(&data.buf.buf[bufidx].size, data.buf.buf[bufidx].data))
 			data.buf.buf[bufidx].state = BufTxComplete;
 		else
@@ -835,7 +841,7 @@ start:	;
 		goto start;
 	case BufRxSegment:
 	case BufRxComplete:
-#if DEBUG > 5
+#if DEBUG >= DEBUG_PRINT
 		printf(ESC_READ "%lu\ti2c: RX %s %u bytes" ESC_DATA, systick_cnt(),
 		       data.buf.buf[bufidx].state == BufRxComplete ? "complete" : "segment",
 		       data.buf.buf[bufidx].size);
@@ -860,7 +866,7 @@ start:	;
 	if (wait != bwait)
 		goto start;
 
-#if DEBUG > 4
+#if DEBUG >= DEBUG_CHECK
 	switch (data.buf.buf[data.buf.dmaidx].state) {
 	case BufInvalid:
 	case BufTxSegment:
