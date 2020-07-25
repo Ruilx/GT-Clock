@@ -20,8 +20,9 @@
 
 #if DEBUG > 5
 #define CHECK_OVERRUN
-#define PROFILING
 #endif
+//#define PROFILING
+//#define GSUPD_FAST
 
 #define DMA		DMA1
 #define DMA_CHANNEL	DMA1_Channel3
@@ -37,11 +38,17 @@
 static struct {
 	// Line processing buffer
 	uint8_t buf[2][GSCALE - 1][BUF_SIZE];
+#ifdef GSUPD_FAST
+	uint8_t gsupd[2][GSCALE - 1];
+#else
+	uint8_t gsupd[2][GSCALE / 8];
+#endif
 
 	uint8_t rbuf;		// Active read buffer
 	uint8_t ridx;		// Read index
 	uint8_t lsw;		// Line switching
 	uint8_t bsw;		// Buffer switching
+	uint8_t gssw;		// Greyscaling update
 
 	uint8_t wbuf;		// Pending write buffer
 	uint8_t wline;		// Pending write line
@@ -111,7 +118,7 @@ static void matrix_init()
 	// Configure Timer
 	// Disable timer
 	TIM4->CR1 = 0;
-	// No div, auto-reload, counts up, UEV enabled
+	// No div, auto-reload, counts up, update event enabled
 	TIM4->CR1 = (0 << TIM_CR1_CKD_Pos) | TIM_CR1_ARPE_Msk | (0 << TIM_CR1_CMS_Pos);
 	// Master mode disabled
 	TIM4->CR2 = 0;
@@ -199,6 +206,7 @@ static inline void matrix_line_calc()
 	unsigned int wbuf = !!data.wbuf;
 	uint8_t *pfbs = &data.fb[data.rfb][line][0];
 	uint8_t lmask = ~(1 << line);
+	memset(data.gsupd[wbuf], 0, sizeof(data.gsupd[0]));
 	for (unsigned int pnl = 0; pnl < PANELS; pnl++) {
 		uint8_t *pfb = pfbs + pnl * 8;
 		uint8_t v = 0x00;
@@ -216,6 +224,11 @@ static inline void matrix_line_calc()
 				if (pfb[i] == step)
 					v |= 0x80 >> i;
 			// Apply current grayscale value
+#ifdef GSUPD_FAST
+			data.gsupd[wbuf][step] = 1;
+#else
+			data.gsupd[wbuf][step / 8] |= 1 << (step % 8);
+#endif
 			while (step != next) {
 				step++;
 				*pbuf = v;
@@ -267,18 +280,25 @@ static inline void matrix_line()
 {
 	if (data.bsw)
 		data.rbuf = !data.wbuf;
-	// Disable DMA
-	DMA_CHANNEL->CCR = DMA_CCR;
-	// Transfer size
-	DMA_CHANNEL->CNDTR = PANELS + 1;
-	// Memory address
-	DMA_CHANNEL->CMAR = (uint32_t)&data.buf[data.rbuf][data.ridx];
-	// Start DMA
-	DMA_CHANNEL->CCR = DMA_CCR | DMA_CCR_EN_Msk;
-#ifdef CHECK_OVERRUN
-	// Clear DMA complete flag
-	DMA->IFCR = DMA_IFCR_CTCIF3_Msk | DMA_IFCR_CGIF3_Msk;
+#ifdef GSUPD_FAST
+	data.gssw = data.gsupd[data.rbuf][data.ridx];
+#else
+	data.gssw = !!(data.gsupd[data.rbuf][data.ridx / 8] & (1 << (data.ridx % 8)));
 #endif
+	if (data.gssw) {
+		// Disable DMA
+		DMA_CHANNEL->CCR = DMA_CCR;
+		// Transfer size
+		DMA_CHANNEL->CNDTR = PANELS + 1;
+		// Memory address
+		DMA_CHANNEL->CMAR = (uint32_t)&data.buf[data.rbuf][data.ridx];
+		// Start DMA
+		DMA_CHANNEL->CCR = DMA_CCR | DMA_CCR_EN_Msk;
+#ifdef CHECK_OVERRUN
+		// Clear DMA complete flag
+		DMA->IFCR = DMA_IFCR_CTCIF3_Msk | DMA_IFCR_CGIF3_Msk;
+#endif
+	}
 
 	// Line switching after DMA complete
 	data.lsw = data.ridx == 0;
@@ -297,15 +317,17 @@ static inline void matrix_line()
 void TIM4_IRQHandler()
 {
 	// Update latching registers
-	// Disable OE
-	if (data.lsw)
-		GPIOB->BSRR = GPIO_BSRR_BS4_Msk;
-	// Pulse ST
-	GPIOA->BSRR = GPIO_BSRR_BS15_Msk;
-	GPIOA->BSRR = GPIO_BSRR_BR15_Msk;
-	// Enable OE
-	if (data.lsw)
-		GPIOB->BSRR = GPIO_BSRR_BR4_Msk;
+	if (data.gssw) {
+		// Disable OE
+		if (data.lsw)
+			GPIOB->BSRR = GPIO_BSRR_BS4_Msk;
+		// Pulse ST
+		GPIOA->BSRR = GPIO_BSRR_BS15_Msk;
+		GPIOA->BSRR = GPIO_BSRR_BR15_Msk;
+		// Enable OE
+		if (data.lsw)
+			GPIOB->BSRR = GPIO_BSRR_BR4_Msk;
+	}
 
 #ifdef CHECK_OVERRUN
 	// Check DMA finished
@@ -320,6 +342,7 @@ void TIM4_IRQHandler()
 	matrix_line();
 	// Clear timer interrupt flags
 	TIM4->SR = 0;
+	NVIC_ClearPendingIRQ(TIM4_IRQn);
 
 #ifdef PROFILING
 	irq++;
