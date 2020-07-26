@@ -2,10 +2,11 @@
 #define LOGIC_LAYERS_H
 
 #include <stdint.h>
+#include <list.h>
 
 typedef enum {LayerIdNone = 0, LayerIdConst, LayerIdGamma,
 	      LayerIdBreath, LayerIdSine,
-	      LayerIdString,
+	      LayerIdString, LayerIdBitmap,
 } layer_id_t;
 
 typedef struct {
