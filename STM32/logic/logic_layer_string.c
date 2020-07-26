@@ -152,9 +152,21 @@ static inline void draw_string(param_t *pp, char *ptr, unsigned int tick,
 		x += bmw;
 	}
 
-	if ((pp->flags & FlagScrollStart) && x == (int)((pp->flags & FlagScrollOffScreen) ? 0 : w)) {
-		pp->flags &= ~FlagScrollStart;
-		pp->scrollx = scrollx;
+	// Check for end of scroll
+	if (pp->flags & FlagScrollStart) {
+		if (pp->flags & FlagScrollOffScreen) {
+			// Hold at before start of display
+			if (x <= 0) {
+				pp->scrollx = w;
+				pp->flags &= ~FlagScrollStart;
+			}
+		} else {
+			// Hold at after end of screen
+			if (x <= (int)w) {
+				pp->scrollx = scrollx + ((int)w - x);
+				pp->flags &= ~FlagScrollStart;
+			}
+		}
 	}
 }
 
