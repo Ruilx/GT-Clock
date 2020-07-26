@@ -31,9 +31,19 @@ Project {
 
         Group {
             name: "Linker script"
+            condition: project.use_stdio
             files: [
                 "ld/0_STM32F103C8T6_FLASH.ld",
                 "ld/1_common.ld",
+            ]
+        }
+
+        Group {
+            name: "Linker script without heap"
+            condition: !project.use_stdio
+            files: [
+                "ld/0_STM32F103C8T6_FLASH.ld",
+                "ld/1_common_noheap.ld",
             ]
         }
 
