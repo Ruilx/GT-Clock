@@ -10,6 +10,8 @@
 #define HEAP_SIZE	(6 * 1024)
 #define LAYER_OBJS	3
 
+#define DEBUG_HEAP	6
+
 typedef enum {LParam = 0, LData, LMixer, LObjs} obj_t;
 typedef enum {Active = 0, Inactive} act_t;
 
@@ -123,7 +125,7 @@ static inline void heap_gc()
 	data.heap.size = newsize;
 }
 
-#if DEBUG > 5
+#if DEBUG >= DEBUG_HEAP
 static void heap_debug()
 {
 	static size_t psize = 0;

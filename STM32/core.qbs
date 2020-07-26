@@ -61,6 +61,11 @@ StaticLibrary {
         files: [
             "peripheral/matrix.c",
             "peripheral/matrix.h",
+            "system/clocks.h",
+            "system/clocks.c",
+            "system/syscall.c",
+            "system/systick.h",
+            "system/systick.c",
         ]
     }
 
@@ -75,8 +80,8 @@ StaticLibrary {
         "logic/logic_i2c_fb.c",
         "logic/logic_i2c_func.c",
         "logic/logic_i2c_layers.c",
-        "logic/logic_layer_breath.c",
         "logic/logic_layer_const.c",
+        "logic/logic_layer_breath.c",
         "logic/logic_layer_gamma.c",
         "logic/logic_layer_mixer.c",
         "logic/logic_layer_mixer.h",
@@ -87,14 +92,9 @@ StaticLibrary {
         "logic/logic_layers.h",
         "peripheral/i2c_slave.c",
         "peripheral/i2c_slave.h",
-        "system/syscall.c",
         "system/system.c",
         "system/system.h",
         "system/system.s",
-        "system/clocks.h",
-        "system/clocks.c",
-        "system/systick.h",
-        "system/systick.c",
         "system/irq.h",
         "system/dma.txt",
     ]

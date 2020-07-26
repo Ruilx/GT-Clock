@@ -6,7 +6,7 @@
 #define FUNC_BASE	0x20
 #define FUNC_SIZE	0x10
 
-#define BUF_SIZE	32
+#define BUF_SIZE	16
 
 typedef enum {
 	// Enable animations

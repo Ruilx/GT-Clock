@@ -29,7 +29,7 @@ uint32_t clkAPB2()
 uint32_t clkTimer(uint32_t i)
 {
 	unsigned int apb1rate = (((RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos) & 0b100) ? 2 : 1;
-	unsigned int apb2rate = (((RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos) & 0b100) ? 2 : 1;
+	//unsigned int apb2rate = (((RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos) & 0b100) ? 2 : 1;
 	switch (i) {
 	// APB1 clocked
 	case 4:

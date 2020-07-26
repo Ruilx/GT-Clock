@@ -33,7 +33,8 @@ extern int main();
 // Buffered STDIO
 int fio_write(int file, char *ptr, int len)
 {
-#if DEBUG > 5
+	UNUSED(file);
+#if DEBUG >= 6
 	if (file != STDOUT_FILENO) {
 		errno = ENOSYS;
 		return -1;
@@ -58,6 +59,9 @@ int fio_write(int file, char *ptr, int len)
 
 int fio_read(int file, char *ptr, int len)
 {
+	UNUSED(file);
+	UNUSED(ptr);
+	UNUSED(len);
 	errno = ENOSYS;
 	return -1;
 }
@@ -103,7 +107,7 @@ static inline int debug_uart_getchar(void)
 }
 
 // Reset entry point, initialise the system
-void _reset(void)
+void reset(void)
 {
 	// Configure the Vector Table location add offset address
 	SCB->VTOR = (uint32_t)g_pfnVectors;
@@ -114,7 +118,8 @@ void _reset(void)
 	systick_init(1000);
 	debug_uart_init();
 
-	// TODO Initialise data from flash to SRAM using DMA
+	// Initialise data from flash to SRAM
+	// TODO using DMA
 	memcpy(&__data_start__, &__data_load__, &__data_end__ - &__data_start__);
 
 	// Zero fill bss segment
@@ -130,19 +135,15 @@ void _reset(void)
 // Default handler for unexpected interrupts
 void debug_handler()
 {
-#if DEBUG > 5
+	uint32_t ipsr = __get_IPSR();
 	SCB_Type scb = *SCB;
 	NVIC_Type nvic = *NVIC;
-#endif
-#if DEBUG
-	uint32_t ipsr = __get_IPSR();
 	printf(ESC_ERROR "\nUnexpected interrupt: %lu\n", ipsr);
-#endif
 	dbgbkpt();
 	NVIC_SystemReset();
 }
 
-#if DEBUG
+#if DEBUG > 5
 #ifndef BOOTLOADER
 void HardFault_Handler()
 {

@@ -70,7 +70,7 @@ int main()
 	for (;;) {
 		LIST_ITERATE(idle, basic_handler_t, p) (*p)();
 
-#if DEBUG > 4
+#if DEBUG > 5
 		// Performance monitor
 		static unsigned int pin = 0;
 		if (pin)

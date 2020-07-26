@@ -15,7 +15,7 @@ Reset_Handler:
 /* Set stack pointer */
 ldr sp, =__stack_end__
 /* Call system reset entry point */
-bl _reset
+bl reset
 bx lr
 .size Reset_Handler, .-Reset_Handler
 
