@@ -6,6 +6,7 @@ Project {
     property string device: "STM32F103C8T6"
     property bool cmsis_dsp: false
     property bool bootloader: false
+    property bool use_stdio: true
     property int hwver: 0x0001
     property int swver: 0x0001
     property string hwver_str: ("0000" + hwver.toString(16)).slice(-4)

@@ -9,6 +9,8 @@ StaticLibrary {
         var flags = ["HWVER=" + project.hwver, "SWVER=" + project.swver];
         if (project.bootloader)
             flags.push("BOOTLOADER");
+        if (project.use_stdio)
+            flags.push("USE_STDIO");
         return flags;
     }
 
@@ -55,6 +57,12 @@ StaticLibrary {
     }
 
     Group {
+        name: "Syscall"
+        condition: project.use_stdio
+        files: ["system/syscall.c"]
+    }
+
+    Group {
         name: "Critical"
         cpp.optimization: "none"
         cpp.commonCompilerFlags: ["-O3"]
@@ -63,7 +71,6 @@ StaticLibrary {
             "peripheral/matrix.h",
             "system/clocks.h",
             "system/clocks.c",
-            "system/syscall.c",
             "system/systick.h",
             "system/systick.c",
         ]

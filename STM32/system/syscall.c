@@ -63,9 +63,6 @@ caddr_t _sbrk(int incr)
 	//extern char end asm("end");
 	char *prev_heap_end;
 
-	if (heap_end == 0)
-		heap_end = &__heap_start__;
-
 	prev_heap_end = heap_end;
 	if (heap_end + incr > &__heap_end__ /*stack_ptr*/) {
 		__BKPT(0);

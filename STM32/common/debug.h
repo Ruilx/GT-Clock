@@ -8,6 +8,11 @@
 
 #define dbgexist()	(CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk)
 
+#ifndef USE_STDIO
+#undef printf
+#define printf(...)	((void)0)
+#endif
+
 #if DEBUG
 
 #define VARIANT	"DEBUG-" STRING(DEBUG)

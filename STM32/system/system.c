@@ -10,7 +10,9 @@
 #include <system/irq.h>
 #include "system.h"
 
+#ifdef USE_STDIO
 #define STDOUT_BUFFER_SIZE	1024
+#endif
 
 // Vector table base address
 extern const uint32_t g_pfnVectors[];
@@ -22,13 +24,14 @@ extern uint8_t __data_load__;
 extern uint8_t __data_start__;
 extern uint8_t __data_end__;
 
+// Main entry point
+extern int main();
+
+#ifdef USE_STDIO
 // stdout buffer
 static char stdout_buf[STDOUT_BUFFER_SIZE];
 static uint32_t i_stdout_read = 0;
 static volatile uint32_t i_stdout_write = 0;
-
-// Assembly helper
-extern int main();
 
 // Buffered STDIO
 int fio_write(int file, char *ptr, int len)
@@ -105,6 +108,7 @@ static inline int debug_uart_getchar(void)
 	while (!(USART1->SR & USART_SR_RXNE));
 	return USART1->DR;
 }
+#endif
 
 // Reset entry point, initialise the system
 void reset(void)
@@ -116,7 +120,9 @@ void reset(void)
 	NVIC_SetPriorityGrouping(NVIC_PRIORITY_GROUPING);
 	rcc_init();
 	systick_init(1000);
+#ifdef USE_STDIO
 	debug_uart_init();
+#endif
 
 	// Initialise data from flash to SRAM
 	// TODO using DMA
@@ -196,7 +202,8 @@ void HardFault_Handler()
 #endif
 #endif
 
-void system_debug_process()
+#ifdef USE_STDIO
+static void system_debug_process()
 {
 	// Flush stdout buffer to debug uart
 	while (i_stdout_read != i_stdout_write) {
@@ -209,9 +216,12 @@ void system_debug_process()
 }
 
 IDLE_HANDLER() = &system_debug_process;
+#endif
 
 void flushCache()
 {
+#ifdef USE_STDIO
 	fflush(stdout);
 	system_debug_process();
+#endif
 }
