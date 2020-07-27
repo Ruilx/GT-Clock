@@ -158,12 +158,14 @@ static inline void draw_string(param_t *pp, char *ptr, unsigned int tick,
 			// Hold at before start of display
 			if (x <= 0) {
 				pp->scrollx = w;
+				pp->scrollstart = 0;
 				pp->flags &= ~FlagScrollStart;
 			}
 		} else {
 			// Hold at after end of screen
 			if (x <= (int)w) {
 				pp->scrollx = scrollx + ((int)w - x);
+				pp->scrollstart = 0;
 				pp->flags &= ~FlagScrollStart;
 			}
 		}

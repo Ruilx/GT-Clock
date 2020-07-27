@@ -19,16 +19,23 @@ typedef enum {
 	FuncParam,
 	// Access layer private data
 	FuncData,
-	// Trigger layer updates
-	FuncUpdate,
-	// Trigger garbage collection
-	FuncGC,
-	// End
-	NumFunc,
+	// Initialise program code
+	FuncProgramInit = 5,
+	// Access program code
+	FuncProgramCode,
+	// Access program code, addressed
+	FuncProgramCodeAddr,
+	// Access program data
+	FuncProgramData,
+	// Access program data, addressed
+	FuncProgramDataAddr,
+	// 0xff: Trigger layer updates
+	// 0x01: Trigger garbage collection
+	FuncUpdate = 0xf,
 } func_t;
 
 static struct {
-	uint8_t regs[NumFunc];
+	uint8_t regs[FUNC_SIZE];
 	uint8_t buf[BUF_SIZE];
 } data;
 
@@ -37,11 +44,11 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 	if (id < FUNC_BASE || id >= (FUNC_BASE + FUNC_SIZE))
 		return 0;
 
+	uint8_t *p;
 	func_t func = id - FUNC_BASE;
 	switch (func) {
 	case FuncEnable:
 	case FuncUpdate:
-	case FuncGC:
 		// Register access
 		*segment = 0;
 		*size = 1;
@@ -104,6 +111,66 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 		// Layer private data
 		*segment = 0;
 		return logic_layers_data(data.regs[FuncParam], size);
+	case FuncProgramInit:
+		switch (*segment) {
+		case 0:
+			// Register access, program size and data size
+			*segment = 1;
+			*size = 2;
+			return &data.regs[func];
+		case 1:
+			// Program code
+			*segment = 0;
+			return logic_layers_program(data.regs[FuncProgramInit],
+						    data.regs[FuncProgramInit + 1], size);
+		}
+		break;
+	case FuncProgramCode:
+		// Program code
+		*segment = 0;
+		return logic_layers_program_code(size);
+	case FuncProgramCodeAddr:
+		switch (*segment) {
+		case 0:
+			// Register access, program code offset
+			*segment = 1;
+			*size = 1;
+			return &data.regs[func];
+		case 1:
+			// Program code
+			*segment = 0;
+			p = logic_layers_program_code(size);
+			if (data.regs[FuncProgramCodeAddr] >= *size) {
+				*size = 0;
+				return 0;
+			}
+			*size = *size - data.regs[FuncProgramCodeAddr];
+			return p + data.regs[FuncProgramCodeAddr];
+		}
+		break;
+	case FuncProgramData:
+		// Program data
+		*segment = 0;
+		return logic_layers_program_data(size);
+	case FuncProgramDataAddr:
+		switch (*segment) {
+		case 0:
+			// Register access, program data offset
+			*segment = 1;
+			*size = 1;
+			return &data.regs[func];
+		case 1:
+			// Program data
+			*segment = 0;
+			p = logic_layers_program_data(size);
+			if (data.regs[FuncProgramDataAddr] >= *size) {
+				*size = 0;
+				return 0;
+			}
+			*size = *size - data.regs[FuncProgramDataAddr];
+			return p + data.regs[FuncProgramDataAddr];
+		}
+		break;
 	default:
 		break;
 	}
@@ -136,13 +203,14 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 		if (segment == 1)
 			data.regs[FuncUpdate] = logic_layers_commit(data.regs[FuncParam]);
 		break;
+	case FuncProgramInit:
+		if ((segment == 1 && size == 2) || (segment == 0 && size == 0))
+			logic_layers_program(data.regs[FuncProgramInit],
+					     data.regs[FuncProgramInit + 1], &size);
+		break;
 	case FuncUpdate:
 		if (size > 0)
-			data.regs[FuncUpdate] = logic_layers_update();
-		break;
-	case FuncGC:
-		if (size > 0)
-			logic_layers_gc(data.regs[FuncGC]);
+			logic_layers_gc(data.regs[FuncUpdate]);
 	default:
 		break;
 	}

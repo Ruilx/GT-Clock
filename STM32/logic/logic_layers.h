@@ -35,6 +35,10 @@ void logic_layers_set_param(unsigned int layer, const void *p, unsigned int size
 void *logic_layers_param(unsigned int layer, unsigned int *size);
 void *logic_layers_mixer(unsigned int layer, unsigned int nops, unsigned int *size);
 void *logic_layers_data(unsigned int layer, unsigned int *size);
+void *logic_layers_program(unsigned int progsize, unsigned int paramsize, unsigned int *size);
+void *logic_layers_program_code(unsigned int *size);
+void *logic_layers_program_data(unsigned int *size);
+
 unsigned int logic_layers_commit(unsigned int layer);
 void logic_layers_gc(unsigned int commit);
 

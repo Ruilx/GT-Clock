@@ -5,26 +5,33 @@
 #include <peripheral/matrix.h>
 #include "logic_layers.h"
 #include "logic_layer_mixer.h"
+#include "logic_layer_program.h"
 
 #define MAX_LAYERS	16
 #define HEAP_SIZE	(6 * 1024)
 #define LAYER_OBJS	3
 
-#define DEBUG_HEAP	6
+#define DEBUG_HEAP	5
 
-typedef enum {LParam = 0, LData, LMixer, LObjs} obj_t;
-typedef enum {Active = 0, Inactive} act_t;
+enum {Active = 0, Inactive};
 
+typedef enum {LParam = 0, LData, LMixer, LObjs} layer_obj_enum_t;
 typedef struct {
 	const logic_layer_handler_t *phdr;
 	layer_obj_t obj[LObjs];
 } layer_t;
+
+typedef enum {PCode = 0, PData, PObjs} program_obj_enum_t;
+typedef struct {
+	layer_obj_t obj[PObjs];
+} program_t;
 
 static struct {
 	unsigned int refcnt;
 	unsigned int enable;
 	volatile unsigned int commit;
 	layer_t layer[MAX_LAYERS][2];
+	program_t program[2];
 	struct {
 		volatile unsigned int size;
 		uint8_t buf[HEAP_SIZE];
@@ -62,34 +69,48 @@ static void layer_reset(unsigned int layer)
 {
 	layer_t *pp = &data.layer[layer][Inactive];
 	pp->phdr = 0;
-	pp->obj[LParam].size = 0;
-	pp->obj[LData].size = 0;
-	pp->obj[LMixer].size = 0;
+	for (unsigned int iobj = 0; iobj < LObjs; iobj++)
+		pp->obj[iobj].size = 0;
 }
 
 static inline void heap_gc()
 {
-	// TODO GC here
+	// Find active objects
+	layer_obj_t *objlist[2 * (MAX_LAYERS * LObjs + PObjs)];
+	unsigned int objnum = 0;
+	for (unsigned int iact = 0; iact < 2; iact++) {
+		for (unsigned int ilayer = 0; ilayer < MAX_LAYERS; ilayer++) {
+			if (&data.layer[ilayer][iact].phdr == 0)
+				continue;
+			for (unsigned int iobj = 0; iobj < LObjs; iobj++) {
+				layer_obj_t *pp = &data.layer[ilayer][iact].obj[iobj];
+				if (pp->size != 0)
+					objlist[objnum++] = pp;
+			}
+		}
+		for (unsigned int iobj = 0; iobj < PObjs; iobj++) {
+			layer_obj_t *pp = &data.program[iact].obj[iobj];
+			if (pp->size != 0)
+				objlist[objnum++] = pp;
+		}
+	}
+
 	void *p = data.heap.buf;
 	for (;;) {
+next:		; // Find next object in heap space
 		void *pnext = data.heap.buf + data.heap.size;
 		unsigned int size = 0;
-		unsigned int layer = 0;
-		unsigned int obj = 0;
-		// Find next object in heap space
-		for (unsigned int ilayer = 0; ilayer < MAX_LAYERS; ilayer++) {
-			for (unsigned int iact = 0; iact < 2; iact++) {
-				for (unsigned int iobj = 0; iobj < LObjs; iobj++) {
-					layer_obj_t *pp = &data.layer[ilayer][iact].obj[iobj];
-					if (pp->size == 0)
-						continue;
-					if (pp->p >= p && pp->p < pnext) {
-						pnext = pp->p;
-						size = pp->size;
-						layer = ilayer;
-						obj = iobj;
-					}
+		for (unsigned int iobj = 0; iobj < objnum; iobj++) {
+			layer_obj_t *pp = objlist[iobj];
+			if (pp->size == 0)
+				continue;
+			if (pp->p >= p && pp->p < pnext) {
+				if (pp->p == p) {
+					p += pp->size;
+					goto next;
 				}
+				pnext = pp->p;
+				size = pp->size;
 			}
 		}
 		// Check for completion
@@ -104,9 +125,9 @@ static inline void heap_gc()
 #endif
 			memmove(p, pnext, size);
 			// Update pointers
-			for (unsigned int iact = 0; iact < 2; iact++) {
-				layer_obj_t *pp = &data.layer[layer][iact].obj[obj];
-				if (pp->size != 0 && pp->p == pnext)
+			for (unsigned int iobj = 0; iobj < objnum; iobj++) {
+				layer_obj_t *pp = objlist[iobj];
+				if (pp->p == pnext)
 					pp->p = p;
 			}
 		}
@@ -160,11 +181,18 @@ void CAN1_SCE_IRQHandler()
 	matrix_fb_swap();
 	data.refcnt++;
 
-gc:
+	// Process program code
+	if (data.program[Active].obj[PCode].size != 0)
+		logic_layer_program_run(&data.program[Active].obj[PCode],
+					&data.program[Active].obj[PData]);
+
+gc:	// Now, GC
 	if (data.commit) {
-		if (data.commit == 0xff)
+		if (data.commit == 0xff) {
 			for (unsigned int i = 0; i < MAX_LAYERS; i++)
 				data.layer[i][Active] = data.layer[i][Inactive];
+			data.program[Active] = data.program[Inactive];
+		}
 		heap_gc();
 		data.commit = 0;
 	}
@@ -204,7 +232,7 @@ void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int
 	}
 }
 
-static void *logic_layers_obj(unsigned int layer, obj_t obj, unsigned int *size)
+static void *logic_layers_obj(unsigned int layer, layer_obj_enum_t obj, unsigned int *size)
 {
 	layer_t *pp = &data.layer[layer][Inactive];
 	*size = pp->obj[obj].size;
@@ -227,6 +255,40 @@ void *logic_layers_mixer(unsigned int layer, unsigned int nops, unsigned int *si
 void *logic_layers_data(unsigned int layer, unsigned int *size)
 {
 	return logic_layers_obj(layer, LData, size);
+}
+
+static void *logic_layers_program_obj(program_obj_enum_t obj, unsigned int *size)
+{
+	layer_obj_t *pd = &data.program[Inactive].obj[obj];
+	*size = pd->size;
+	return pd->p;
+}
+
+void *logic_layers_program(unsigned int progsize, unsigned int paramsize, unsigned int *size)
+{
+	layer_obj_t *pp = &data.program[Inactive].obj[PCode];
+	pp->size = progsize;
+	logic_layers_alloc(pp);
+	layer_obj_t *pd = &data.program[Inactive].obj[PData];
+	pd->size = paramsize;
+	logic_layers_alloc(pd);
+
+	if (pp->size == 0 || pd->size != paramsize) {
+		pp->size = 0;
+		pd->size = 0;
+	}
+	logic_layer_program_init(pp, pd);
+	return logic_layers_program_obj(PCode, size);
+}
+
+void *logic_layers_program_code(unsigned int *size)
+{
+	return logic_layers_program_obj(PCode, size);
+}
+
+void *logic_layers_program_data(unsigned int *size)
+{
+	return logic_layers_program_obj(PData, size);
 }
 
 unsigned int logic_layers_commit(unsigned int layer)
