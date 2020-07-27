@@ -9,6 +9,8 @@ typedef enum {LayerIdNone = 0, LayerIdConst, LayerIdGamma,
 	      LayerIdString, LayerIdBitmap,
 } layer_id_t;
 
+typedef enum {LOParam = 0, LOData, LOMixer, LObjs} layer_obj_enum_t;
+
 typedef struct {
 	void *p;
 	unsigned int size;
@@ -32,6 +34,8 @@ unsigned int logic_layers_max();
 
 void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int num);
 void logic_layers_set_param(unsigned int layer, const void *p, unsigned int size);
+void *logic_layers_active_obj(unsigned int layer, layer_obj_enum_t obj, unsigned int *size);
+void *logic_layers_inactive_obj(unsigned int layer, layer_obj_enum_t obj, unsigned int *size);
 void *logic_layers_param(unsigned int layer, unsigned int *size);
 void *logic_layers_mixer(unsigned int layer, unsigned int nops, unsigned int *size);
 void *logic_layers_data(unsigned int layer, unsigned int *size);

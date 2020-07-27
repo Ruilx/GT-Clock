@@ -16,14 +16,17 @@ struct op_t {
 };
 
 static const op_t program_code[] = {
-	OP_JUMP_NOT_ZERO(LabelEnable, DataEnable),
-	OP_LABEL(LabelExit),
+	OP_LOAD_DATA(DataEnable),
+	OP_JUMP_NOT_ZERO(LabelEnable),
 	OP_EXIT(),
 
 	OP_LABEL(LabelEnable),
-	OP_LOAD_PARAM(DataTmp, LayerTextScroll, ParamTextFlag),
-	OP_AND(DataTmp, 0x01),
-	OP_JUMP_NOT_ZERO(LabelExit, DataTmp),
-	OP_SAVE_PARAM(DataStart, LayerTextScroll, ParamTextFlag),
-	OP_EXIT(),
+	OP_PTR_PARAM(LayerTextScroll, ParamTextFlag),
+	OP_LOAD_PTR(),
+	OP_AND(0x01),
+	OP_JUMP_NOT_ZERO(LabelExit),
+	OP_LOAD_DATA(DataStart),
+	OP_SAVE_PTR(),
+
+	OP_LABEL(LabelExit),
 };

@@ -17,14 +17,18 @@ void logic_layer_program_init(layer_obj_t *pcode, layer_obj_t *pdata)
 
 void logic_layer_program_run(layer_obj_t *pcode, layer_obj_t *pdata)
 {
-#if DEBUG >= 5
+#if DEBUG >= 6
 	uint8_t (*ppc)[32] = pcode->p;
 	uint8_t (*ppd)[32] = pdata->p;
 #endif
+
+	// Temporary register and pointer
+	uint8_t reg = 0;
+	uint8_t *ptr = 0;
+
+	// Program execution
 	uint8_t *pc = pcode->p;
 	uint8_t *pd = pdata->p;
-	uint8_t *p;
-	unsigned int size;
 	unsigned int ofs = 0;
 	for (;;) {
 		switch ((opcode_t)pc[ofs]) {
@@ -34,108 +38,77 @@ void logic_layer_program_run(layer_obj_t *pcode, layer_obj_t *pdata)
 			ofs = pc[ofs + 1];
 			break;
 		case OpJumpNotZero:
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 2] >= pdata->size)
-				dbgbkpt();
-#endif
-			ofs = pd[pc[ofs + 2]] != 0 ? pc[ofs + 1] : ofs + 3;
+			ofs = reg != 0 ? pc[ofs + 1] : ofs + 2;
 			break;
 		case OpJumpNegative:
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 2] >= pdata->size)
-				dbgbkpt();
-#endif
-			ofs = (int8_t)pd[pc[ofs + 2]] < 0 ? pc[ofs + 1] : ofs + 3;
+			ofs = (int8_t)reg < 0 ? pc[ofs + 1] : ofs + 2;
 			break;
-		case OpLoadMixer:
-			p = logic_layers_mixer(pc[ofs + 2], 0, &size);
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 3] >= size || pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			pd[pc[ofs + 1]] = p[pc[ofs + 3]];
-			ofs += 4;
+
+		case OpPtrMixer:
+		case OpPtrParam:
+		case OpPtrData: {
+			layer_obj_enum_t obj;
+			switch ((opcode_t)pc[ofs]) {
+			case OpPtrMixer:
+				obj = LOMixer;
+				break;
+			case OpPtrParam:
+				obj = LOParam;
+				break;
+			case OpPtrData:
+				obj = LOData;
+				break;
+			default:
+				break;
+			}
+			unsigned int size;
+			ptr = logic_layers_active_obj(pc[ofs + 1], obj, &size);
+			if (ptr == 0 || pc[ofs + 2] >= size)
+				ptr = 0;
+			else
+				ptr += pc[ofs + 2];
+			ofs += 3;
 			break;
-		case OpLoadParam:
-			p = logic_layers_param(pc[ofs + 2], &size);
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 3] >= size || pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			pd[pc[ofs + 1]] = p[pc[ofs + 3]];
-			ofs += 4;
+		}
+
+		case OpLoadConst:
+			reg = pc[ofs + 1];
+			ofs += 2;
 			break;
 		case OpLoadData:
-			p = logic_layers_data(pc[ofs + 2], &size);
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 3] >= size || pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			pd[pc[ofs + 1]] = p[pc[ofs + 3]];
-			ofs += 4;
+			if (pc[ofs + 1] < pdata->size)
+				reg = pd[pc[ofs + 1]];
+			ofs += 2;
 			break;
-		case OpLoadConst:
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			pd[pc[ofs + 1]] = pc[ofs + 2];
-			ofs += 3;
+
+		case OpLoadPtr:
+			if (ptr != 0)
+				reg = *ptr;
+			ofs += 1;
 			break;
-		case OpSaveMixer:
-			p = logic_layers_mixer(pc[ofs + 2], 0, &size);
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 3] >= size || pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			p[pc[ofs + 3]] = pd[pc[ofs + 1]];
-			ofs += 4;
+		case OpSavePtr:
+			if (ptr != 0)
+				*ptr = reg;
+			ofs += 1;
 			break;
-		case OpSaveParam:
-			p = logic_layers_param(pc[ofs + 2], &size);
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 3] >= size || pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			p[pc[ofs + 3]] = pd[pc[ofs + 1]];
-			ofs += 4;
-			break;
-		case OpSaveData:
-			p = logic_layers_data(pc[ofs + 2], &size);
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 3] >= size || pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			p[pc[ofs + 3]] = pd[pc[ofs + 1]];
-			ofs += 4;
-			break;
+
 		case OpAnd:
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			pd[pc[ofs + 1]] &= pc[ofs + 2];
-			ofs += 3;
+			reg &= pc[ofs + 1];
+			ofs += 2;
 			break;
 		case OpOr:
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			pd[pc[ofs + 1]] |= pc[ofs + 2];
-			ofs += 3;
+			reg |= pc[ofs + 1];
+			ofs += 2;
 			break;
 		case OpXor:
-#if DEBUG >= DEBUG_CHECK
-			if (pc[ofs + 1] >= pdata->size)
-				dbgbkpt();
-#endif
-			pd[pc[ofs + 1]] ^= pc[ofs + 2];
-			ofs += 3;
+			reg ^= pc[ofs + 2];
+			ofs += 2;
 			break;
+
 		case NumOps:
 			break;
 		}
+
 		if (ofs == pcode->size)
 			return;
 #if DEBUG >= DEBUG_CHECK

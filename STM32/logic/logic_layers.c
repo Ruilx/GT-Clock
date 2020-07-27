@@ -15,7 +15,6 @@
 
 enum {Active = 0, Inactive};
 
-typedef enum {LParam = 0, LData, LMixer, LObjs} layer_obj_enum_t;
 typedef struct {
 	const logic_layer_handler_t *phdr;
 	layer_obj_t obj[LObjs];
@@ -173,9 +172,9 @@ void CAN1_SCE_IRQHandler()
 		if (pp->phdr == 0)
 			continue;
 		unsigned int w, h;
-		void *pfb = logic_layer_mixer_fb(&pp->obj[LMixer], &w, &h);
-		pp->phdr->proc(&pp->obj[LParam], &pp->obj[LData], tick, pfb, w, h);
-		logic_layer_mixer_post(&pp->obj[LMixer]);
+		void *pfb = logic_layer_mixer_fb(&pp->obj[LOMixer], &w, &h);
+		pp->phdr->proc(&pp->obj[LOParam], &pp->obj[LOData], tick, pfb, w, h);
+		logic_layer_mixer_post(&pp->obj[LOMixer]);
 	}
 
 	matrix_fb_swap();
@@ -225,14 +224,21 @@ void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int
 			if (phdr->id == layers[i - start]) {
 				pp->phdr = phdr;
 				if (phdr->init)
-					phdr->init(&pp->obj[LParam], &pp->obj[LData]);
+					phdr->init(&pp->obj[LOParam], &pp->obj[LOData]);
 				break;
 			}
 		}
 	}
 }
 
-static void *logic_layers_obj(unsigned int layer, layer_obj_enum_t obj, unsigned int *size)
+void *logic_layers_active_obj(unsigned int layer, layer_obj_enum_t obj, unsigned int *size)
+{
+	layer_t *pp = &data.layer[layer][Active];
+	*size = pp->obj[obj].size;
+	return *size == 0 ? 0 : pp->obj[obj].p;
+}
+
+void *logic_layers_inactive_obj(unsigned int layer, layer_obj_enum_t obj, unsigned int *size)
 {
 	layer_t *pp = &data.layer[layer][Inactive];
 	*size = pp->obj[obj].size;
@@ -241,20 +247,20 @@ static void *logic_layers_obj(unsigned int layer, layer_obj_enum_t obj, unsigned
 
 void *logic_layers_param(unsigned int layer, unsigned int *size)
 {
-	return logic_layers_obj(layer, LParam, size);
+	return logic_layers_inactive_obj(layer, LOParam, size);
 }
 
 void *logic_layers_mixer(unsigned int layer, unsigned int nops, unsigned int *size)
 {
 	layer_t *pp = &data.layer[layer][Inactive];
-	if (pp->obj[LMixer].size == 0)
-		logic_layer_mixer_init(&pp->obj[LMixer], nops);
-	return logic_layers_obj(layer, LMixer, size);
+	if (pp->obj[LOMixer].size == 0)
+		logic_layer_mixer_init(&pp->obj[LOMixer], nops);
+	return logic_layers_inactive_obj(layer, LOMixer, size);
 }
 
 void *logic_layers_data(unsigned int layer, unsigned int *size)
 {
-	return logic_layers_obj(layer, LData, size);
+	return logic_layers_inactive_obj(layer, LOData, size);
 }
 
 static void *logic_layers_program_obj(program_obj_enum_t obj, unsigned int *size)
@@ -299,10 +305,10 @@ unsigned int logic_layers_commit(unsigned int layer)
 		return 1;
 	}
 	unsigned int w, h;
-	logic_layer_mixer_fb(&pp->obj[LMixer], &w, &h);
+	logic_layer_mixer_fb(&pp->obj[LOMixer], &w, &h);
 	unsigned int ok = 1;
 	if (pp->phdr->config)
-		pp->phdr->config(&pp->obj[LParam], &pp->obj[LData], &ok, w, h);
+		pp->phdr->config(&pp->obj[LOParam], &pp->obj[LOData], &ok, w, h);
 	//gc(1);
 	return ok;
 }

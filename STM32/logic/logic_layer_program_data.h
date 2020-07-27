@@ -2,47 +2,48 @@
 
 typedef enum {
 	// Exit
-	//   Data: None
 	OpExit = 0,
 	// Unconditional jump
 	//   Data: CodeAddr (1)
 	OpJump,
-	// Conditional jump if equal to zero
-	//   Data: CodeAddr (1), SrcDataAddr (1)
+	// Conditional jump if register is not zero
+	//   Data: CodeAddr (1)
 	OpJumpNotZero,
-	// Conditional jump if less than zero
-	//   Data: CodeAddr (1), SrcDataAddr (1)
+	// Conditional jump if register is less than zero
+	//   Data: CodeAddr (1)
 	OpJumpNegative,
 
-	// Load layer mixer
-	//   Data: DestDataAddr (1), Layer (1), Addr(1)
-	OpLoadMixer,
-	// Load layer parameter
-	//   Data: DestDataAddr (1), Layer (1), Addr(1)
-	OpLoadParam,
-	// Load layer private data
-	//   Data: DestDataAddr (1), Layer (1), Addr(1)
-	OpLoadData,
-	// Load const
-	//   Data: DestDataAddr (1), Constant (1)
+	// Set pointer to layer mixer
+	//   Data: Layer (1), Addr(1)
+	OpPtrMixer,
+	// Set pointer to layer parameter
+	//   Data: Layer (1), Addr(1)
+	OpPtrParam,
+	// Set pointer to layer private data
+	//   Data: Layer (1), Addr(1)
+	OpPtrData,
+
+	// Load register from constant
+	//   Data: Constant (1)
 	OpLoadConst,
+	// Load register from data
+	//   Data: DataAddr (1)
+	OpLoadData,
 
-	// Save layer mixer
-	//   Data: SrcDataAddr (1), Layer (1), Addr(1)
-	OpSaveMixer,
-	// Save layer parameter
-	//   Data: SrcDataAddr (1), Layer (1), Addr(1)
-	OpSaveParam,
-	// Save layer private data
-	//   Data: SrcDataAddr (1), Layer (1), Addr(1)
-	OpSaveData,
+	// Load register from pointer address
+	OpLoadPtr,
+	// Save register to pointer address
+	OpSavePtr,
 
-	// Arithmetic operations
+	// Register arithmetic operations
 	// Bit-wise AND
+	//   Data: Mask (1)
 	OpAnd,
 	// Bit-wise OR
+	//   Data: Mask (1)
 	OpOr,
 	// Bit-wise XOR
+	//   Data: Mask (1)
 	OpXor,
 
 	NumOps} opcode_t;
