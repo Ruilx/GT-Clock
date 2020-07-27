@@ -35,6 +35,8 @@
 
 #define BUF_SIZE	(PANELS + 1)
 
+LIST(matrix_swap, matrix_handler_t);
+
 static struct {
 	// Line processing buffer
 	uint8_t buf[2][GSCALE - 1][BUF_SIZE];
@@ -268,11 +270,15 @@ void DMA1_Channel3_IRQHandler()
 #ifdef PROFILING
 	unsigned int s = irq;
 #endif
-	if (data.wline == 0) {
+	unsigned int swap = data.wline == 0;
+	if (swap)
 		data.rfb = !data.wfb;
-		data.refcnt++;
-	}
 	matrix_line_calc();
+	if (swap) {
+		data.refcnt++;
+		LIST_ITERATE(matrix_swap, matrix_handler_t, p)
+			(*p)();
+	}
 #ifdef PROFILING
 	unsigned int e = irq;
 

@@ -6,6 +6,9 @@ typedef enum {
 	// Unconditional jump
 	//   Data: CodeAddr (1)
 	OpJump,
+	// Conditional jump if register is zero
+	//   Data: CodeAddr (1)
+	OpJumpZero,
 	// Conditional jump if register is not zero
 	//   Data: CodeAddr (1)
 	OpJumpNotZero,
@@ -29,6 +32,9 @@ typedef enum {
 	// Load register from data
 	//   Data: DataAddr (1)
 	OpLoadData,
+	// Save register to data
+	//   Data: DataAddr (1)
+	OpSaveData,
 
 	// Load register from pointer address
 	OpLoadPtr,
@@ -45,5 +51,9 @@ typedef enum {
 	// Bit-wise XOR
 	//   Data: Mask (1)
 	OpXor,
+	// Increment
+	OpInc,
+	// Decrement
+	OpDec,
 
 	NumOps} opcode_t;

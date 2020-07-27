@@ -6,6 +6,7 @@ enum {OpLabel = 0xff};
 
 #define OP_EXIT()			{0, OpExit, {}}
 #define OP_JUMP(addr)			{1, OpJump, {addr}}
+#define OP_JUMP_ZERO(addr)		{1, OpJumpZero, {addr}}
 #define OP_JUMP_NOT_ZERO(addr)		{1, OpJumpNotZero, {addr}}
 #define OP_JUMP_NEGATIVE(addr)		{1, OpJumpNegative, {addr}}
 
@@ -15,6 +16,7 @@ enum {OpLabel = 0xff};
 
 #define OP_LOAD_CONST(val)		{1, OpLoadConst, {val}}
 #define OP_LOAD_DATA(src)		{1, OpLoadData, {src}}
+#define OP_SAVE_DATA(dst)		{1, OpSaveData, {dst}}
 
 #define OP_LOAD_PTR()			{0, OpLoadPtr, {}}
 #define OP_SAVE_PTR()			{0, OpSavePtr, {}}
@@ -22,6 +24,9 @@ enum {OpLabel = 0xff};
 #define OP_AND(mask)			{1, OpAnd, {mask}}
 #define OP_OR(mask)			{1, OpOr, {mask}}
 #define OP_XOR(mask)			{1, OpXor, {mask}}
+
+#define OP_INC()			{0, OpInc, {}}
+#define OP_DEC()			{0, OpDec, {}}
 
 // Special
 #define OP_LABEL(label)			{1, OpLabel, {label}}

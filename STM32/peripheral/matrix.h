@@ -2,6 +2,11 @@
 #define MATRIX_H
 
 #include <stdint.h>
+#include <list.h>
+
+// Matrix frame buffer swap callback
+typedef void (*const matrix_handler_t)();
+#define MATRIX_SWAP_HANDLER()	LIST_ITEM(matrix_swap, matrix_handler_t)
 
 unsigned int matrix_refresh_cnt();
 

@@ -8,12 +8,11 @@ using namespace std;
 int main()
 {
 	// Extract jump labels
-	map<label_t, unsigned int> labels;
-	label_t label;
+	map<label_t, size_t> labels;
 	size_t ofs = 0;
 	for (const op_t op: program_code) {
 		if (op.op == OpLabel) {
-			label = (label_t)op.data[0];
+			label_t label = (label_t)op.data[0];
 			if (labels.find(label) != labels.end()) {
 				cerr << "Error: Label " << label << " redefined" << endl;
 				return 1;
@@ -31,21 +30,27 @@ int main()
 	for (const op_t op: program_code) {
 		if (op.op == OpLabel)
 			continue;
-		code[ofs++] = op.op;
-		memcpy(&code[ofs], op.data, op.size);
+		code[ofs] = op.op;
+		memcpy(&code[ofs + 1], op.data, op.size);
 		switch (op.op) {
 		case OpJump:
-		case OpJumpNegative:
+		case OpJumpZero:
 		case OpJumpNotZero:
-			label = (label_t)code[ofs];
+		case OpJumpNegative:
+			label_t label = (label_t)op.data[0];
 			if (labels.find(label) == labels.end()) {
 				cerr << "Error: Label " << label << " not found" << endl;
 				return 2;
 			}
-			code[ofs] = labels[label];
+			off_t lofs = labels[label] - ofs;
+			if (lofs > INT8_MAX || lofs < INT8_MIN) {
+				cerr << "Error: Label " << label << " out of range" << endl;
+				return 3;
+			}
+			code[ofs + 1] = lofs;
 			break;
 		}
-		ofs += op.size;
+		ofs += 1 + op.size;
 	}
 
 	// Print data

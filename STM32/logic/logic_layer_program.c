@@ -10,9 +10,10 @@
 
 void logic_layer_program_init(layer_obj_t *pcode, layer_obj_t *pdata)
 {
-	if (pcode->size == 0)
-		return;
-	*(uint8_t *)pcode->p = OpExit;
+	if (pcode->size != 0)
+		*(uint8_t *)pcode->p = OpExit;
+	if (pdata->size != 0)
+		memset(pdata->p, 0, pdata->size);
 }
 
 void logic_layer_program_run(layer_obj_t *pcode, layer_obj_t *pdata)
@@ -35,13 +36,16 @@ void logic_layer_program_run(layer_obj_t *pcode, layer_obj_t *pdata)
 		case OpExit:
 			return;
 		case OpJump:
-			ofs = pc[ofs + 1];
+			ofs = ofs + (int8_t)pc[ofs + 1];
+			break;
+		case OpJumpZero:
+			ofs = reg == 0 ? ofs + (int8_t)pc[ofs + 1] : ofs + 2;
 			break;
 		case OpJumpNotZero:
-			ofs = reg != 0 ? pc[ofs + 1] : ofs + 2;
+			ofs = reg != 0 ? ofs + (int8_t)pc[ofs + 1] : ofs + 2;
 			break;
 		case OpJumpNegative:
-			ofs = (int8_t)reg < 0 ? pc[ofs + 1] : ofs + 2;
+			ofs = (int8_t)reg < 0 ? ofs + (int8_t)pc[ofs + 1] : ofs + 2;
 			break;
 
 		case OpPtrMixer:
@@ -80,6 +84,11 @@ void logic_layer_program_run(layer_obj_t *pcode, layer_obj_t *pdata)
 				reg = pd[pc[ofs + 1]];
 			ofs += 2;
 			break;
+		case OpSaveData:
+			if (pc[ofs + 1] < pdata->size)
+				pd[pc[ofs + 1]] = reg;
+			ofs += 2;
+			break;
 
 		case OpLoadPtr:
 			if (ptr != 0)
@@ -103,6 +112,15 @@ void logic_layer_program_run(layer_obj_t *pcode, layer_obj_t *pdata)
 		case OpXor:
 			reg ^= pc[ofs + 2];
 			ofs += 2;
+			break;
+
+		case OpInc:
+			reg++;
+			ofs += 1;
+			break;
+		case OpDec:
+			reg--;
+			ofs += 1;
 			break;
 
 		case NumOps:

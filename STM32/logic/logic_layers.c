@@ -198,14 +198,14 @@ gc:	// Now, GC
 	NVIC_ClearPendingIRQ(CAN1_SCE_IRQn);
 }
 
-static void trigger(uint32_t tick)
+static void trigger()
 {
-	// Trigger rendering thread if vsync ready
-	if (data.enable && matrix_fb_ready())
+	// Trigger rendering thread if enabled
+	if (data.enable)
 		NVIC_SetPendingIRQ(CAN1_SCE_IRQn);
 }
 
-SYSTICK_HANDLER() = &trigger;
+MATRIX_SWAP_HANDLER() = &trigger;
 
 void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int num)
 {
