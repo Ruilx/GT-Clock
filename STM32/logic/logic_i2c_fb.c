@@ -13,9 +13,14 @@ typedef enum {
 	//   Write 1 to access standby FB
 	//   Write 0x80 to copy active FB to standby FB
 	//   Write 0xff to activate standby FB
+	FuncSwap = 0,
+	// FuncFlip
+	//   Write 0 to flip to normal orientation
+	//   Write 1 to flip to flipped orientation
+	FuncFlip,
 	// FuncX, FuncY
 	//   Starting offset of FuncPtr
-	FuncSwap = 0, FuncX = 0xd, FuncY = 0xe, FuncPtr = 0xf
+	FuncX = 0xd, FuncY = 0xe, FuncPtr = 0xf
 } func_t;
 
 static uint8_t regs[FUNC_SIZE];
@@ -69,6 +74,8 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 		else if (regs[FuncSwap] == 0x80)
 			matrix_fb_copy();
 	}
+	if (start <= FuncFlip && end > FuncFlip)
+		matrix_orientation(regs[FuncFlip]);
 }
 
 I2C_SLAVE_REG_HANDLER() = {&i2c_data, &i2c_write};

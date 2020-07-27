@@ -49,9 +49,12 @@ static struct {
 	uint8_t lsw;		// Line switching
 	uint8_t bsw;		// Buffer switching
 	uint8_t gssw;		// Greyscaling update
+	uint8_t dflipped;	// Diaply flipped
+	uint8_t rflipped;	// Diaply buffer flipped
 
 	uint8_t wbuf;		// Pending write buffer
 	uint8_t wline;		// Pending write line
+	uint8_t wflipped;	// Pending display flip
 
 	// Frame buffer
 	uint8_t fb[2][LINES][PANELS * 8];
@@ -194,6 +197,14 @@ static inline void matrix_buf_init()
 #endif
 }
 
+static inline void matrix_spi_flip()
+{
+	if (data.rflipped)
+		SPI1->CR1 |= SPI_CR1_LSBFIRST_Msk;
+	else
+		SPI1->CR1 &= ~SPI_CR1_LSBFIRST_Msk;
+}
+
 static inline void matrix_line_calc()
 {
 	unsigned int line = data.wline;
@@ -201,6 +212,9 @@ static inline void matrix_line_calc()
 	data.wline = (line + 1) % LINES;
 	// Interleaaved, line order 0, 4, 2, 6, 1, 5, 3, 7
 	line = (line & ~5) | ((line & 1) << 2) | ((line & 4) >> 2);
+	// Update buffer flip
+	if (line == 0)
+		data.rflipped = data.wflipped;
 
 	// Generate grayscale buffer
 	unsigned int wbuf = !!data.wbuf;
@@ -212,7 +226,7 @@ static inline void matrix_line_calc()
 		uint8_t v = 0x00;
 		uint8_t step = 0;
 		uint8_t next;
-		uint8_t *pbuf = &data.buf[wbuf][0][pnl];
+		uint8_t *pbuf = &data.buf[wbuf][0][data.rflipped ? PANELS - 1 - pnl : pnl];
 		do {
 			next = GSCALE - 1;
 			// Find next grayscale change
@@ -240,7 +254,6 @@ static inline void matrix_line_calc()
 	// Update line driver
 	for (unsigned int gs = 0; gs < GSCALE - 1; gs++)
 		data.buf[wbuf][gs][PANELS] = lmask;
-
 	// Done, switch active buffer
 	data.wbuf = !wbuf;
 }
@@ -280,6 +293,15 @@ static inline void matrix_line()
 {
 	if (data.bsw)
 		data.rbuf = !data.wbuf;
+
+	// Line switching after DMA complete
+	data.lsw = data.ridx == 0;
+	// Update SPI flip
+	if (data.lsw && data.dflipped != data.rflipped) {
+		data.dflipped = data.rflipped;
+		matrix_spi_flip();
+	}
+
 #ifdef GSUPD_FAST
 	data.gssw = data.gsupd[data.rbuf][data.ridx];
 #else
@@ -300,8 +322,6 @@ static inline void matrix_line()
 #endif
 	}
 
-	// Line switching after DMA complete
-	data.lsw = data.ridx == 0;
 	// Update line buffer index
 	data.ridx++;
 	if (data.ridx == GSCALE - 1)
@@ -369,4 +389,9 @@ void matrix_fb_swap()
 void matrix_fb_copy()
 {
 	memcpy(&data.fb[data.wfb][0][0], &data.fb[!data.wfb][0][0], LINES * PANELS * 8);
+}
+
+void matrix_orientation(unsigned int flipped)
+{
+	data.wflipped = flipped;
 }
