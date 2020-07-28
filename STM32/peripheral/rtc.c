@@ -4,6 +4,8 @@
 #include <system/systick.h>
 #include "rtc.h"
 
+LIST(rtc_second, rtc_second_handler_t);
+
 typedef union {
 	uint32_t val;
 	struct {
@@ -12,7 +14,7 @@ typedef union {
 	};
 } u32_t;
 
-struct {
+static struct {
 	u32_t cnt;
 	struct tm time;
 } data;
@@ -81,16 +83,43 @@ retry:	cnt.vall = RTC->CNTL;
 	// Update data and calculate calendar
 	time_t time = data.cnt.val = cnt.val;
 	data.time = *localtime(&time);
+
+	// RTC second timer callbacks
+	LIST_ITERATE(rtc_second, rtc_second_handler_t, pfunc)
+		(*pfunc)(data.cnt.val);
 }
 
 IDLE_HANDLER() = &rtc_update;
 
-uint32_t rtc_value()
+time_t rtc_timestamp()
 {
 	return data.cnt.val;
+}
+
+void rtc_set_timestamp(time_t time)
+{
+	u32_t cnt;
+	cnt.val = time;
+
+	// Wait for RTC register ready
+	while (!(RTC->CRL & RTC_CRL_RTOFF));
+	// Enter RTC configuration mode
+	RTC->CRL = RTC_CRL_CNF_Msk;
+	// Update RTC counter
+	RTC->CNTH = cnt.valh;
+	RTC->CNTL = cnt.vall;
+	// Exit RTC configuration mode
+	RTC->CRL = 0;
+	// Wait for RTC register ready
+	while (!(RTC->CRL & RTC_CRL_RTOFF));
 }
 
 struct tm *rtc_time()
 {
 	return &data.time;
+}
+
+void rtc_set_time(struct tm *dtm)
+{
+	rtc_set_timestamp(mktime(dtm));
 }

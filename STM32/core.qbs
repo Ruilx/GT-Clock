@@ -87,6 +87,7 @@ StaticLibrary {
         "logic/logic_i2c_fb.c",
         "logic/logic_i2c_func.c",
         "logic/logic_i2c_layers.c",
+        "logic/logic_i2c_rtc.c",
         "logic/logic_layer_const.c",
         "logic/logic_layer_bitmap.c",
         "logic/logic_layer_breath.c",

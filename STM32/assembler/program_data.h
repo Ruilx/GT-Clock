@@ -3,6 +3,48 @@
 #include <stdint.h>
 #include "program_inc.h"
 
+struct op_t {
+	uint8_t size;
+	uint8_t op;
+	uint8_t data[4];
+};
+
+#if 1
+
+enum {LayerSine, LayerTextTime, LayerGamma};
+enum {ParamTextFlag};
+enum {MixerX, MixerY, MixerW, MixerH, MixerOp1, MixerOp1Param, MixerOp2, MixerOp2Param};
+
+enum {DataEnable, SizeData};
+enum label_t {LabelExit};
+
+static const op_t program_code[] = {
+	// Check program enabled
+	OP_LOAD_DATA(DataEnable),
+	OP_JUMP_ZERO(LabelExit),
+
+	// Update RTC time
+	OP_PTR_CALENDAR(2),	// Hour
+	OP_LOAD_PTR(),
+	OP_PTR_DATA(LayerTextTime, 0),
+	OP_PRINT_I8(PType02d),
+
+	OP_PTR_CALENDAR(1),	// Minute
+	OP_LOAD_PTR(),
+	OP_PTR_DATA(LayerTextTime, 2),
+	OP_PRINT_I8(PType02d),
+
+	OP_PTR_CALENDAR(0),	// Second
+	OP_LOAD_PTR(),
+	OP_PTR_DATA(LayerTextTime, 4),
+	OP_PRINT_I8(PType02d),
+
+	// Exit
+	OP_LABEL(LabelExit),
+};
+
+#else
+
 enum {LayerSine, LayerSineDisabled, LayerTextConst, LayerTextScroll, LayerGamma};
 enum {ParamTextFlag};
 enum {MixerX, MixerY, MixerW, MixerH, MixerOp1, MixerOp1Param, MixerOp2, MixerOp2Param};
@@ -11,12 +53,6 @@ enum {DataEnable, DataStart, DataState, SizeData};
 enum label_t {LabelDec, LabelScroll, LabelWait, LabelInc,
 	      LabelDecDone, LabelIncDone,
 	      LabelExit};
-
-struct op_t {
-	uint8_t size;
-	uint8_t op;
-	uint8_t data[4];
-};
 
 static const op_t program_code[] = {
 	// Check program enabled
@@ -95,3 +131,5 @@ static const op_t program_code[] = {
 	// Exit
 	OP_LABEL(LabelExit),
 };
+
+#endif

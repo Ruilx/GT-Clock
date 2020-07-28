@@ -13,6 +13,9 @@ enum {OpLabel = 0xff};
 #define OP_PTR_MIXER(layer, addr)	{2, OpPtrMixer, {layer, addr}}
 #define OP_PTR_PARAM(layer, addr)	{2, OpPtrParam, {layer, addr}}
 #define OP_PTR_DATA(layer, addr)	{2, OpPtrData, {layer, addr}}
+#define OP_PTR_CALENDAR(addr)		{1, OpPtrCalendar, {addr}}
+
+#define OP_PRINT_I8(type)		{1, OpPrintI8, {type}}
 
 #define OP_LOAD_CONST(val)		{1, OpLoadConst, {val}}
 #define OP_LOAD_DATA(src)		{1, OpLoadData, {src}}

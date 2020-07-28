@@ -52,35 +52,29 @@ INIT_HANDLER() = &init;
 #if DEBUG >= DEBUG_FPS
 static void debug()
 {
-	static uint32_t v = 0;
-	if (!regs[FuncDebug]) {
-		v = systick_cnt();
+	if (!regs[FuncDebug])
 		return;
-	}
 
-	if ((systick_cnt() - v) >= 1000) {
-		// RTC value
-		uint32_t rtc = rtc_value();
+	// RTC value
+	uint32_t rtc = rtc_timestamp();
 
-		// Matrix refresh
-		static unsigned int matrix_cnt = 0;
-		unsigned int matrix_cnt_now = matrix_refresh_cnt();
-		unsigned int matrix_cnt_delta = matrix_cnt_now - matrix_cnt;
-		matrix_cnt = matrix_cnt_now;
+	// Matrix refresh
+	static unsigned int matrix_cnt = 0;
+	unsigned int matrix_cnt_now = matrix_refresh_cnt();
+	unsigned int matrix_cnt_delta = matrix_cnt_now - matrix_cnt;
+	matrix_cnt = matrix_cnt_now;
 
-		// Layers refresh
-		static unsigned int layers_cnt = 0;
-		unsigned int layers_cnt_now = logic_layers_refresh_cnt();
-		unsigned int layers_cnt_delta = layers_cnt_now - layers_cnt;
-		layers_cnt = layers_cnt_now;
+	// Layers refresh
+	static unsigned int layers_cnt = 0;
+	unsigned int layers_cnt_now = logic_layers_refresh_cnt();
+	unsigned int layers_cnt_delta = layers_cnt_now - layers_cnt;
+	layers_cnt = layers_cnt_now;
 
-		printf(ESC_DEBUG "%lu\tdebug cnt: RTC %lu, Matrix %u, Layers %u\n", systick_cnt(),
-		       rtc, matrix_cnt_delta, layers_cnt_delta);
-		v += 1000;
-	}
+	printf(ESC_DEBUG "%lu\tdebug cnt: RTC %lu, Matrix %u, Layers %u\n", systick_cnt(),
+	       rtc, matrix_cnt_delta, layers_cnt_delta);
 }
 
-IDLE_HANDLER() = &debug;
+RTC_SECOND_HANDLER() = &debug;
 #endif
 
 static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment, unsigned int *size)

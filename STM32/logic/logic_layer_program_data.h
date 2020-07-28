@@ -1,5 +1,7 @@
 #pragma once
 
+typedef enum {PTypeNormal, PType02d} print_type_t;
+
 typedef enum {
 	// Exit
 	OpExit = 0,
@@ -25,6 +27,15 @@ typedef enum {
 	// Set pointer to layer private data
 	//   Data: Layer (1), Addr(1)
 	OpPtrData,
+	// Set pointer to RTC calendar data
+	//   Data: Addr(1)
+	OpPtrCalendar,
+
+	// String print decimal 8-bit data
+	//   Data: Type (1)
+	//     Type 0: %d
+	//     Type 1: %02d
+	OpPrintI8,
 
 	// Load register from constant
 	//   Data: Constant (1)
