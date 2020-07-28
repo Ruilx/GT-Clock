@@ -4,16 +4,16 @@
 #include <system/systick.h>
 #include "rtc.h"
 
-#define UPDATE_PERIOD	100
+typedef union {
+	uint32_t val;
+	struct {
+		uint16_t vall;
+		uint16_t valh;
+	};
+} u32_t;
 
 struct {
-	union {
-		uint32_t cnt;
-		struct {
-			uint16_t cntl;
-			uint16_t cnth;
-		};
-	} cnt;
+	u32_t cnt;
 	struct tm time;
 } data;
 
@@ -43,16 +43,10 @@ void rtc_init()
 		// Enter RTC configuration mode
 		RTC->CRL = RTC_CRL_CNF_Msk;
 		// Set up RTC clock prescaler
-		union {
-			uint32_t prl;
-			struct {
-				uint16_t prll;
-				uint16_t prlh;
-			};
-		} presc;
-		presc.prl = 32768 - 1;		// 32k osc
-		RTC->PRLH = presc.prlh;
-		RTC->PRLL = presc.prll;
+		u32_t presc;
+		presc.val = 32768 - 1;		// 32k osc
+		RTC->PRLL = presc.vall;
+		RTC->PRLH = presc.valh;
 		// Reset RTC counter
 		RTC->CNTH = 0;
 		RTC->CNTL = 0;
@@ -69,39 +63,31 @@ INIT_HANDLER() = &rtc_init;
 
 static void rtc_update()
 {
-	// Update every UPDATE_PERIOD systick
-	static unsigned int prevtick = 0;
-	uint32_t tick = systick_cnt();
-	if ((tick - prevtick) < UPDATE_PERIOD)
+	// Read RTC counter value
+	u32_t cnt;
+retry:	cnt.vall = RTC->CNTL;
+	cnt.valh = RTC->CNTH;
+	if (cnt.val == data.cnt.val)
 		return;
-	prevtick += UPDATE_PERIOD;
 
-	uint32_t prevcnt = data.cnt.cnt;
-	for (;;) {
-		uint32_t cnt;
-		// Read RTC counter value
-		data.cnt.cntl = RTC->CNTL;
-		data.cnt.cnth = RTC->CNTH;
-		cnt = data.cnt.cnt;
-		// Read RTC counter value again
-		data.cnt.cntl = RTC->CNTL;
-		data.cnt.cnth = RTC->CNTH;
-		// Make sure RTC counter did not change
-		if (cnt == data.cnt.cnt)
-			break;
-	}
+	// Read RTC counter value again
+	u32_t cnt2;
+	cnt2.vall = RTC->CNTL;
+	cnt2.valh = RTC->CNTH;
+	// Make sure RTC counter did not change between readings
+	if (cnt.val != cnt2.val)
+		goto retry;
 
-	if (prevcnt != data.cnt.cnt) {
-		time_t time = data.cnt.cnt;
-		data.time = *localtime(&time);
-	}
+	// Update data and calculate calendar
+	time_t time = data.cnt.val = cnt.val;
+	data.time = *localtime(&time);
 }
 
 IDLE_HANDLER() = &rtc_update;
 
 uint32_t rtc_value()
 {
-	return data.cnt.cnt;
+	return data.cnt.val;
 }
 
 struct tm *rtc_time()
