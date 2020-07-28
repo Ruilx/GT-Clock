@@ -18,7 +18,7 @@ void logic_layer_program_init(layer_obj_t *pcode, layer_obj_t *pdata)
 
 void logic_layer_program_run(layer_obj_t *pcode, layer_obj_t *pdata)
 {
-#if DEBUG >= 6
+#if DEBUG >= 5
 	uint8_t (*ppc)[32] = pcode->p;
 	uint8_t (*ppd)[32] = pdata->p;
 #endif

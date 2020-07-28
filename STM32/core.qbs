@@ -103,6 +103,8 @@ StaticLibrary {
         "logic/logic_layers.h",
         "peripheral/i2c_slave.c",
         "peripheral/i2c_slave.h",
+        "peripheral/rtc.c",
+        "peripheral/rtc.h",
         "system/system.c",
         "system/system.h",
         "system/system.s",

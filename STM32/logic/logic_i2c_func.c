@@ -1,5 +1,6 @@
 #include <debug.h>
 #include <system/systick.h>
+#include <peripheral/rtc.h>
 #include <peripheral/i2c_slave.h>
 // For debug prints
 #include <peripheral/matrix.h>
@@ -12,7 +13,10 @@
 #define DEBUG_FPS	1
 
 typedef enum {
-	// Extra
+	// General function
+	// FuncUID
+	//   Report chip UID and flash size
+	FuncUID = 0,
 #if DEBUG >= DEBUG_TEST
 	// FuncTest
 	//   Test I2C communication
@@ -55,6 +59,9 @@ static void debug()
 	}
 
 	if ((systick_cnt() - v) >= 1000) {
+		// RTC value
+		uint32_t rtc = rtc_value();
+
 		// Matrix refresh
 		static unsigned int matrix_cnt = 0;
 		unsigned int matrix_cnt_now = matrix_refresh_cnt();
@@ -67,8 +74,8 @@ static void debug()
 		unsigned int layers_cnt_delta = layers_cnt_now - layers_cnt;
 		layers_cnt = layers_cnt_now;
 
-		printf(ESC_DEBUG "%lu\tdebug: cnt: Matrix %u, Layers %u\n",
-		       systick_cnt(), matrix_cnt_delta, layers_cnt_delta);
+		printf(ESC_DEBUG "%lu\tdebug cnt: RTC %lu, Matrix %u, Layers %u\n", systick_cnt(),
+		       rtc, matrix_cnt_delta, layers_cnt_delta);
 		v += 1000;
 	}
 }
@@ -83,6 +90,19 @@ static void *i2c_data(unsigned int write, unsigned int id, unsigned int *segment
 
 	func_t func = id - FUNC_BASE;
 	switch (func) {
+	case FuncUID:
+		if (*segment == 0) {
+			// UID
+			*segment = write ? 0 : 1;
+			*size = write ? 0 : 12;
+			return (void *)UID_BASE;
+		} else {
+			// Flash size
+			*segment = 0;
+			*size = 2;
+			return (void *)FLASHSIZE_BASE;
+		}
+		break;
 #if DEBUG >= DEBUG_TEST
 	case FuncTestNum:
 		*size = 1;
