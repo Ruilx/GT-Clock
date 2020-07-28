@@ -231,6 +231,8 @@ static void i2c_slave_irq_tx_dma_done()
 	data.buf.buf[data.buf.dmaidx].state = BufInvalid;
 	// Update double buffering
 	data.buf.dmaidx = !data.buf.dmaidx;
+	// Clear TX DMA complete flag (not cleared in circular mode)
+	DMA1->IFCR = DMA_IFCR_CTCIF4_Msk | DMA_IFCR_CGIF4_Msk;
 	// Disable TX DMA
 	DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
 }
@@ -379,9 +381,8 @@ static void i2c_slave_dma_tx()
 	}
 #endif
 
-	// Disable DMAs
+	// Disable TX DMA
 	DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
-	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
 	// Set circular mode and disable interrupt if TX complete
 	uint32_t ccr = data.buf.buf[data.buf.dmaidx].state == BufTxComplete ?
 			       DMA_CCR_CIRC_Msk : DMA_CCR_TCIE_Msk;
@@ -574,6 +575,12 @@ void I2C2_EV_IRQHandler()
 void I2C2_ER_IRQHandler()
 {
 	uint16_t sr1 = I2C2->SR1;
+#if DEBUG >= DEBUG_CHECK
+	I2C_TypeDef *i2c = I2C2;
+	DMA_TypeDef *dma = DMA1;
+	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
+	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+#endif
 #if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
 	GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
@@ -762,7 +769,7 @@ static void i2c_slave_reg_tx_buf()
 	}
 
 #if DEBUG >= DEBUG_PRINT
-	printf(ESC_WRITE "%lu\ti2c reg: Write buffer segment %u: %u bytes\n",
+	printf(ESC_READ "%lu\ti2c reg: Read buffer segment %u: %u bytes\n",
 	       systick_cnt(), data.reg.segment, data.reg.buf.size);
 #endif
 }
@@ -799,7 +806,7 @@ static unsigned int i2c_slave_reg_tx_segment(unsigned int *psize, uint8_t *p)
 			s = data.reg.buf.size - data.reg.buf.pos;
 			s = MIN(size, s);
 #if DEBUG >= DEBUG_PRINT
-			printf(ESC_WRITE "%lu\ti2c reg: Write data segment %u: %u bytes\n",
+			printf(ESC_READ "%lu\ti2c reg: Read data segment %u: %u bytes\n",
 			       systick_cnt(), data.reg.segment, s);
 #endif
 			memcpy(p, &data.reg.buf.p[data.reg.buf.pos], s);
