@@ -10,6 +10,9 @@ LIST(idle, basic_handler_t);
 static inline void init()
 {
 	printf(ESC_BOOT "%lu\tboot: " VARIANT " build @ " __DATE__ " " __TIME__ "\n", systick_cnt());
+	// Set JTAG to SWD only
+	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN_Msk;
+	AFIO->MAPR |= AFIO_MAPR_SPI1_REMAP_Msk | (0b010 << AFIO_MAPR_SWJ_CFG_Pos);
 	LIST_ITERATE(init, basic_handler_t, p) (*p)();
 	printf(ESC_INIT "%lu\tboot: Init done\n", systick_cnt());
 }

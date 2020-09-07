@@ -24,9 +24,10 @@
 //#define PROFILING
 //#define GSUPD_FAST
 
+#define SPI		SPI2
 #define DMA		DMA1
-#define DMA_CHANNEL	DMA1_Channel3
-#define DMA_CHANNEL_IRQ	DMA1_Channel3_IRQn
+#define DMA_CHANNEL	DMA1_Channel5
+#define DMA_CHANNEL_IRQ	DMA1_Channel5_IRQn
 
 // Memory to peripheral, 8bit -> 8bit, very high priority
 // Memory increment, peripheral not increment, circular disabled
@@ -73,50 +74,47 @@ static inline void matrix_line_calc();
 static void matrix_init()
 {
 	// Configure GPIOs
-	// PB3  SH SPI1: Alternate function output push-pull, 50MHz
-	// PB4  OE:      Output push-pull, 50MHz
-	// PB5  DS SPI1: Alternate function output push-pull, 50MHz
-	// PA15 ST:      Output push-pull, 50MHz
-	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN_Msk | RCC_APB2ENR_IOPBEN_Msk | RCC_APB2ENR_AFIOEN_Msk;
-	GPIOB->CRL = (GPIOB->CRL & ~(GPIO_CRL_CNF3_Msk | GPIO_CRL_MODE3_Msk |
-				     GPIO_CRL_CNF4_Msk | GPIO_CRL_MODE4_Msk |
-				     GPIO_CRL_CNF5_Msk | GPIO_CRL_MODE5_Msk)) |
-		     ((0b10 << GPIO_CRL_CNF3_Pos) | (0b11 << GPIO_CRL_MODE3_Pos)) |
-		     ((0b00 << GPIO_CRL_CNF4_Pos) | (0b11 << GPIO_CRL_MODE4_Pos)) |
-		     ((0b10 << GPIO_CRL_CNF5_Pos) | (0b11 << GPIO_CRL_MODE5_Pos));
-	GPIOA->CRH = (GPIOA->CRH & ~(GPIO_CRH_CNF15_Msk | GPIO_CRH_MODE15_Msk)) |
-		     ((0b00 << GPIO_CRH_CNF15_Pos) | (0b11 << GPIO_CRH_MODE15_Pos));
-	// Also set JTAG to SWD only
-	AFIO->MAPR |= AFIO_MAPR_SPI1_REMAP_Msk | (0b010 << AFIO_MAPR_SWJ_CFG_Pos);
+	// PB12 ST:      Output push-pull, 50MHz
+	// PB13 SH SPI2: Alternate function output push-pull, 50MHz
+	// PB14 OE:      Output push-pull, 50MHz
+	// PB15 DS SPI2: Alternate function output push-pull, 50MHz
+	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN_Msk | RCC_APB2ENR_AFIOEN_Msk;
+	GPIOB->CRH = (GPIOB->CRH & ~(GPIO_CRH_CNF12_Msk | GPIO_CRH_MODE12_Msk |
+				     GPIO_CRH_CNF13_Msk | GPIO_CRH_MODE13_Msk |
+				     GPIO_CRH_CNF14_Msk | GPIO_CRH_MODE14_Msk |
+				     GPIO_CRH_CNF15_Msk | GPIO_CRH_MODE15_Msk)) |
+		     ((0b00 << GPIO_CRH_CNF12_Pos) | (0b11 << GPIO_CRH_MODE12_Pos)) |
+		     ((0b10 << GPIO_CRH_CNF13_Pos) | (0b11 << GPIO_CRH_MODE13_Pos)) |
+		     ((0b00 << GPIO_CRH_CNF14_Pos) | (0b11 << GPIO_CRH_MODE14_Pos)) |
+		     ((0b10 << GPIO_CRH_CNF15_Pos) | (0b11 << GPIO_CRH_MODE15_Pos));
 
 	// Disable OE, ST = 0
-	GPIOB->BSRR = GPIO_BSRR_BS4_Msk;
-	GPIOA->BSRR = GPIO_BSRR_BR15_Msk;
+	GPIOB->BSRR = GPIO_BSRR_BR12_Msk | GPIO_BSRR_BS14_Msk;
 
-	// Enable SPI1 clock
-	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN_Msk;
+	// Enable SPI2 clock
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN_Msk;
 	// Configure SPI
 	// SPI mode, I2S disabled
-	SPI1->I2SCFGR = 0;
+	SPI->I2SCFGR = 0;
 	// 1-line bidirectional, output enabled, CRC disabled, 8-bit data
-	// SSM set NSS to 1, MSB first, SPI disabled, baud rate div by 4, master mode
+	// SSM set NSS to 1, MSB first, SPI disabled, baud rate div by 2, master mode
 	// CPOL = 0, CPHA = 0
-	SPI1->CR1 = SPI_CR1_BIDIMODE_Msk | SPI_CR1_BIDIOE_Msk | SPI_CR1_SSM_Msk | SPI_CR1_SSI_Msk |
-		    (1 << SPI_CR1_BR_Pos) | SPI_CR1_MSTR_Msk;
+	SPI->CR1 = SPI_CR1_BIDIMODE_Msk | SPI_CR1_BIDIOE_Msk | SPI_CR1_SSM_Msk | SPI_CR1_SSI_Msk |
+		    (0 << SPI_CR1_BR_Pos) | SPI_CR1_MSTR_Msk;
 	// SS output disable, TX DMA enabled, RX DMA disabled
-	SPI1->CR2 = SPI_CR2_TXDMAEN_Msk;
+	SPI->CR2 = SPI_CR2_TXDMAEN_Msk;
 	// Enable SPI
-	SPI1->CR1 |= SPI_CR1_SPE_Msk;
+	SPI->CR1 |= SPI_CR1_SPE_Msk;
 
 	// Enable DMA clock
 	RCC->AHBENR |= RCC_AHBENR_DMA1EN_Msk;
-	// Configure DMA Channel 3 for SPI1_TX
+	// Configure DMA Channel 5 for SPI2_TX
 	// Disable stream
 	DMA_CHANNEL->CCR = 0;
 	// Peripheral address
-	DMA_CHANNEL->CPAR = (uint32_t)&SPI1->DR;
+	DMA_CHANNEL->CPAR = (uint32_t)&SPI->DR;
 	// Clear DMA complete flag
-	DMA->IFCR = DMA_IFCR_CTCIF3_Msk | DMA_IFCR_CGIF3_Msk;
+	DMA->IFCR = DMA_IFCR_CTCIF5_Msk | DMA_IFCR_CGIF5_Msk;
 
 	// Enable Timer4 clock
 	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN_Msk;
@@ -202,9 +200,9 @@ static inline void matrix_buf_init()
 static inline void matrix_spi_flip()
 {
 	if (data.rflipped)
-		SPI1->CR1 |= SPI_CR1_LSBFIRST_Msk;
+		SPI->CR1 |= SPI_CR1_LSBFIRST_Msk;
 	else
-		SPI1->CR1 &= ~SPI_CR1_LSBFIRST_Msk;
+		SPI->CR1 &= ~SPI_CR1_LSBFIRST_Msk;
 }
 
 static inline void matrix_line_calc()
@@ -264,7 +262,7 @@ static inline void matrix_line_calc()
 static volatile unsigned int irq = 0;
 #endif
 
-void DMA1_Channel3_IRQHandler()
+void DMA1_Channel5_IRQHandler()
 {
 	// Line buffer calculation thread
 #ifdef PROFILING
@@ -346,13 +344,13 @@ void TIM4_IRQHandler()
 	if (data.gssw) {
 		// Disable OE
 		if (data.lsw)
-			GPIOB->BSRR = GPIO_BSRR_BS4_Msk;
+			GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
 		// Pulse ST
-		GPIOA->BSRR = GPIO_BSRR_BS15_Msk;
-		GPIOA->BSRR = GPIO_BSRR_BR15_Msk;
+		GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
+		GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
 		// Enable OE
 		if (data.lsw)
-			GPIOB->BSRR = GPIO_BSRR_BR4_Msk;
+			GPIOB->BSRR = GPIO_BSRR_BR14_Msk;
 	}
 
 #ifdef CHECK_OVERRUN

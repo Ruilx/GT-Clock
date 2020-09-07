@@ -20,6 +20,13 @@
 #define BUF_SIZE	16
 #endif
 
+#define I2C			I2C1
+#define DMA			DMA1
+#define DMA_CHANNEL_TX		DMA1_Channel6
+#define DMA_CHANNEL_TX_IRQ	DMA1_Channel6_IRQn
+#define DMA_CHANNEL_RX		DMA1_Channel7
+#define DMA_CHANNEL_RX_IRQ	DMA1_Channel7_IRQn
+
 LIST(i2c_slave_reg, i2c_slave_reg_handler_t);
 
 typedef enum {Idle = 0, WaitTx, ActiveTx, ActiveRx} state_t;
@@ -76,76 +83,77 @@ static void i2c_slave_dma_rx();
 static void i2c_slave_init()
 {
 	// Configure GPIOs
-	// PB10 SCL I2C2: Alternate function open-drain, 10MHz
-	// PB11 SDA I2C2: Alternate function open-drain, 10MHz
+	// PB8 SCL I2C1: Alternate function open-drain, 10MHz
+	// PB9 SDA I2C1: Alternate function open-drain, 10MHz
 	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN_Msk | RCC_APB2ENR_AFIOEN_Msk;
-	GPIOB->CRH = (GPIOB->CRH & ~(GPIO_CRH_CNF10_Msk | GPIO_CRH_MODE10_Msk |
-				     GPIO_CRH_CNF11_Msk | GPIO_CRH_MODE11_Msk)) |
-		     ((0b11 << GPIO_CRH_CNF10_Pos) | (0b01 << GPIO_CRH_MODE10_Pos)) |
-		     ((0b11 << GPIO_CRH_CNF11_Pos) | (0b01 << GPIO_CRH_MODE11_Pos));
+	GPIOB->CRH = (GPIOB->CRH & ~(GPIO_CRH_CNF8_Msk | GPIO_CRH_MODE8_Msk |
+				     GPIO_CRH_CNF9_Msk | GPIO_CRH_MODE9_Msk)) |
+		     ((0b11 << GPIO_CRH_CNF8_Pos) | (0b01 << GPIO_CRH_MODE8_Pos)) |
+		     ((0b11 << GPIO_CRH_CNF9_Pos) | (0b01 << GPIO_CRH_MODE9_Pos));
+	AFIO->MAPR |= AFIO_MAPR_I2C1_REMAP_Msk;
 
-	// Enable I2C2 clock
-	RCC->APB1ENR |= RCC_APB1ENR_I2C2EN_Msk;
+	// Enable I2C1 clock
+	RCC->APB1ENR |= RCC_APB1ENR_I2C1EN_Msk;
 	// Disable and configure I2C peripheral
 	// Clock stretching enabled, general call disabled, I2C mode
-	I2C2->CR1 = 0;
+	I2C->CR1 = 0;
 	// DMA enabled, buffer interrupts disabled, event interrupts enabled
 	// Set APB clock frequency
-	I2C2->CR2 = I2C_CR2_DMAEN_Msk | I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk |
+	I2C->CR2 = I2C_CR2_DMAEN_Msk | I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk |
 		    ((clkAPB1() / 1000000) << I2C_CR2_FREQ_Pos);
 	// Configure I2C address, 7-bit mode
-	I2C2->OAR1 = (I2C_ADDR << I2C_OAR1_ADD1_Pos);
+	I2C->OAR1 = (I2C_ADDR << I2C_OAR1_ADD1_Pos);
 	// Dual address disabled
-	I2C2->OAR2 = 0;
+	I2C->OAR2 = 0;
 	// Clear flags
-	I2C2->SR1 = 0;
+	I2C->SR1 = 0;
 	// Clock control, 400kHz fast mode
-	I2C2->CCR = I2C_CCR_FS_Msk | I2C_CCR_DUTY_Msk | (4 << I2C_CCR_CCR_Pos);
+	I2C->CCR = I2C_CCR_FS_Msk | I2C_CCR_DUTY_Msk | (4 << I2C_CCR_CCR_Pos);
 
 	// Enable DMA clock
 	RCC->AHBENR |= RCC_AHBENR_DMA1EN_Msk;
 
-	// Configure DMA Channel 4 for I2C2_TX
+	// Configure DMA Channel 6 for I2C1_TX
 	// Disable stream
-	DMA1_Channel4->CCR = 0;
+	DMA_CHANNEL_TX->CCR = 0;
 	// Peripheral address
-	DMA1_Channel4->CPAR = (uint32_t)&I2C2->DR;
+	DMA_CHANNEL_TX->CPAR = (uint32_t)&I2C->DR;
 	// Clear DMA complete flag
-	DMA1->IFCR = DMA_IFCR_CTCIF4_Msk | DMA_IFCR_CGIF4_Msk;
+	DMA->IFCR = DMA_IFCR_CTCIF6_Msk | DMA_IFCR_CGIF6_Msk;
 	// Memory to peripheral, 8bit -> 8bit, low priority
 	// Memory increment, peripheral not increment, circular disabled
 	// Transfer complete interrupt enable
-	DMA1_Channel4->CCR = (0b00 << DMA_CCR_PL_Pos) | DMA_CCR_MINC_Msk | DMA_CCR_DIR_Msk | \
-			     (0b00 << DMA_CCR_MSIZE_Pos) | (0b00 << DMA_CCR_PSIZE_Pos) |
-			     DMA_CCR_TCIE_Msk;
+	DMA_CHANNEL_TX->CCR = (0b00 << DMA_CCR_PL_Pos) | DMA_CCR_MINC_Msk | DMA_CCR_DIR_Msk | \
+			      (0b00 << DMA_CCR_MSIZE_Pos) | (0b00 << DMA_CCR_PSIZE_Pos) |
+			      DMA_CCR_TCIE_Msk;
 
-	// Configure DMA Channel 5 for I2C2_RX
+	// Configure DMA Channel 7 for I2C1_RX
 	// Disable stream
-	DMA1_Channel5->CCR = 0;
+	DMA_CHANNEL_RX->CCR = 0;
 	// Peripheral address
-	DMA1_Channel5->CPAR = (uint32_t)&I2C2->DR;
+	DMA_CHANNEL_RX->CPAR = (uint32_t)&I2C->DR;
 	// Clear DMA complete flag
-	DMA1->IFCR = DMA_IFCR_CTCIF5_Msk | DMA_IFCR_CGIF5_Msk;
+	DMA->IFCR = DMA_IFCR_CTCIF7_Msk | DMA_IFCR_CGIF7_Msk;
 	// Peripheral to memory, 8bit -> 8bit, low priority
 	// Memory increment, peripheral not increment, circular disabled
 	// Transfer complete interrupt enable
-	DMA1_Channel5->CCR = (0b00 << DMA_CCR_PL_Pos) | DMA_CCR_MINC_Msk | /*DMA_CCR_DIR_Msk |*/ \
-			     (0b00 << DMA_CCR_MSIZE_Pos) | (0b00 << DMA_CCR_PSIZE_Pos) |
-			     DMA_CCR_TCIE_Msk;
+	DMA_CHANNEL_RX->CCR = (0b00 << DMA_CCR_PL_Pos) | DMA_CCR_MINC_Msk | /*DMA_CCR_DIR_Msk |*/ \
+			      (0b00 << DMA_CCR_MSIZE_Pos) | (0b00 << DMA_CCR_PSIZE_Pos) |
+			      DMA_CCR_TCIE_Msk;
 
 	// Configure interrupts
 	uint32_t pg = NVIC_GetPriorityGrouping();
-	NVIC_SetPriority(I2C2_EV_IRQn, NVIC_EncodePriority(pg, NVIC_PRIORITY_I2C, 0));
-	NVIC_EnableIRQ(I2C2_EV_IRQn);
-	NVIC_SetPriority(I2C2_ER_IRQn, NVIC_EncodePriority(pg, NVIC_PRIORITY_I2C, 0));
-	NVIC_EnableIRQ(I2C2_ER_IRQn);
-	NVIC_SetPriority(DMA1_Channel4_IRQn, NVIC_EncodePriority(pg, NVIC_PRIORITY_I2C_DMA, 0));
-	NVIC_EnableIRQ(DMA1_Channel4_IRQn);
-	NVIC_SetPriority(DMA1_Channel5_IRQn, NVIC_EncodePriority(pg, NVIC_PRIORITY_I2C_DMA, 0));
-	NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+	NVIC_SetPriority(I2C1_EV_IRQn, NVIC_EncodePriority(pg, NVIC_PRIORITY_I2C, 0));
+	NVIC_EnableIRQ(I2C1_EV_IRQn);
+	NVIC_SetPriority(I2C1_ER_IRQn, NVIC_EncodePriority(pg, NVIC_PRIORITY_I2C, 0));
+	NVIC_EnableIRQ(I2C1_ER_IRQn);
+	NVIC_SetPriority(DMA_CHANNEL_TX_IRQ, NVIC_EncodePriority(pg, NVIC_PRIORITY_I2C_DMA, 0));
+	NVIC_EnableIRQ(DMA_CHANNEL_TX_IRQ);
+	NVIC_SetPriority(DMA_CHANNEL_RX_IRQ, NVIC_EncodePriority(pg, NVIC_PRIORITY_I2C_DMA, 0));
+	NVIC_EnableIRQ(DMA_CHANNEL_RX_IRQ);
 	// Enable I2C peripheral
 	// ACK enable
-	I2C2->CR1 = I2C_CR1_PE_Msk | I2C_CR1_ACK_Msk;
+	I2C->CR1 = I2C_CR1_PE_Msk | I2C_CR1_ACK_Msk;
 
 #if DEBUG >= DEBUG_PRINT
 	printf(ESC_INIT "%lu\ti2c: Init done\n", systick_cnt());
@@ -158,7 +166,7 @@ static inline void i2c_slave_irq_rx_wait()
 {
 	// Wait for RX buffer
 	// Disable interrupts for now
-	I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
+	I2C->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
 	data.buf.intwait = 1;
 }
 
@@ -169,17 +177,17 @@ static void i2c_slave_dma_rx()
 		dbgbkpt();
 #endif
 	// Disable DMAs
-	DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
-	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
+	DMA_CHANNEL_TX->CCR &= ~DMA_CCR_EN_Msk;
+	DMA_CHANNEL_RX->CCR &= ~DMA_CCR_EN_Msk;
 	// Transfer size
-	DMA1_Channel5->CNDTR = BUF_SIZE;
+	DMA_CHANNEL_RX->CNDTR = BUF_SIZE;
 	// Memory address
-	DMA1_Channel5->CMAR = (uint32_t)data.buf.buf[data.buf.dmaidx].data;
+	DMA_CHANNEL_RX->CMAR = (uint32_t)data.buf.buf[data.buf.dmaidx].data;
 	// Set buffer states
 	data.buf.buf[data.buf.dmaidx].state = BufRx;
 	data.buf.buf[data.buf.dmaidx].size = 0;
 	// Start RX DMA
-	DMA1_Channel5->CCR |= DMA_CCR_EN_Msk;
+	DMA_CHANNEL_RX->CCR |= DMA_CCR_EN_Msk;
 }
 
 static inline void i2c_slave_dma_irq_rx_segment()
@@ -189,15 +197,15 @@ static inline void i2c_slave_dma_irq_rx_segment()
 		dbgbkpt();
 #endif
 	// Set buffer states
-	data.buf.buf[data.buf.dmaidx].size = BUF_SIZE - DMA1_Channel5->CNDTR;
+	data.buf.buf[data.buf.dmaidx].size = BUF_SIZE - DMA_CHANNEL_RX->CNDTR;
 	data.buf.buf[data.buf.dmaidx].state = BufRxSegment;
 	// Update double buffering
 	data.buf.dmaidx = !data.buf.dmaidx;
 	// Disable RX DMA
-	//DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
-	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
+	//DMA_CHANNEL_TX->CCR &= ~DMA_CCR_EN_Msk;
+	DMA_CHANNEL_RX->CCR &= ~DMA_CCR_EN_Msk;
 	// Clear RX DMA complete flag
-	DMA1->IFCR = DMA_IFCR_CTCIF5_Msk | DMA_IFCR_CGIF5_Msk;
+	DMA->IFCR = DMA_IFCR_CTCIF7_Msk | DMA_IFCR_CGIF7_Msk;
 	// Don't restart DMA, wait for BTF interrupt to avoid I2C bug
 }
 
@@ -209,7 +217,7 @@ static void i2c_slave_irq_rx_dma_done()
 		data.buf.buf[data.buf.dmaidx].size = 0;
 		break;
 	case BufRx:
-		data.buf.buf[data.buf.dmaidx].size = BUF_SIZE - DMA1_Channel5->CNDTR;
+		data.buf.buf[data.buf.dmaidx].size = BUF_SIZE - DMA_CHANNEL_RX->CNDTR;
 		break;
 	default:
 #if DEBUG >= DEBUG_CHECK
@@ -222,7 +230,7 @@ static void i2c_slave_irq_rx_dma_done()
 	// Update double buffering
 	data.buf.dmaidx = !data.buf.dmaidx;
 	// Disable RX DMA
-	DMA1_Channel5->CCR &= ~DMA_CCR_EN_Msk;
+	DMA_CHANNEL_RX->CCR &= ~DMA_CCR_EN_Msk;
 }
 
 static void i2c_slave_irq_tx_dma_done()
@@ -232,9 +240,9 @@ static void i2c_slave_irq_tx_dma_done()
 	// Update double buffering
 	data.buf.dmaidx = !data.buf.dmaidx;
 	// Clear TX DMA complete flag (not cleared in circular mode)
-	DMA1->IFCR = DMA_IFCR_CTCIF4_Msk | DMA_IFCR_CGIF4_Msk;
+	DMA->IFCR = DMA_IFCR_CTCIF6_Msk | DMA_IFCR_CGIF6_Msk;
 	// Disable TX DMA
-	DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
+	DMA_CHANNEL_TX->CCR &= ~DMA_CCR_EN_Msk;
 }
 
 static void i2c_slave_irq_rx_next()
@@ -254,18 +262,18 @@ static void i2c_slave_irq_done()
 	printf(ESC_DISABLE "%lu\ti2c irq: stop\n", systick_cnt());
 #endif
 	// We may have 1 byte left in I2C receive buffer
-	if (I2C2->SR1 & I2C_SR1_RXNE_Msk) {
+	if (I2C->SR1 & I2C_SR1_RXNE_Msk) {
 		switch (data.buf.buf[data.buf.dmaidx].state) {
 		case BufInvalid:
 			// Read that last 1 byte
 			// Set buffer states
-			data.buf.buf[data.buf.dmaidx].data[0] = I2C2->DR;
+			data.buf.buf[data.buf.dmaidx].data[0] = I2C->DR;
 			data.buf.buf[data.buf.dmaidx].size = 1;
 			data.buf.buf[data.buf.dmaidx].state = BufRxComplete;
 			// Update double buffering
 			data.buf.dmaidx = !data.buf.dmaidx;
 			// Re-enable ACK and clear stop flag
-			I2C2->CR1 |= I2C_CR1_ACK_Msk;
+			I2C->CR1 |= I2C_CR1_ACK_Msk;
 			data.state = Idle;
 			break;
 #if DEBUG >= DEBUG_CHECK
@@ -286,7 +294,7 @@ static void i2c_slave_irq_done()
 	case BufRx:
 		i2c_slave_irq_rx_dma_done();
 		// Re-enable ACK and clear stop flag
-		I2C2->CR1 |= I2C_CR1_ACK_Msk;
+		I2C->CR1 |= I2C_CR1_ACK_Msk;
 		data.state = Idle;
 		break;
 #if DEBUG >= DEBUG_CHECK
@@ -311,7 +319,7 @@ static void i2c_slave_irq_tx_done()
 #endif
 #if DEBUG >= DEBUG_CHECK
 	// We may have 1 byte left in I2C receive buffer
-	if (I2C2->SR1 & I2C_SR1_RXNE_Msk)
+	if (I2C->SR1 & I2C_SR1_RXNE_Msk)
 		dbgbkpt();
 #endif
 
@@ -320,7 +328,7 @@ static void i2c_slave_irq_tx_done()
 		// Wait for buffer to be filled, then clean it
 		data.buf.intwait = 1;
 		// Disable interrupts
-		I2C2->CR2 &= ~(I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk);
+		I2C->CR2 &= ~(I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk);
 		return;
 	case BufTxComplete:
 	case BufTxSegment:
@@ -328,7 +336,7 @@ static void i2c_slave_irq_tx_done()
 		// fall through
 	case BufInvalid:
 		// Clear NAK flag
-		I2C2->SR1 = ~I2C_SR1_AF_Msk;
+		I2C->SR1 = ~I2C_SR1_AF_Msk;
 		data.state = Idle;
 		break;
 	default:
@@ -338,7 +346,7 @@ static void i2c_slave_irq_tx_done()
 		break;
 	}
 	// Reenable interrupts
-	I2C2->CR2 |= I2C_CR2_ITEVTEN_Msk;
+	I2C->CR2 |= I2C_CR2_ITEVTEN_Msk;
 }
 
 static void i2c_slave_irq_tx_wait()
@@ -348,7 +356,7 @@ static void i2c_slave_irq_tx_wait()
 		data.buf.buf[data.buf.dmaidx].state = BufTx;
 	data.buf.intwait = 1;
 	// Disable interrupts for now
-	I2C2->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
+	I2C->CR2 &= ~I2C_CR2_ITEVTEN_Msk;
 }
 
 static void i2c_slave_dma_irq_tx_segment()
@@ -366,7 +374,7 @@ static void i2c_slave_dma_irq_tx_segment()
 	i2c_slave_irq_tx_dma_done();
 	i2c_slave_irq_tx_wait();
 	// Clear TX DMA complete flag
-	DMA1->IFCR = DMA_IFCR_CTCIF4_Msk | DMA_IFCR_CGIF4_Msk;
+	DMA->IFCR = DMA_IFCR_CTCIF6_Msk | DMA_IFCR_CGIF6_Msk;
 }
 
 static void i2c_slave_dma_tx()
@@ -382,17 +390,17 @@ static void i2c_slave_dma_tx()
 #endif
 
 	// Disable TX DMA
-	DMA1_Channel4->CCR &= ~DMA_CCR_EN_Msk;
+	DMA_CHANNEL_TX->CCR &= ~DMA_CCR_EN_Msk;
 	// Set circular mode and disable interrupt if TX complete
 	uint32_t ccr = data.buf.buf[data.buf.dmaidx].state == BufTxComplete ?
 			       DMA_CCR_CIRC_Msk : DMA_CCR_TCIE_Msk;
-	DMA1_Channel4->CCR = (DMA1_Channel4->CCR & ~(DMA_CCR_CIRC_Msk | DMA_CCR_TCIE_Msk)) | ccr;
+	DMA_CHANNEL_TX->CCR = (DMA_CHANNEL_TX->CCR & ~(DMA_CCR_CIRC_Msk | DMA_CCR_TCIE_Msk)) | ccr;
 	// Transfer size
-	DMA1_Channel4->CNDTR = data.buf.buf[data.buf.dmaidx].size;
+	DMA_CHANNEL_TX->CNDTR = data.buf.buf[data.buf.dmaidx].size;
 	// Memory address
-	DMA1_Channel4->CMAR = (uint32_t)data.buf.buf[data.buf.dmaidx].data;
+	DMA_CHANNEL_TX->CMAR = (uint32_t)data.buf.buf[data.buf.dmaidx].data;
 	// Start TX DMA
-	DMA1_Channel4->CCR |= DMA_CCR_EN_Msk;
+	DMA_CHANNEL_TX->CCR |= DMA_CCR_EN_Msk;
 }
 
 static void i2c_slave_irq_tx_start()
@@ -414,7 +422,7 @@ static void i2c_slave_irq_tx_start()
 static void i2c_slave_irq_addr()
 {
 	// Addressed, switch to transmitter or receiver mode
-	uint16_t sr2 = I2C2->SR2;
+	uint16_t sr2 = I2C->SR2;
 #if DEBUG >= DEBUG_PRINT
 	printf(ESC_ENABLE "%lu\ti2c irq: addr 0x%04x\n", systick_cnt(), sr2);
 #endif
@@ -427,13 +435,13 @@ static void i2c_slave_irq_addr()
 	}
 }
 
-void DMA1_Channel4_IRQHandler()
+void DMA1_Channel6_IRQHandler()
 {
 #if DEBUG >= DEBUG_CHECK
-	I2C_TypeDef *i2c = I2C2;
-	DMA_TypeDef *dma = DMA1;
-	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
-	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+	I2C_TypeDef *i2c = I2C;
+	DMA_TypeDef *dma = DMA;
+	DMA_Channel_TypeDef *dmarx = DMA_CHANNEL_RX;
+	DMA_Channel_TypeDef *dmatx = DMA_CHANNEL_TX;
 #endif
 #if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
@@ -448,13 +456,13 @@ void DMA1_Channel4_IRQHandler()
 #endif
 }
 
-void DMA1_Channel5_IRQHandler()
+void DMA1_Channel7_IRQHandler()
 {
 #if DEBUG >= DEBUG_CHECK
-	I2C_TypeDef *i2c = I2C2;
-	DMA_TypeDef *dma = DMA1;
-	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
-	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+	I2C_TypeDef *i2c = I2C;
+	DMA_TypeDef *dma = DMA;
+	DMA_Channel_TypeDef *dmarx = DMA_CHANNEL_RX;
+	DMA_Channel_TypeDef *dmatx = DMA_CHANNEL_TX;
 #endif
 #if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BS14_Msk;
@@ -465,9 +473,9 @@ void DMA1_Channel5_IRQHandler()
 #endif
 }
 
-void I2C2_EV_IRQHandler()
+void I2C1_EV_IRQHandler()
 {
-	uint16_t sr1 = I2C2->SR1;
+	uint16_t sr1 = I2C->SR1;
 #if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
 #endif
@@ -479,10 +487,10 @@ void I2C2_EV_IRQHandler()
 	}
 
 #if DEBUG >= DEBUG_CHECK
-	I2C_TypeDef *i2c = I2C2;
-	DMA_TypeDef *dma = DMA1;
-	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
-	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+	I2C_TypeDef *i2c = I2C;
+	DMA_TypeDef *dma = DMA;
+	DMA_Channel_TypeDef *dmarx = DMA_CHANNEL_RX;
+	DMA_Channel_TypeDef *dmatx = DMA_CHANNEL_TX;
 #endif
 #if DEBUG >= DEBUG_EVLOG
 	evlog.log[evlog.idx].sr1 = sr1;
@@ -521,7 +529,7 @@ void I2C2_EV_IRQHandler()
 	case ActiveTx:
 		if (sr1 & I2C_SR1_BTF_Msk) {
 			// Disable buffer interrupt again
-			I2C2->CR2 &= ~I2C_CR2_ITBUFEN_Msk;
+			I2C->CR2 &= ~I2C_CR2_ITBUFEN_Msk;
 			i2c_slave_irq_tx_start();
 		} else if (sr1 & I2C_SR1_AF_Msk) {
 			// No acknowledgement
@@ -572,14 +580,14 @@ void I2C2_EV_IRQHandler()
 #endif
 }
 
-void I2C2_ER_IRQHandler()
+void I2C1_ER_IRQHandler()
 {
-	uint16_t sr1 = I2C2->SR1;
+	uint16_t sr1 = I2C->SR1;
 #if DEBUG >= DEBUG_CHECK
-	I2C_TypeDef *i2c = I2C2;
-	DMA_TypeDef *dma = DMA1;
-	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
-	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+	I2C_TypeDef *i2c = I2C;
+	DMA_TypeDef *dma = DMA;
+	DMA_Channel_TypeDef *dmarx = DMA_CHANNEL_RX;
+	DMA_Channel_TypeDef *dmatx = DMA_CHANNEL_TX;
 #endif
 #if DEBUG >= DEBUG_IRQ
 	GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
@@ -597,7 +605,7 @@ void I2C2_ER_IRQHandler()
 		i2c_slave_irq_tx_done();
 	} else if (sr1 & I2C_SR1_BERR_Msk) {
 		// Bus error
-		I2C2->SR1 = ~I2C_SR1_BERR_Msk;
+		I2C->SR1 = ~I2C_SR1_BERR_Msk;
 #if DEBUG >= DEBUG_CHECK
 	} else if (sr1 & (I2C_SR1_ARLO_Msk | I2C_SR1_OVR_Msk | I2C_SR1_TIMEOUT_Msk |
 			  I2C_SR1_PECERR_Msk | I2C_SR1_SMBALERT_Msk)) {
@@ -830,10 +838,10 @@ done:
 static void i2c_slave_process()
 {
 #if DEBUG >= DEBUG_CHECK
-	I2C_TypeDef *i2c = I2C2;
-	DMA_TypeDef *dma = DMA1;
-	DMA_Channel_TypeDef *dmarx = DMA1_Channel5;
-	DMA_Channel_TypeDef *dmatx = DMA1_Channel4;
+	I2C_TypeDef *i2c = I2C;
+	DMA_TypeDef *dma = DMA;
+	DMA_Channel_TypeDef *dmarx = DMA_CHANNEL_RX;
+	DMA_Channel_TypeDef *dmatx = DMA_CHANNEL_TX;
 #endif
 start:	;
 	unsigned int bwait = data.buf.intwait;
@@ -886,9 +894,9 @@ start:	;
 	data.buf.intwait = 0;
 	// WaitTx state needs manual pending interrupt
 	if (data.state == WaitTx)
-		NVIC_SetPendingIRQ(I2C2_EV_IRQn);
+		NVIC_SetPendingIRQ(I2C1_EV_IRQn);
 	// Enable interrupts
-	I2C2->CR2 |= I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk;
+	I2C->CR2 |= I2C_CR2_ITEVTEN_Msk | I2C_CR2_ITERREN_Msk;
 }
 
 IDLE_HANDLER() = &i2c_slave_process;
