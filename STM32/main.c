@@ -10,10 +10,10 @@ LIST(idle, basic_handler_t);
 static inline void init()
 {
 	printf(ESC_BOOT "%lu\tboot: " VARIANT " build @ " __DATE__ " " __TIME__ "\n", systick_cnt());
+	LIST_ITERATE(init, basic_handler_t, p) (*p)();
 	// Set JTAG to SWD only
 	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN_Msk;
-	AFIO->MAPR |= AFIO_MAPR_SPI1_REMAP_Msk | (0b010 << AFIO_MAPR_SWJ_CFG_Pos);
-	LIST_ITERATE(init, basic_handler_t, p) (*p)();
+	AFIO->MAPR = (AFIO->MAPR & ~AFIO_MAPR_SWJ_CFG_Msk) | AFIO_MAPR_SWJ_CFG_JTAGDISABLE_Msk;
 	printf(ESC_INIT "%lu\tboot: Init done\n", systick_cnt());
 }
 
@@ -52,14 +52,11 @@ INIT_HANDLER() = &usb_disabled;
 static void debug_gpio_init()
 {
 	// Configure GPIOs
-	// PB12: Output push-pull, 50MHz
-	// PB14: Output push-pull, 50MHz
-	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN_Msk;
-	GPIOB->CRH = (GPIOB->CRH & ~(GPIO_CRH_CNF12_Msk | GPIO_CRH_CNF12_Msk |
-				     GPIO_CRH_CNF14_Msk | GPIO_CRH_MODE14_Msk)) |
-		     ((0b00 << GPIO_CRH_CNF12_Pos) | (0b11 << GPIO_CRH_MODE12_Pos)) |
-		     ((0b00 << GPIO_CRH_CNF14_Pos) | (0b11 << GPIO_CRH_MODE14_Pos));
-	GPIOB->BSRR = GPIO_BSRR_BR12_Msk | GPIO_BSRR_BR14_Msk;
+	// PC13: Output push-pull, 50MHz
+	RCC->APB2ENR |= RCC_APB2ENR_IOPCEN_Msk;
+	GPIOC->CRH = (GPIOC->CRH & ~(GPIO_CRH_CNF13_Msk | GPIO_CRH_CNF13_Msk)) |
+		     ((0b00 << GPIO_CRH_CNF13_Pos) | (0b11 << GPIO_CRH_MODE13_Pos));
+	GPIOC->BSRR = GPIO_BSRR_BR13_Msk;
 }
 
 INIT_HANDLER() = &debug_gpio_init;
@@ -77,9 +74,9 @@ int main()
 		// Performance monitor
 		static unsigned int pin = 0;
 		if (pin)
-			GPIOB->BSRR = GPIO_BSRR_BS12_Msk;
+			GPIOC->BSRR = GPIO_BSRR_BS13_Msk;
 		else
-			GPIOB->BSRR = GPIO_BSRR_BR12_Msk;
+			GPIOC->BSRR = GPIO_BSRR_BR13_Msk;
 		pin = !pin;
 #endif
 

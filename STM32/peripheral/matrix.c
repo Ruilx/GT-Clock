@@ -358,7 +358,7 @@ void TIM4_IRQHandler()
 	while (!(DMA->ISR & DMA_ISR_TCIF3_Msk))
 		dbgbkpt();
 	// Check SPI finished
-	while (SPI1->SR & SPI_SR_BSY_Msk)
+	while (SPI->SR & SPI_SR_BSY_Msk)
 		dbgbkpt();
 #endif
 

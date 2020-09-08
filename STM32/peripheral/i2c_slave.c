@@ -90,7 +90,7 @@ static void i2c_slave_init()
 				     GPIO_CRH_CNF9_Msk | GPIO_CRH_MODE9_Msk)) |
 		     ((0b11 << GPIO_CRH_CNF8_Pos) | (0b01 << GPIO_CRH_MODE8_Pos)) |
 		     ((0b11 << GPIO_CRH_CNF9_Pos) | (0b01 << GPIO_CRH_MODE9_Pos));
-	AFIO->MAPR |= AFIO_MAPR_I2C1_REMAP_Msk;
+	AFIO->MAPR = (AFIO->MAPR & ~AFIO_MAPR_SWJ_CFG_Msk) | AFIO_MAPR_I2C1_REMAP_Msk;
 
 	// Enable I2C1 clock
 	RCC->APB1ENR |= RCC_APB1ENR_I2C1EN_Msk;
