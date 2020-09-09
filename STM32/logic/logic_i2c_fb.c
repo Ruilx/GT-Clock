@@ -2,6 +2,7 @@
 #include <system/systick.h>
 #include <peripheral/i2c_slave.h>
 #include <peripheral/matrix.h>
+#include <peripheral/button.h>
 
 #define FUNC_BASE	0x10
 #define FUNC_SIZE	0x10
@@ -79,3 +80,12 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 }
 
 I2C_SLAVE_REG_HANDLER() = {&i2c_data, &i2c_write};
+
+static void button_flip(uint16_t btn)
+{
+	regs[FuncFlip] = !(btn & ButtonOrientation);
+	matrix_orientation(regs[FuncFlip]);
+}
+
+BUTTON_HANDLER() = &button_flip;
+
