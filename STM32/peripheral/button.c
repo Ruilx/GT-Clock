@@ -10,7 +10,6 @@
 
 #define DEBUG_PRINT	5
 #define DEBUG_CHECK	5
-#define DEBUG_IRQ	5
 
 LIST(button, button_handler_t);
 
@@ -76,8 +75,12 @@ void EXTI9_5_IRQHandler()
 	// Disable detection for activated pins, enable for debouncing pins
 	EXTI->FTSR = (EXTI->FTSR & ~hw) | sw;
 	EXTI->RTSR = (EXTI->RTSR & ~hw) | sw;
-	//NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
+	// Reset pending IRQ states
+	// If debouncing pin states changed unexpectedly, it should be caught by PR
 	EXTI->PR = pr;
+	//NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
+
+	// Toggle activated pins, update debouncing pins
 	uint16_t state = data.state ^ hw;
 	if (sw)
 		state = (state & ~sw) | (button_read() & sw);
@@ -90,12 +93,12 @@ void EXTI9_5_IRQHandler()
 			data.tick[i] = tick;
 }
 
-static void button_process()
+static void button_tick(uint32_t tick)
 {
 	uint16_t db = data.debouncing;
 	if (db) {
+		// Find pins with expired debouncing timer
 		uint16_t sw = 0;
-		uint32_t tick = systick_cnt();
 		for (unsigned int i = 0; db != 0; db >>= 1, i++)
 			if ((db & 1) && tick - data.tick[i] >= DEBOUNCING_MS)
 				sw |= 1 << i;
@@ -115,4 +118,4 @@ static void button_process()
 	}
 }
 
-IDLE_HANDLER() = &button_process;
+SYSTICK_HANDLER() = &button_tick;

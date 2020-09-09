@@ -15,6 +15,7 @@ uint32_t systick_cnt();
 void systick_delay(uint32_t cycles);
 
 // Register a systick handler
+#define SYSTICK_IRQ_HANDLER()	LIST_ITEM(systick_irq, systick_handler_t)
 #define SYSTICK_HANDLER()	LIST_ITEM(systick, systick_handler_t)
 
 #ifdef __cplusplus
