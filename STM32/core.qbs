@@ -104,6 +104,8 @@ StaticLibrary {
         "logic/logic_layers.h",
         "peripheral/button.c",
         "peripheral/button.h",
+        "peripheral/gpio.c",
+        "peripheral/gpio.h",
         "peripheral/i2c_slave.c",
         "peripheral/i2c_slave.h",
         "peripheral/spi_master.c",

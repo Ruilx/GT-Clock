@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <list.h>
 
-enum {ButtonOrientation = 1 << 8};
+enum {	ButtonGeneral = 1 << 5,
+	ButtonOrientation = 1 << 8};
 
 // Button state change callback
 typedef void (*const button_handler_t)(uint16_t btn);
