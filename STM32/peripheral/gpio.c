@@ -96,7 +96,7 @@ static void button_handler(uint16_t btn)
 		power_esp_enable(enable);
 		printf("%s%lu\tgpio: Power %s\n",
 		       enable ? ESC_ENABLE : ESC_DISABLE, systick_cnt(),
-		       enable ? "enabled", "disabled");
+		       enable ? "enabled" : "disabled");
 	}
 	btn_prev = btn;
 }
