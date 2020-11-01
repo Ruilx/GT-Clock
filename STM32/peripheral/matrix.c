@@ -226,7 +226,7 @@ static inline void matrix_line_calc()
 		uint8_t v = 0x00;
 		uint8_t step = 0;
 		uint8_t next;
-		uint8_t *pbuf = &data.buf[wbuf][0][data.rflipped ? PANELS - 1 - pnl : pnl];
+		uint8_t *pbuf = &data.buf[wbuf][0][data.rflipped ? pnl : PANELS - 1 - pnl];
 		do {
 			next = GSCALE - 1;
 			// Find next grayscale change
