@@ -207,13 +207,13 @@ static void trigger()
 
 MATRIX_SWAP_HANDLER() = &trigger;
 
-void logic_layers_select(const uint8_t *layers, unsigned int start, unsigned int num)
+void logic_layers_select(const uint8_t *layers, int8_t start, unsigned int num)
 {
 	unsigned int i;
-	if (start == 0xff) {
-		start = 0;
-		for (unsigned int i = 0; i < MAX_LAYERS; i++)
+	if (start < 0) {
+		for (i = 0; i < MAX_LAYERS && i <= (unsigned int)(MAX_LAYERS + start); i++)
 			layer_reset(i);
+		start = 0;
 	}
 	for (i = start; i < MAX_LAYERS && i < start + num; i++) {
 		layer_reset(i);

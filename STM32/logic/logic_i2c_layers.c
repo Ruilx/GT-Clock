@@ -192,8 +192,8 @@ static void i2c_write(unsigned int id, unsigned int segment, unsigned int size, 
 			logic_layers_enable(data.regs[FuncEnable]);
 		break;
 	case FuncLayers:
-		if (size > 0 && segment == 0)
-			logic_layers_select(data.buf, data.regs[FuncLayers], size);
+		if (size >= 0 && segment == 0)
+			logic_layers_select(data.buf, (int8_t)data.regs[FuncLayers], size);
 		break;
 	case FuncMixer:
 		if (segment == 4)
